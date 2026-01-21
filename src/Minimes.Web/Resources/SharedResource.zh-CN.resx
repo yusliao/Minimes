@@ -53,6 +53,9 @@
   <data name="Nav_Workstation" xml:space="preserve">
     <value>工作台</value>
   </data>
+  <data name="Nav_Weighing" xml:space="preserve">
+    <value>生产称重</value>
+  </data>
   <data name="Nav_WeighingRecords" xml:space="preserve">
     <value>生产查询</value>
   </data>
