@@ -1,0 +1,409 @@
+@page "/weighing"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Operator")]
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.WeighingRecord
+@using Minimes.Domain.Enums
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IWeighingRecordService WeighingRecordService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>@L["Weighing_Title"]</PageTitle>
+
+<!-- 响应式标题：PC完整显示，移动端简化 -->
+<h3 class="mb-3">
+    ⚖️ @L["Weighing_Title"]
+    <span class="d-none d-md-inline text-muted fs-6">- @L["Weighing_Subtitle"]</span>
+</h3>
+
+<!-- 移动端：顶部快捷统计条 -->
+<div class="d-md-none mb-3">
+    <div class="card bg-light">
+        <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="small">
+                    @if (todaySummary != null)
+                    {
+                        <span class="me-3">📊 @L["Time_Today"] <strong>@todaySummary.TotalRecords</strong> @L["Weighing_Records"]</span>
+                        <span>⚖️ <strong>@todaySummary.TotalWeight.ToString("F1")</strong> kg</span>
+                    }
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#mobileStats">
+                    <span class="oi oi-chevron-bottom"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 左侧/移动端全宽：当前称重区域 -->
+    <div class="col-12 col-md-8 mb-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white py-2">
+                <h5 class="mb-0">📦 @L["Weighing_Current"]</h5>
+            </div>
+            <div class="card-body">
+                <!-- 条码输入区域 -->
+                <div class="mb-4">
+                    <h6>@L["Weighing_Barcode"] <span class="text-danger">*</span></h6>
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control form-control-lg"
+                               @ref="barcodeInput"
+                               @bind="currentBarcode"
+                               @bind:event="oninput"
+                               @onkeydown="OnBarcodeKeyDown"
+                               placeholder="@L["Weighing_BarcodePlaceholder"]" />
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(currentBarcode))
+                    {
+                        <small class="text-success">✓ @L["Weighing_BarcodeEntered"]：@currentBarcode</small>
+                    }
+                    else
+                    {
+                        <small class="text-muted">📱 @L["Weighing_BarcodeScanHint"]</small>
+                    }
+                </div>
+
+                <!-- 重量输入区域 -->
+                <div class="mb-4">
+                    <h6>@L["Weighing_Weight"] <span class="text-danger">*</span></h6>
+                    <div class="input-group input-group-lg">
+                        <input type="number" class="form-control form-control-lg text-center"
+                               @ref="weightInput"
+                               @bind="manualWeightInput"
+                               @onkeydown="OnWeightKeyDown"
+                               placeholder="@L["Weighing_WeightPlaceholder"]" step="0.001" min="0" />
+                        <span class="input-group-text">kg</span>
+                    </div>
+                    @if (manualWeightInput > 0)
+                    {
+                        <small class="text-success">✓ @L["Weighing_Weight"]：@manualWeightInput.ToString("F3") kg</small>
+                    }
+                    else
+                    {
+                        <small class="text-muted">@L["Weighing_WeightHint"]</small>
+                    }
+                </div>
+
+                <!-- 加工环节选择 -->
+                <div class="mb-4">
+                    <h6>@L["Weighing_Stage"] <span class="text-danger">*</span></h6>
+                    <select class="form-select form-select-lg" @bind="selectedProcessStage">
+                        <option value="@ProcessStage.Receiving">@L["Stage_Receiving"]</option>
+                        <option value="@ProcessStage.Processing">@L["Stage_Processing"]</option>
+                        <option value="@ProcessStage.Shipping">@L["Stage_Shipping"]</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">@L["Weighing_Remark"]（@L["Weighing_Optional"]）</label>
+                    <textarea class="form-control form-control-lg" @bind="remarks" rows="2" placeholder="@L["Weighing_RemarkPlaceholder"]"></textarea>
+                </div>
+
+                <!-- 保存按钮 -->
+                <div class="d-grid gap-2">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger">
+                            <strong>❌ </strong>@errorMessage
+                        </div>
+                    }
+                    <button class="btn btn-success btn-lg" @onclick="SaveRecord">
+                        <span class="oi oi-check"></span> @L["Weighing_SaveRecord"]
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="ClearForm">
+                        <span class="oi oi-reload"></span> @L["Weighing_Reset"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧/移动端：统计和最近记录 -->
+    <div class="col-12 col-md-4">
+        <!-- 移动端折叠内容 -->
+        <div class="collapse d-md-block" id="mobileStats">
+            <!-- 今日统计 -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white py-2">
+                    <h6 class="mb-0">📊 @L["Weighing_TodayStats"]</h6>
+                </div>
+                <div class="card-body py-2">
+                    @if (todaySummary != null)
+                    {
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold text-primary">@todaySummary.TotalRecords</div>
+                                <small class="text-muted">@L["Weighing_RecordCount"]</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold text-success">@todaySummary.TotalWeight.ToString("F1")</div>
+                                <small class="text-muted">@L["Weighing_TotalWeight"]</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold text-info">@todaySummary.UniqueBarcodes</div>
+                                <small class="text-muted">@L["Weighing_BarcodeCount"]</small>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0 text-center">@L["Status_Loading"]</p>
+                    }
+                </div>
+            </div>
+
+            <!-- 最近记录 -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h6 class="mb-0">📝 @L["Weighing_RecentRecords"]</h6>
+                </div>
+                <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                    @if (recentRecords.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var record in recentRecords)
+                            {
+                                <div class="list-group-item py-2 px-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <code class="fw-bold">@record.Barcode</code>
+                                            <span class="badge bg-info ms-1">@GetLocalizedStageName(record.ProcessStageName)</span>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">@record.Weight.ToString("F2") kg</div>
+                                            <small class="text-muted">@record.CreatedAt.ToString("HH:mm")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-3 mb-0">@L["Weighing_NoRecords"]</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // SignalR连接（用于扫码枪）
+    private HubConnection? hubConnection;
+
+    // 输入框引用（用于自动聚焦）
+    private ElementReference barcodeInput;
+    private ElementReference weightInput;
+
+    // 条码
+    private string currentBarcode = string.Empty;
+
+    // 重量状态
+    private decimal manualWeightInput = 0;  // 手动输入的重量
+
+    // 其他字段
+    private ProcessStage selectedProcessStage = ProcessStage.Receiving;
+    private string? remarks;
+    private string? errorMessage;  // 错误提示
+
+    // 统计数据
+    private TodaySummary? todaySummary;
+    private List<WeighingRecordResponse> recentRecords = new();
+
+    // 保存条件：有条码 + 重量大于0
+    private bool CanSave => !string.IsNullOrWhiteSpace(currentBarcode) && manualWeightInput > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 初始化SignalR连接（用于扫码枪）
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/hardwareHub"))
+            .Build();
+
+        // 订阅扫码事件（保留，扫码枪还是有用的）
+        hubConnection.On<object>("ReceiveBarcode", (data) =>
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(data);
+            var barcodeData = System.Text.Json.JsonSerializer.Deserialize<BarcodeData>(json);
+
+            if (barcodeData != null && !string.IsNullOrEmpty(barcodeData.barcode))
+            {
+                currentBarcode = barcodeData.barcode;
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        // SignalR连接可能失败，不影响页面基本功能
+        try
+        {
+            await hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SignalR连接失败（演示模式不影响使用）: {ex.Message}");
+        }
+
+        await LoadTodaySummary();
+        await LoadRecentRecords();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // 页面首次加载，自动聚焦到条码输入框
+            await FocusBarcodeInput();
+        }
+    }
+
+    private async Task FocusBarcodeInput()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('input[placeholder*=\"扫码\"]')?.focus()");
+        }
+        catch { /* 忽略聚焦失败 */ }
+    }
+
+    private async Task FocusWeightInput()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('input[type=\"number\"]')?.focus()");
+        }
+        catch { /* 忽略聚焦失败 */ }
+    }
+
+    private async Task LoadTodaySummary()
+    {
+        todaySummary = await WeighingRecordService.GetTodaySummaryAsync();
+    }
+
+    private async Task LoadRecentRecords()
+    {
+        var query = new WeighingRecordQueryRequest
+        {
+            PageNumber = 1,
+            PageSize = 10
+        };
+
+        var (records, _) = await WeighingRecordService.QueryAsync(query);
+        recentRecords = records;
+    }
+
+    // 条码输入框回车：跳转到重量输入框
+    private async Task OnBarcodeKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(currentBarcode))
+        {
+            await FocusWeightInput();
+        }
+    }
+
+    // 重量输入框回车：直接保存
+    private async Task OnWeightKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && manualWeightInput > 0)
+        {
+            await SaveRecord();
+        }
+    }
+
+    private async Task SaveRecord()
+    {
+        errorMessage = null;
+
+        // 验证条码
+        if (string.IsNullOrWhiteSpace(currentBarcode))
+        {
+            errorMessage = L["Weighing_ErrorBarcodeRequired"];
+            return;
+        }
+
+        // 验证重量
+        if (manualWeightInput <= 0)
+        {
+            errorMessage = L["Weighing_ErrorWeightRequired"];
+            return;
+        }
+
+        try
+        {
+            // 获取当前登录用户
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var currentUser = authState.User.Identity?.Name ?? "Unknown";
+
+            var request = new CreateWeighingRecordRequest
+            {
+                Barcode = currentBarcode.Trim(),
+                Weight = manualWeightInput,
+                ProcessStage = selectedProcessStage,
+                Remarks = remarks
+            };
+
+            await WeighingRecordService.CreateAsync(request, currentUser);
+
+            await LoadTodaySummary();
+            await LoadRecentRecords();
+
+            // 清空，准备下一次
+            currentBarcode = string.Empty;
+            manualWeightInput = 0;
+            remarks = null;
+
+            StateHasChanged();
+
+            // 保存成功后自动聚焦回条码输入框，准备下一次扫码
+            await FocusBarcodeInput();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearForm()
+    {
+        currentBarcode = string.Empty;
+        manualWeightInput = 0;
+        selectedProcessStage = ProcessStage.Receiving;
+        remarks = null;
+        errorMessage = null;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    private class BarcodeData
+    {
+        public string barcode { get; set; } = string.Empty;
+    }
+
+    private string GetLocalizedStageName(string stageName)
+    {
+        var normalized = stageName.ToLower().Trim();
+        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
+            return L["Stage_Receiving"];
+        if (normalized.Contains("processing") || normalized.Contains("加工"))
+            return L["Stage_Processing"];
+        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
+            return L["Stage_Shipping"];
+        return stageName;
+    }
+}

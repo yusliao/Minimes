@@ -1,0 +1,87 @@
+@page
+@model Minimes.Web.Pages.Account.LoginModel
+@using Microsoft.Extensions.Localization
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = L["Login_Title"];
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <span class="oi oi-lock-locked me-2"></span>@L["Login_Header"]
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span class="oi oi-warning me-2"></span>@Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label class="form-label">@L["Login_Username"]</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <span class="oi oi-person"></span>
+                                </span>
+                                <input type="text" class="form-control" name="Username"
+                                       value="@Model.Username" placeholder="@L["Login_UsernamePlaceholder"]" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">@L["Login_Password"]</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <span class="oi oi-lock-locked"></span>
+                                </span>
+                                <input type="password" class="form-control" name="Password"
+                                       placeholder="@L["Login_PasswordPlaceholder"]" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="RememberMe"
+                                   id="rememberMe" value="true" @(Model.RememberMe ? "checked" : "") />
+                            <label class="form-check-label" for="rememberMe">
+                                @L["Login_RememberMe"]
+                            </label>
+                        </div>
+
+                        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <span class="oi oi-account-login me-2"></span>
+                            <span>@L["Login_Submit"]</span>
+                        </button>
+
+                        <button type="submit" name="DemoLogin" value="true" class="btn btn-outline-success w-100 mt-2">
+                            <span class="oi oi-eye me-2"></span>
+                            <span>@L["Login_DemoLogin"]</span>
+                        </button>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <strong>@L["Login_DemoAccount"]</strong> demo / demo123<br />
+                            <strong>@L["Login_AdminAccount"]</strong> admin / Admin123456
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

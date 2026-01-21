@@ -1,0 +1,460 @@
+@page "/profile"
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.User
+@using Minimes.Application.DTOs.WeighingRecord
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
+@using Minimes.Web.Resources
+@inject Minimes.Application.Interfaces.IAuthenticationService AuthService
+@inject IUserService UserService
+@inject IWeighingRecordService WeighingRecordService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<SharedResource> L
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>@L["Profile_Title"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-person me-2"></span>@L["Profile_Title"]
+            </h2>
+            <p class="text-muted">@L["Profile_Subtitle"]</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 左侧：用户信息 -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-info me-2"></span>@L["Profile_AccountInfo"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (currentUser != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-4 text-muted"><strong>@L["User_Username"]:</strong></div>
+                            <div class="col-8"><code>@currentUser.Username</code></div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4 text-muted"><strong>@L["User_FullName"]:</strong></div>
+                            <div class="col-8">@currentUser.FullName</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4 text-muted"><strong>@L["User_Role"]:</strong></div>
+                            <div class="col-8">
+                                @if (currentUser.Role == Minimes.Domain.Enums.UserRole.Administrator)
+                                {
+                                    <span class="badge bg-danger">@L["Role_Admin"]</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info">@L["Role_Operator"]</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4 text-muted"><strong>@L["User_Status"]:</strong></div>
+                            <div class="col-8">
+                                <span class="badge @(currentUser.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(currentUser.IsActive ? L["Status_Active"] : L["Status_Inactive"])
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4 text-muted"><strong>@L["User_CreatedAt"]:</strong></div>
+                            <div class="col-8">@currentUser.CreatedAt.ToString("yyyy-MM-dd")</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary"></div>
+                            <p class="mt-2 text-muted">@L["Status_Loading"]</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：操作统计 -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-graph me-2"></span>@L["Profile_MyStats"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (userSummary != null)
+                    {
+                        <div class="row text-center">
+                            <div class="col-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="text-muted small">@L["Profile_TodayRecords"]</div>
+                                    <div class="fs-3 fw-bold text-primary">@userSummary.TodayRecords</div>
+                                    <div class="text-muted small">@userSummary.TodayWeight.ToString("F1") kg</div>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="text-muted small">@L["Profile_MonthRecords"]</div>
+                                    <div class="fs-3 fw-bold text-success">@userSummary.MonthRecords</div>
+                                    <div class="text-muted small">@userSummary.MonthWeight.ToString("F1") kg</div>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="text-muted small">@L["Profile_TotalRecordsCount"]</div>
+                                    <div class="fs-3 fw-bold text-info">@userSummary.TotalRecords</div>
+                                    <div class="text-muted small">@userSummary.TotalWeight.ToString("F1") kg</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-success"></div>
+                            <p class="mt-2 text-muted">@L["Profile_LoadingStats"]</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近操作记录 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-list me-2"></span>@L["Profile_RecentRecords"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (recentRecords != null && recentRecords.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@L["Records_Time"]</th>
+                                        <th>@L["Weighing_Barcode"]</th>
+                                        <th>@L["Weighing_Weight"]</th>
+                                        <th>@L["Weighing_Stage"]</th>
+                                        <th>@L["Weighing_Remark"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var record in recentRecords)
+                                    {
+                                        <tr>
+                                            <td>@record.CreatedAt.ToString("MM-dd HH:mm")</td>
+                                            <td><code>@record.Barcode</code></td>
+                                            <td><strong>@record.Weight.ToString("F2")</strong> kg</td>
+                                            <td>
+                                                <span class="badge @GetStageBadgeClass(record.ProcessStageName)">
+                                                    @GetLocalizedStageName(record.ProcessStageName)
+                                                </span>
+                                            </td>
+                                            <td class="text-muted">@(record.Remarks ?? "-")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else if (recentRecords != null)
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <span class="oi oi-inbox" style="font-size: 2rem;"></span>
+                            <p class="mt-2">@L["Profile_NoRecords"]</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-secondary"></div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 修改姓名 -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-pencil me-2"></span>@L["Profile_UpdateName"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(updateNameSuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            @updateNameSuccessMessage
+                            <button type="button" class="btn-close" @onclick="() => updateNameSuccessMessage = null"></button>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(updateNameErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            @updateNameErrorMessage
+                            <button type="button" class="btn-close" @onclick="() => updateNameErrorMessage = null"></button>
+                        </div>
+                    }
+
+                    <EditForm Model="updateNameModel" OnValidSubmit="HandleUpdateName">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label class="form-label"><strong>@L["Profile_NewName"]</strong></label>
+                            <input type="text" class="form-control" @bind="updateNameModel.FullName" placeholder="@L["Profile_NewNamePlaceholder"]" />
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-info" disabled="@isUpdatingName">
+                                @if (isUpdatingName) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                @L["Profile_SaveName"]
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <!-- 修改密码 -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <span class="oi oi-lock-locked me-2"></span>@L["Profile_ChangePassword"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            @successMessage
+                            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            @errorMessage
+                            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                        </div>
+                    }
+
+                    <EditForm Model="changePasswordRequest" OnValidSubmit="HandleChangePassword">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label class="form-label"><strong>@L["Profile_CurrentPassword"]</strong></label>
+                            <input type="password" class="form-control" @bind="changePasswordRequest.OldPassword" placeholder="@L["Profile_CurrentPasswordPlaceholder"]" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>@L["User_NewPassword"]</strong></label>
+                            <input type="password" class="form-control" @bind="changePasswordRequest.NewPassword" placeholder="@L["Profile_NewPasswordPlaceholder"]" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>@L["User_ConfirmPassword"]</strong></label>
+                            <input type="password" class="form-control" @bind="changePasswordRequest.ConfirmNewPassword" placeholder="@L["Profile_ConfirmNewPasswordPlaceholder"]" />
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning" disabled="@isChangingPassword">
+                                @if (isChangingPassword) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                @L["Profile_SavePassword"]
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private UserResponse? currentUser;
+    private UserOperationSummary? userSummary;
+    private List<WeighingRecordResponse>? recentRecords;
+
+    private ChangePasswordRequest changePasswordRequest = new();
+    private UpdateNameModel updateNameModel = new();
+
+    private bool isChangingPassword = false;
+    private bool isUpdatingName = false;
+
+    private string? successMessage;
+    private string? errorMessage;
+    private string? updateNameSuccessMessage;
+    private string? updateNameErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUser();
+        await LoadUserStatistics();
+        await LoadRecentRecords();
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            if (AuthenticationStateTask != null)
+            {
+                var authState = await AuthenticationStateTask;
+                var user = authState.User;
+
+                if (user.Identity?.IsAuthenticated == true)
+                {
+                    var username = user.FindFirst(ClaimTypes.Name)?.Value;
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        currentUser = await UserService.GetByUsernameAsync(username);
+                        if (currentUser != null)
+                        {
+                            changePasswordRequest.UserId = currentUser.Id;
+                            updateNameModel.FullName = currentUser.FullName;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Profile_LoadUserFailed"]}: {ex.Message}";
+        }
+    }
+
+    private async Task LoadUserStatistics()
+    {
+        try
+        {
+            if (currentUser != null)
+            {
+                userSummary = await WeighingRecordService.GetUserSummaryAsync(currentUser.Username);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load stats failed: {ex.Message}");
+        }
+    }
+
+    private async Task LoadRecentRecords()
+    {
+        try
+        {
+            if (currentUser != null)
+            {
+                var query = new WeighingRecordQueryRequest { PageNumber = 1, PageSize = 100 };
+                var (records, _) = await WeighingRecordService.QueryAsync(query);
+                recentRecords = records.Where(r => r.CreatedBy == currentUser.Username).Take(10).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Load records failed: {ex.Message}");
+        }
+    }
+
+    private async Task HandleChangePassword()
+    {
+        isChangingPassword = true;
+        successMessage = null;
+        errorMessage = null;
+
+        try
+        {
+            await AuthService.ChangePasswordAsync(changePasswordRequest);
+            successMessage = L["Profile_PasswordUpdateSuccess"];
+            changePasswordRequest.OldPassword = string.Empty;
+            changePasswordRequest.NewPassword = string.Empty;
+            changePasswordRequest.ConfirmNewPassword = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Profile_UpdateFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isChangingPassword = false;
+        }
+    }
+
+    private async Task HandleUpdateName()
+    {
+        isUpdatingName = true;
+        updateNameSuccessMessage = null;
+        updateNameErrorMessage = null;
+
+        try
+        {
+            if (currentUser == null) return;
+
+            if (updateNameModel.FullName.Trim() == currentUser.FullName)
+            {
+                updateNameErrorMessage = L["Profile_NameSameError"];
+                return;
+            }
+
+            var updatedUser = await UserService.UpdateAsync(currentUser.Id, updateNameModel.FullName.Trim(), currentUser.IsActive);
+            if (updatedUser != null)
+            {
+                currentUser = updatedUser;
+                updateNameSuccessMessage = L["Profile_NameUpdateSuccess"];
+            }
+        }
+        catch (Exception ex)
+        {
+            updateNameErrorMessage = $"{L["Profile_UpdateFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isUpdatingName = false;
+        }
+    }
+
+    private string GetStageBadgeClass(string stageName)
+    {
+        // 支持中英文环节名称
+        var normalized = stageName.ToLower().Trim();
+        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
+            return "bg-primary";
+        if (normalized.Contains("processing") || normalized.Contains("加工"))
+            return "bg-warning text-dark";
+        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
+            return "bg-success";
+        return "bg-secondary";
+    }
+
+    private string GetLocalizedStageName(string stageName)
+    {
+        // 将环节名称转换为本地化的名称
+        var normalized = stageName.ToLower().Trim();
+        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
+            return L["Stage_Receiving"];
+        if (normalized.Contains("processing") || normalized.Contains("加工"))
+            return L["Stage_Processing"];
+        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
+            return L["Stage_Shipping"];
+        return stageName; // 返回原值
+    }
+
+    private class UpdateNameModel
+    {
+        public string FullName { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,21 @@
+@page "/login"
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        // 重定向到新的 Razor Page 登录页面
+        var returnUrl = Navigation.Uri.Contains("returnUrl")
+            ? Navigation.Uri.Split("returnUrl=")[1]
+            : string.Empty;
+
+        if (!string.IsNullOrEmpty(returnUrl))
+        {
+            Navigation.NavigateTo($"/Account/Login?returnUrl={returnUrl}", forceLoad: true);
+        }
+        else
+        {
+            Navigation.NavigateTo("/Account/Login", forceLoad: true);
+        }
+    }
+}

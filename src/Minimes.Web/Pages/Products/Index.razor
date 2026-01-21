@@ -1,0 +1,275 @@
+@page "/products"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Operator")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Product
+@using Microsoft.JSInterop
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>批次管理 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-box me-2"></span>批次管理
+            </h2>
+            <p class="text-muted">管理生产批次信息和供应商二维码</p>
+        </div>
+    </div>
+
+    <!-- 搜索和操作栏 -->
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <span class="oi oi-magnifying-glass"></span>
+                </span>
+                <input type="text" class="form-control" placeholder="输入批次名称或二维码搜索..."
+                       @bind="searchKeyword" @bind:event="oninput" />
+                <button class="btn btn-outline-secondary" @onclick="HandleSearch">
+                    搜索
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                    清空
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" @onclick="NavigateToCreate">
+                <span class="oi oi-plus me-1"></span>新增批次
+            </button>
+        </div>
+    </div>
+
+    <!-- 过滤器 -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn @(filterStatus == null ? "btn-primary" : "btn-outline-primary")"
+                        @onclick="() => SetFilterStatus(null)">
+                    全部 (@totalCount)
+                </button>
+                <button type="button" class="btn @(filterStatus == true ? "btn-success" : "btn-outline-success")"
+                        @onclick="() => SetFilterStatus(true)">
+                    激活中 (@activeCount)
+                </button>
+                <button type="button" class="btn @(filterStatus == false ? "btn-secondary" : "btn-outline-secondary")"
+                        @onclick="() => SetFilterStatus(false)">
+                    已停用 (@inactiveCount)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+            <p class="mt-2 text-muted">加载批次数据中...</p>
+        </div>
+    }
+    else if (products == null || !products.Any())
+    {
+        <div class="alert alert-info text-center py-5">
+            <span class="oi oi-info me-2"></span>
+            暂无批次数据，点击"新增批次"按钮创建第一个批次
+        </div>
+    }
+    else
+    {
+        <!-- 批次列表表格 -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="15%">二维码</th>
+                        <th width="20%">批次名称</th>
+                        <th width="20%">供应商/规格</th>
+                        <th width="10%">单位</th>
+                        <th width="10%">参考价格</th>
+                        <th width="10%">状态</th>
+                        <th width="10%">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in filteredProducts)
+                    {
+                        <tr class="@(product.IsActive ? "" : "table-secondary")">
+                            <td>@product.Id</td>
+                            <td>
+                                <code>@product.Barcode</code>
+                            </td>
+                            <td>
+                                <strong>@product.Name</strong>
+                            </td>
+                            <td>@product.Specification</td>
+                            <td>@product.Unit</td>
+                            <td>
+                                @if (product.ReferencePrice.HasValue)
+                                {
+                                    <span>¥@product.ReferencePrice.Value.ToString("F2")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (product.IsActive)
+                                {
+                                    <span class="badge bg-success">激活</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">停用</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => NavigateToEdit(product.Id)">
+                                    <span class="oi oi-pencil"></span>
+                                </button>
+                                @if (product.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ToggleStatus(product.Id)">
+                                        <span class="oi oi-ban"></span>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-success" @onclick="() => ToggleStatus(product.Id)">
+                                        <span class="oi oi-check"></span>
+                                    </button>
+                                }
+                                <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => DeleteProduct(product.Id)">
+                                    <span class="oi oi-trash"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="row mt-3">
+            <div class="col">
+                <small class="text-muted">
+                    共 @filteredProducts.Count() 条记录
+                </small>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ProductResponse>? products;
+    private string searchKeyword = string.Empty;
+    private bool? filterStatus = null;
+    private bool isLoading = true;
+
+    private int totalCount => products?.Count ?? 0;
+    private int activeCount => products?.Count(p => p.IsActive) ?? 0;
+    private int inactiveCount => products?.Count(p => !p.IsActive) ?? 0;
+
+    private IEnumerable<ProductResponse> filteredProducts
+    {
+        get
+        {
+            if (products == null) return Enumerable.Empty<ProductResponse>();
+
+            var result = products.AsEnumerable();
+
+            // 按状态过滤
+            if (filterStatus.HasValue)
+            {
+                result = result.Where(p => p.IsActive == filterStatus.Value);
+            }
+
+            // 按关键字搜索
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                var keyword = searchKeyword.ToLower();
+                result = result.Where(p =>
+                    p.Barcode.ToLower().Contains(keyword) ||
+                    p.Name.ToLower().Contains(keyword) ||
+                    (p.Specification != null && p.Specification.ToLower().Contains(keyword))
+                );
+            }
+
+            return result.OrderByDescending(p => p.CreatedAt);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        isLoading = true;
+        try
+        {
+            products = (await ProductService.GetAllAsync()).ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleSearch()
+    {
+        // 触发重新渲染即可，filteredProducts会自动过滤
+        StateHasChanged();
+    }
+
+    private void ClearSearch()
+    {
+        searchKeyword = string.Empty;
+        StateHasChanged();
+    }
+
+    private void SetFilterStatus(bool? status)
+    {
+        filterStatus = status;
+        StateHasChanged();
+    }
+
+    private void NavigateToCreate()
+    {
+        NavigationManager.NavigateTo("/products/create");
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        NavigationManager.NavigateTo($"/products/edit/{id}");
+    }
+
+    private async Task ToggleStatus(int id)
+    {
+        var product = products?.FirstOrDefault(p => p.Id == id);
+        if (product == null) return;
+
+        // TODO: 实现状态切换
+        product.IsActive = !product.IsActive;
+        StateHasChanged();
+    }
+
+    private async Task DeleteProduct(int id)
+    {
+        // TODO: 添加确认对话框
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个批次吗？"))
+        {
+            return;
+        }
+
+        await ProductService.DeleteAsync(id);
+        await LoadProducts();
+    }
+}

@@ -1,0 +1,289 @@
+@page "/customers/edit/{id:int}"
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Customer
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+
+<PageTitle>@L["Customer_EditTitle"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-pencil me-2"></span>@L["Customer_EditTitle"]
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/customers">@L["Customer_Title"]</a></li>
+                    <li class="breadcrumb-item active">@L["Customer_EditTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-2 text-muted">@L["Customer_LoadingData"]</p>
+        </div>
+    }
+    else if (customer == null)
+    {
+        <div class="alert alert-danger">
+            <span class="oi oi-warning me-2"></span>
+            @L["Customer_NotFound"]
+        </div>
+        <div class="mt-3">
+            <button class="btn btn-secondary" @onclick="BackToList">
+                <span class="oi oi-arrow-left me-1"></span>@L["Customer_BackToList"]
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <span class="oi oi-warning me-2"></span>@errorMessage
+                                <button type="button" class="btn-close" @onclick="ClearError"></button>
+                            </div>
+                        }
+
+                        <EditForm Model="request" OnValidSubmit="HandleSubmit">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>@L["Customer_Code"] *</strong>
+                                    <span class="badge bg-secondary ms-2">@L["Customer_CodeReadonly"]</span>
+                                </label>
+                                <input type="text" class="form-control" value="@customer.Code" disabled />
+                                <small class="form-text text-muted">
+                                    @L["Customer_CodeReadonlyNote"]
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>@L["Customer_Name"] *</strong>
+                                </label>
+                                <input type="text" class="form-control form-control-lg" @bind="request.Name" required />
+                                <ValidationMessage For="@(() => request.Name)" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label class="form-label">@L["Customer_Contact"]</label>
+                                    <input type="text" class="form-control" @bind="request.ContactPerson" />
+                                    <ValidationMessage For="@(() => request.ContactPerson)" />
+                                </div>
+
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label class="form-label">@L["Customer_Phone"]</label>
+                                    <input type="tel" class="form-control" @bind="request.Phone" />
+                                    <ValidationMessage For="@(() => request.Phone)" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">@L["Customer_Address"]</label>
+                                <textarea class="form-control" @bind="request.Address" rows="3"></textarea>
+                                <ValidationMessage For="@(() => request.Address)" />
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="isActive" @bind="request.IsActive" />
+                                <label class="form-check-label" for="isActive">
+                                    @L["Customer_ActiveStatus"]
+                                </label>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary btn-lg" @onclick="Cancel">
+                                    <span class="oi oi-x me-1"></span>@L["Btn_Cancel"]
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-lg" disabled="@isSaving">
+                                    @if (isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1"></span>
+                                        <span>@L["Customer_Saving"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="oi oi-check me-1"></span>
+                                        <span>@L["Btn_Save"]</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+
+                <!-- 客户使用记录 -->
+                <div class="card mt-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <span class="oi oi-info me-2"></span>@L["Customer_Info"]
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 col-md-3">
+                                <div class="text-muted small">@L["Customer_CreatedAt"]</div>
+                                <div><strong>@customer.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong></div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-muted small">@L["Customer_UpdatedAt"]</div>
+                                <div><strong>@(customer.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? L["Customer_NeverUpdated"])</strong></div>
+                            </div>
+                            <div class="col-6 col-md-3 mt-2 mt-md-0">
+                                <div class="text-muted small">ID</div>
+                                <div><strong>#@customer.Id</strong></div>
+                            </div>
+                            <div class="col-6 col-md-3 mt-2 mt-md-0">
+                                <div class="text-muted small">@L["Status_Active"]</div>
+                                <div>
+                                    @if (customer.IsActive)
+                                    {
+                                        <span class="badge bg-success">@L["Status_Active"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@L["Status_Inactive"]</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧帮助信息 -->
+            <div class="col-12 col-lg-4 mt-3 mt-lg-0">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span class="oi oi-info me-2"></span>@L["Customer_EditHelpTitle"]
+                        </h5>
+                        <ul class="mb-0">
+                            <li class="mb-2">
+                                <strong>@L["Customer_Code"]</strong>：@L["Customer_CodeReadonly"]
+                            </li>
+                            <li class="mb-2">
+                                <strong>@L["Customer_Name"]</strong>：@L["Common_Required"]
+                            </li>
+                            <li class="mb-2">
+                                <strong>@L["Customer_Contact"]</strong>：@L["Common_Optional"]
+                            </li>
+                            <li class="mb-2">
+                                <strong>@L["Customer_Phone"]</strong>：@L["Common_Optional"]
+                            </li>
+                        </ul>
+
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <small>
+                                <span class="oi oi-warning me-1"></span>
+                                @L["Customer_EditWarning"]
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CustomerResponse? customer;
+    private UpdateCustomerRequest request = new();
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomer();
+    }
+
+    private async Task LoadCustomer()
+    {
+        isLoading = true;
+        try
+        {
+            customer = await CustomerService.GetByIdAsync(Id);
+            if (customer != null)
+            {
+                // 填充表单数据
+                request = new UpdateCustomerRequest
+                {
+                    Id = customer.Id,
+                    Code = customer.Code,
+                    Name = customer.Name,
+                    ContactPerson = customer.ContactPerson,
+                    Phone = customer.Phone,
+                    Address = customer.Address,
+                    IsActive = customer.IsActive
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Customer_LoadFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            await CustomerService.UpdateAsync(request);
+            NavigationManager.NavigateTo("/customers");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Customer_SaveFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/customers");
+    }
+
+    private void BackToList()
+    {
+        NavigationManager.NavigateTo("/customers");
+    }
+
+    private void ClearError()
+    {
+        errorMessage = null;
+    }
+}

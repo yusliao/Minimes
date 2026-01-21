@@ -1,0 +1,131 @@
+/* 平板适配样式 - 触摸友好优化 */
+
+/* 导航菜单触摸优化 */
+.nav-link {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem !important;
+}
+
+.navbar-toggler {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0.5rem;
+}
+
+.nav-item {
+    margin-bottom: 0.25rem;
+}
+
+/* 表格触摸滚动优化 */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* 触摸目标最小尺寸 - 符合无障碍标准 */
+.btn {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* 表单控件在平板上的触摸优化 */
+@media (max-width: 1024px) {
+    .form-control,
+    .form-select {
+        min-height: 44px;
+        font-size: 16px; /* 防止iOS自动缩放 */
+    }
+
+    .form-label {
+        font-size: 14px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* 卡片间距优化 */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    /* 按钮间距 */
+    .btn {
+        padding: 0.75rem 1rem;
+    }
+
+    /* 表格文字大小 */
+    .table {
+        font-size: 14px;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+    }
+}
+
+/* 小屏幕（手机）优化 */
+@media (max-width: 576px) {
+    .form-control,
+    .form-select {
+        font-size: 16px; /* 防止iOS自动缩放 */
+    }
+
+    .btn {
+        padding: 0.875rem 1.25rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h4 {
+        font-size: 1.25rem;
+    }
+
+    /* 卡片标题优化 */
+    .card-title {
+        font-size: 1.25rem;
+    }
+
+    .card-subtitle {
+        font-size: 0.875rem;
+    }
+}
+
+/* 触摸设备的hover效果优化 */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover {
+        transform: none;
+    }
+
+    .card:hover {
+        transform: none;
+    }
+
+    /* 增加按钮的点击反馈 */
+    .btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* 横向滚动指示器 */
+.table-responsive::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.05));
+    pointer-events: none;
+}
+
+/* 平板横屏优化 */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .container-fluid {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}

@@ -1,0 +1,144 @@
+﻿@using Microsoft.Extensions.Localization
+@using System.Globalization
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+
+<div class="top-row ps-3 navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <span class="oi oi-layers me-2" aria-hidden="true"></span>MiniMES
+        </a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <!-- 核心生产功能 - 操作员和管理员都可见 -->
+        <AuthorizeView Policy="Operator">
+            <Authorized>
+                <div class="nav-section-title px-3 py-2 text-muted">
+                    <small>📦 @L["Nav_Production"]</small>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="oi oi-home" aria-hidden="true"></span> @L["Nav_Workstation"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="weighing">
+                        <span class="oi oi-scale" aria-hidden="true"></span> @L["Nav_WeighingRecords"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="weighing/records">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> @L["Nav_WeighingRecords"]
+                    </NavLink>
+                </div>
+
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- 系统管理 - 仅管理员可见 -->
+        <AuthorizeView Policy="Admin">
+            <Authorized>
+                <!-- 基础数据管理 - 仅管理员 -->
+                <div class="nav-section-title px-3 py-2 text-muted mt-3">
+                    <small>⚙️ @L["Nav_BasicData"]</small>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="customers">
+                        <span class="oi oi-person" aria-hidden="true"></span> @L["Nav_Customers"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-section-title px-3 py-2 text-muted mt-3">
+                    <small>📊 @L["Nav_Reports"]</small>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="reports/production">
+                        <span class="oi oi-graph" aria-hidden="true"></span> @L["Nav_ProductionReport"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-section-title px-3 py-2 text-muted mt-3">
+                    <small>🔧 @L["Nav_System"]</small>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="users">
+                        <span class="oi oi-people" aria-hidden="true"></span> @L["Nav_Users"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="hardware-test">
+                        <span class="oi oi-wrench" aria-hidden="true"></span> @L["Nav_HardwareTest"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="settings">
+                        <span class="oi oi-cog" aria-hidden="true"></span> @L["Nav_Settings"]
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- 用户操作 -->
+        <div class="nav-section-title px-3 py-2 text-muted mt-3">
+            <small>👤 @L["Nav_Account"]</small>
+        </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="px-3 py-2">
+                    <div class="text-white small">
+                        <span class="oi oi-person me-1"></span>
+                        <strong>@context.User.Identity?.Name</strong>
+                    </div>
+                    <div class="text-muted" style="font-size: 0.75rem;">
+                        @(context.User.IsInRole("Administrator") ? L["Role_Admin"] : L["Role_Operator"])
+                    </div>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="profile">
+                        <span class="oi oi-person" aria-hidden="true"></span> @L["Nav_Profile"]
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Logout">
+                        <span class="oi oi-account-logout" aria-hidden="true"></span> @L["Nav_Logout"]
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> @L["Nav_Login"]
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

@@ -1,0 +1,204 @@
+@page "/customers"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Customer
+@using Minimes.Web.Resources
+@using Microsoft.JSInterop
+@inject IStringLocalizer<SharedResource> L
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@L["Customer_Title"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-person me-2"></span>@L["Customer_Title"]
+            </h2>
+            <p class="text-muted">@L["Customer_Subtitle"]</p>
+        </div>
+    </div>
+
+    <!-- 搜索和操作栏 -->
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <span class="oi oi-magnifying-glass"></span>
+                </span>
+                <input type="text" class="form-control" placeholder="@L["Customer_SearchPlaceholder"]"
+                       @bind="searchKeyword" @bind:event="oninput" />
+                <button class="btn btn-outline-secondary" @onclick="HandleSearch">
+                    @L["Btn_Search"]
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                    @L["Btn_Clear"]
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" @onclick="NavigateToCreate">
+                <span class="oi oi-plus me-1"></span>@L["Customer_AddNew"]
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-2 text-muted">@L["Customer_LoadingData"]</p>
+        </div>
+    }
+    else if (customers == null || !customers.Any())
+    {
+        <div class="alert alert-info text-center py-5">
+            <span class="oi oi-info me-2"></span>
+            @L["Customer_NoData"]
+        </div>
+    }
+    else
+    {
+        <!-- 客户列表表格 -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="10%">@L["Customer_Code"]</th>
+                        <th width="15%">@L["Customer_Name"]</th>
+                        <th width="12%">@L["Customer_Contact"]</th>
+                        <th width="13%">@L["Customer_Phone"]</th>
+                        <th width="20%">@L["Customer_Address"]</th>
+                        <th width="10%">@L["Status_Active"]</th>
+                        <th width="15%">@L["Records_Action"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in filteredCustomers)
+                    {
+                        <tr class="@(customer.IsActive ? "" : "table-secondary")">
+                            <td>@customer.Id</td>
+                            <td><code>@customer.Code</code></td>
+                            <td><strong>@customer.Name</strong></td>
+                            <td>@customer.ContactPerson</td>
+                            <td>@customer.Phone</td>
+                            <td>@customer.Address</td>
+                            <td>
+                                @if (customer.IsActive)
+                                {
+                                    <span class="badge bg-success">@L["Status_Active"]</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@L["Status_Inactive"]</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => NavigateToEdit(customer.Id)">
+                                    <span class="oi oi-pencil"></span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteCustomer(customer.Id)">
+                                    <span class="oi oi-trash"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="row mt-3">
+            <div class="col">
+                <small class="text-muted">
+                    @string.Format(L["Customer_TotalRecords"], filteredCustomers.Count())
+                </small>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CustomerResponse>? customers;
+    private string searchKeyword = string.Empty;
+    private bool isLoading = true;
+
+    private IEnumerable<CustomerResponse> filteredCustomers
+    {
+        get
+        {
+            if (customers == null) return Enumerable.Empty<CustomerResponse>();
+
+            var result = customers.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                var keyword = searchKeyword.ToLower();
+                result = result.Where(c =>
+                    c.Code.ToLower().Contains(keyword) ||
+                    c.Name.ToLower().Contains(keyword) ||
+                    (c.ContactPerson != null && c.ContactPerson.ToLower().Contains(keyword)) ||
+                    (c.Phone != null && c.Phone.Contains(keyword))
+                );
+            }
+
+            return result.OrderByDescending(c => c.CreatedAt);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        isLoading = true;
+        try
+        {
+            customers = (await CustomerService.GetAllAsync()).ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleSearch()
+    {
+        StateHasChanged();
+    }
+
+    private void ClearSearch()
+    {
+        searchKeyword = string.Empty;
+        StateHasChanged();
+    }
+
+    private void NavigateToCreate()
+    {
+        NavigationManager.NavigateTo("/customers/create");
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        NavigationManager.NavigateTo($"/customers/edit/{id}");
+    }
+
+    private async Task DeleteCustomer(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Customer_ConfirmDelete"].Value))
+        {
+            return;
+        }
+
+        await CustomerService.DeleteAsync(id);
+        await LoadCustomers();
+    }
+}

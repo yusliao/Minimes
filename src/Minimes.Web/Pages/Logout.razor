@@ -1,0 +1,10 @@
+@page "/logout"
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        // 重定向到新的 Razor Page 登出页面
+        Navigation.NavigateTo("/Account/Logout", forceLoad: true);
+    }
+}

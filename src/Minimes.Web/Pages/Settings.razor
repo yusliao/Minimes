@@ -1,0 +1,383 @@
+@page "/settings"
+@using Microsoft.Extensions.Configuration
+@using Microsoft.Extensions.Localization
+@using Microsoft.EntityFrameworkCore
+@using Minimes.Infrastructure.Persistence
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IConfiguration Configuration
+@inject NavigationManager Navigation
+@inject ApplicationDbContext DbContext
+@inject IJSRuntime JSRuntime
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@implements IDisposable
+
+<PageTitle>@L["Settings_Title"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-cog me-2"></span>@L["Settings_Title"]
+            </h2>
+            <p class="text-muted">@L["Settings_Subtitle"]</p>
+        </div>
+    </div>
+
+    <!-- 应用信息 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-info me-2"></span>@L["Settings_AppInfo"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="text-muted small">@L["Settings_AppName"]</div>
+                            <div><strong>MiniMES</strong></div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="text-muted small">@L["Settings_Version"]</div>
+                            <div><strong>v1.0.0</strong></div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="text-muted small">@L["Settings_Framework"]</div>
+                            <div><strong>.NET 8.0 Blazor</strong></div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="text-muted small">@L["Settings_Database"]</div>
+                            <div><strong>SQLite</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统状态 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-dashboard me-2"></span>@L["Settings_SystemStatus"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">@L["Settings_StartTime"]</div>
+                                <div class="fw-bold">@startTime.ToString("MM-dd HH:mm")</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">@L["Settings_Uptime"]</div>
+                                <div class="fw-bold">@GetUptime()</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">@L["Settings_DbSize"]</div>
+                                <div class="fw-bold">@dbSize</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">@L["Settings_RecordCount"]</div>
+                                <div class="fw-bold">@recordCount @L["Tracing_Records"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- 电子秤设置 -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-monitor me-2"></span>@L["Settings_ScaleSettings"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="text-muted">@L["Settings_PortName"]:</span>
+                        <code class="ms-2">@scalePortName</code>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted">@L["Settings_BaudRate"]:</span>
+                        <code class="ms-2">@scaleBaudRate</code>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">@L["Settings_Protocol"]:</span>
+                        <code class="ms-2">@scaleProtocol</code>
+                    </div>
+                    <div class="alert alert-info mb-0 small">
+                        <span class="oi oi-info me-1"></span>
+                        @L["Settings_HardwareNote"]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据库管理 -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <span class="oi oi-database me-2"></span>@L["Settings_DbManagement"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="text-muted">@L["Settings_DbFile"]:</span>
+                        <code class="ms-2">minimes.db</code>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">@L["Settings_FileSize"]:</span>
+                        <code class="ms-2">@dbSize</code>
+                    </div>
+                    <hr />
+                    <div class="d-grid">
+                        <button class="btn btn-outline-primary btn-lg" @onclick="BackupDatabase" disabled="@isBackingUp">
+                            @if (isBackingUp)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            else
+                            {
+                                <span class="oi oi-data-transfer-download me-1"></span>
+                            }
+                            @L["Settings_BackupDb"]
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(backupMessage))
+                    {
+                        <div class="alert @(backupSuccess ? "alert-success" : "alert-danger") mt-3 mb-0 small">
+                            @backupMessage
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快捷入口 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-link-intact me-2"></span>@L["Settings_QuickLinks"]
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 col-md-4 col-lg-3 mb-3">
+                            <div class="d-grid">
+                                <button class="btn btn-primary" @onclick="GoToUsers">
+                                    <span class="oi oi-people me-1"></span>@L["User_Title"]
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-3 mb-3">
+                            <div class="d-grid">
+                                <button class="btn btn-success" @onclick="GoToHardwareTest">
+                                    <span class="oi oi-wrench me-1"></span>@L["Nav_HardwareTest"]
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-3 mb-3">
+                            <div class="d-grid">
+                                <button class="btn btn-warning" @onclick="GoToProduction">
+                                    <span class="oi oi-graph me-1"></span>@L["Report_Title"]
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-3 mb-3">
+                            <div class="d-grid">
+                                <button class="btn btn-info" @onclick="GoToTracing">
+                                    <span class="oi oi-magnifying-glass me-1"></span>@L["Tracing_Title"]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 技术栈 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <span class="oi oi-code me-2"></span>技术栈
+                    </h6>
+                    <div class="row small">
+                        <div class="col-4 col-md-2 mb-2">
+                            <span class="text-muted">框架:</span><br /><strong>.NET 8.0</strong>
+                        </div>
+                        <div class="col-4 col-md-2 mb-2">
+                            <span class="text-muted">Web:</span><br /><strong>Blazor Server</strong>
+                        </div>
+                        <div class="col-4 col-md-2 mb-2">
+                            <span class="text-muted">ORM:</span><br /><strong>EF Core 8.0</strong>
+                        </div>
+                        <div class="col-4 col-md-2 mb-2">
+                            <span class="text-muted">验证:</span><br /><strong>FluentValidation</strong>
+                        </div>
+                        <div class="col-4 col-md-2 mb-2">
+                            <span class="text-muted">Excel:</span><br /><strong>EPPlus 8.4</strong>
+                        </div>
+                        <div class="col-4 col-md-2 mb-2">
+                            <span class="text-muted">实时:</span><br /><strong>SignalR</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string scalePortName = string.Empty;
+    private int scaleBaudRate = 0;
+    private string scaleProtocol = string.Empty;
+    private string dbSize = "计算中...";
+    private int recordCount = 0;
+    private static DateTime startTime = DateTime.Now;
+
+    private bool isBackingUp = false;
+    private string? backupMessage;
+    private bool backupSuccess = false;
+
+    private CancellationTokenSource? cancellationTokenSource;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadSettings();
+        await LoadStatistics();
+
+        // 启动定时刷新运行时长
+        cancellationTokenSource = new CancellationTokenSource();
+        _ = UpdateUptimeLoop(cancellationTokenSource.Token);
+    }
+
+    private async Task UpdateUptimeLoop(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(5000, cancellationToken); // 每5秒更新一次
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // 正常取消，忽略
+        }
+    }
+
+    public void Dispose()
+    {
+        cancellationTokenSource?.Cancel();
+        cancellationTokenSource?.Dispose();
+    }
+
+    private void LoadSettings()
+    {
+        scalePortName = Configuration["Scale:PortName"] ?? "未配置";
+        scaleBaudRate = Configuration.GetValue<int>("Scale:BaudRate", 9600);
+        scaleProtocol = Configuration["Scale:Protocol"] ?? "Generic";
+    }
+
+    private async Task LoadStatistics()
+    {
+        try
+        {
+            // 获取记录数
+            recordCount = await DbContext.WeighingRecords.CountAsync();
+
+            // 获取数据库文件大小
+            var connStr = Configuration.GetConnectionString("DefaultConnection") ?? "";
+            var dbPath = connStr.Replace("Data Source=", "").Trim();
+            if (File.Exists(dbPath))
+            {
+                var fileInfo = new FileInfo(dbPath);
+                var sizeKb = fileInfo.Length / 1024.0;
+                dbSize = sizeKb < 1024 ? $"{sizeKb:F1} KB" : $"{sizeKb / 1024:F2} MB";
+            }
+            else
+            {
+                dbSize = "未找到";
+            }
+        }
+        catch
+        {
+            dbSize = "未知";
+        }
+    }
+
+    private string GetUptime()
+    {
+        var uptime = DateTime.Now - startTime;
+        if (uptime.TotalHours < 1)
+            return $"{(int)uptime.TotalMinutes} 分钟";
+        if (uptime.TotalDays < 1)
+            return $"{(int)uptime.TotalHours} 小时 {uptime.Minutes} 分";
+        return $"{(int)uptime.TotalDays} 天 {uptime.Hours} 小时";
+    }
+
+    private async Task BackupDatabase()
+    {
+        isBackingUp = true;
+        backupMessage = null;
+
+        try
+        {
+            var connStr = Configuration.GetConnectionString("DefaultConnection") ?? "";
+            var dbPath = connStr.Replace("Data Source=", "").Trim();
+
+            if (!File.Exists(dbPath))
+            {
+                backupMessage = "数据库文件不存在";
+                backupSuccess = false;
+                return;
+            }
+
+            var bytes = await File.ReadAllBytesAsync(dbPath);
+            var base64 = Convert.ToBase64String(bytes);
+            var fileName = $"minimes_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64);
+
+            backupMessage = $"备份成功！文件: {fileName}";
+            backupSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            backupMessage = $"备份失败: {ex.Message}";
+            backupSuccess = false;
+        }
+        finally
+        {
+            isBackingUp = false;
+        }
+    }
+
+    private void GoToUsers() => Navigation.NavigateTo("/users");
+    private void GoToHardwareTest() => Navigation.NavigateTo("/hardware-test");
+    private void GoToProduction() => Navigation.NavigateTo("/reports/production");
+    private void GoToTracing() => Navigation.NavigateTo("/reports/tracing");
+}

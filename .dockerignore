@@ -1,0 +1,77 @@
+# ============================================
+# MiniMES Docker Ignore
+# 艹，这些垃圾文件不要打包进去，浪费空间
+# ============================================
+
+# Git相关
+.git
+.gitignore
+.gitattributes
+
+# IDE配置（这些SB配置文件不需要）
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# 编译输出（我们在容器里重新编译）
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# 测试相关
+**/TestResults/
+**/*.Tests/
+**/tests/
+
+# NuGet缓存
+**/*.nupkg
+**/packages/
+
+# 日志和调试
+**/*.log
+**/logs/
+
+# 数据库文件（别把本地数据库打包进去）
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/data/
+
+# 文档（镜像里不需要）
+*.md
+!README.md
+docs/
+
+# Docker自身（防止递归）
+Dockerfile*
+docker-compose*
+.docker/
+.dockerignore
+
+# macOS垃圾
+.DS_Store
+**/.DS_Store
+
+# Windows垃圾
+Thumbs.db
+ehthumbs.db
+
+# Node相关（如果有前端）
+**/node_modules/
+**/npm-debug.log
+
+# 备份文件
+**/*.bak
+**/*.backup
+**/*~
+
+# 证书和密钥（安全第一）
+**/*.pfx
+**/*.key
+**/*.pem
+**/secrets/

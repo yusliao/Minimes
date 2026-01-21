@@ -1,0 +1,281 @@
+@page "/users/edit/{id:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.User
+@using Minimes.Domain.Enums
+@using System.ComponentModel.DataAnnotations
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@L["User_EditTitle"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-pencil me-2"></span>@L["User_EditTitle"]
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/users">@L["User_Title"]</a></li>
+                    <li class="breadcrumb-item active">@L["User_EditTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (user == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-3 text-muted">@L["User_LoadingData"]</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(notFoundMessage))
+    {
+        <div class="alert alert-warning">
+            <span class="oi oi-warning me-2"></span>
+            @notFoundMessage
+            <a href="/users" class="alert-link ms-2">@L["User_BackToList"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+                            <DataAnnotationsValidator />
+
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <span class="oi oi-warning me-2"></span>
+                                    @errorMessage
+                                    <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(successMessage))
+                            {
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <span class="oi oi-check me-2"></span>
+                                    @successMessage
+                                    <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+                                </div>
+                            }
+
+                            <div class="mb-3">
+                                <label class="form-label">@L["User_Username"]</label>
+                                <input type="text"
+                                       class="form-control"
+                                       value="@user.Username"
+                                       disabled
+                                       readonly />
+                                <small class="form-text text-muted">@L["User_UsernameReadonly"]</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">
+                                    @L["User_FullName"] <span class="text-danger">*</span>
+                                </label>
+                                <InputText id="fullName"
+                                           class="form-control"
+                                           @bind-Value="model.FullName" />
+                                <ValidationMessage For="@(() => model.FullName)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role" class="form-label">
+                                    @L["User_Role"] <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect id="role" class="form-select" @bind-Value="model.Role">
+                                    <option value="@UserRole.Operator">@L["Role_Operator"]</option>
+                                    <option value="@UserRole.Administrator">@L["Role_Admin"]</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => model.Role)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <InputCheckbox id="isActive"
+                                                   class="form-check-input"
+                                                   @bind-Value="model.IsActive" />
+                                    <label class="form-check-label" for="isActive">
+                                        @L["User_AccountStatus"]：@(model.IsActive ? L["User_StatusNormal"] : L["User_StatusDisabled"])
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">
+                                    @L["User_DisableNote"]
+                                </small>
+                            </div>
+
+                            <hr />
+
+                            <div class="mb-3">
+                                <h6>@L["User_PasswordReset"]</h6>
+                                <label for="newPassword" class="form-label">@L["User_NewPassword"]</label>
+                                <InputText id="newPassword"
+                                           type="password"
+                                           class="form-control"
+                                           @bind-Value="model.NewPassword"
+                                           placeholder="@L["User_NewPasswordPlaceholder"]"
+                                           autocomplete="new-password" />
+                                <ValidationMessage For="@(() => model.NewPassword)" class="text-danger small" />
+                                <small class="form-text text-muted">
+                                    @L["User_NewPasswordNote"]
+                                </small>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1"></span>
+                                        <span>@L["User_Saving"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="oi oi-check me-1"></span>
+                                        <span>@L["User_SaveChanges"]</span>
+                                    }
+                                </button>
+                                <a href="/users" class="btn btn-outline-secondary">
+                                    <span class="oi oi-x me-1"></span>@L["Btn_Cancel"]
+                                </a>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span class="oi oi-info me-2"></span>@L["User_Info"]
+                        </h5>
+                        <hr />
+                        <table class="table table-sm">
+                            <tr>
+                                <th style="width: 120px;">@L["User_CreatedAt"]：</th>
+                                <td>@user.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            </tr>
+                            <tr>
+                                <th>@L["User_UpdatedAt"]：</th>
+                                <td>@(user.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? L["User_NeverUpdated"])</td>
+                            </tr>
+                            <tr>
+                                <th>@L["User_UserId"]：</th>
+                                <td>@user.Id</td>
+                            </tr>
+                        </table>
+
+                        <div class="alert alert-info small mt-3">
+                            <span class="oi oi-info me-2"></span>
+                            <strong>@L["User_EditNote"]：</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>@L["User_EditNote1"]</li>
+                                <li>@L["User_EditNote2"]</li>
+                                <li>@L["User_EditNote3"]</li>
+                                <li>@L["User_EditNote4"]</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private UserResponse? user;
+    private EditUserModel model = new();
+    private bool isSubmitting = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private string? notFoundMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUser();
+    }
+
+    private async Task LoadUser()
+    {
+        user = await UserService.GetByIdAsync(Id);
+
+        if (user == null)
+        {
+            notFoundMessage = string.Format(L["User_NotFound"].Value, Id);
+            return;
+        }
+
+        // 初始化表单模型
+        model.FullName = user.FullName;
+        model.Role = user.Role;
+        model.IsActive = user.IsActive;
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            // 更新基本信息（姓名、状态）
+            await UserService.UpdateAsync(Id, model.FullName, model.IsActive);
+
+            // 更新角色（如果有变化）
+            if (model.Role != user!.Role)
+            {
+                await UserService.UpdateRoleAsync(Id, model.Role);
+            }
+
+            // 重置密码（如果提供了新密码）
+            if (!string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                await UserService.ResetPasswordAsync(Id, model.NewPassword);
+            }
+
+            successMessage = L["User_UpdateSuccess"];
+
+            // 重新加载用户数据
+            await LoadUser();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public class EditUserModel
+    {
+        [Required(ErrorMessage = "请输入姓名")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "姓名长度必须在2-50个字符之间")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "请选择用户角色")]
+        public UserRole Role { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        [StringLength(6, MinimumLength = 4, ErrorMessage = "新密码长度必须在4-6个字符之间")]
+        public string? NewPassword { get; set; }
+    }
+}

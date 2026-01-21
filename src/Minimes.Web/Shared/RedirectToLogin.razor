@@ -1,0 +1,11 @@
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        // 获取当前页面URL作为重定向参数，登录后返回
+        var currentUri = new Uri(Navigation.Uri);
+        var returnUrl = Uri.EscapeDataString(currentUri.PathAndQuery);
+        Navigation.NavigateTo($"/Account/Login?returnUrl={returnUrl}", forceLoad: true);
+    }
+}

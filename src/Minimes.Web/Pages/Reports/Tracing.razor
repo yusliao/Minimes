@@ -1,0 +1,341 @@
+@page "/reports/tracing"
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.WeighingRecord
+@using Minimes.Domain.Enums
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IWeighingRecordService WeighingRecordService
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+
+<PageTitle>@L["Tracing_Title"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-magnifying-glass me-2"></span>@L["Tracing_Title"]
+            </h2>
+            <p class="text-muted">@L["Tracing_Subtitle"]</p>
+        </div>
+    </div>
+
+    <!-- 搜索区域 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-12 col-md-8 col-lg-6 mb-3 mb-md-0">
+                            <label class="form-label"><strong>@L["Tracing_InputBarcode"]</strong></label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">
+                                    <span class="oi oi-barcode"></span>
+                                </span>
+                                <input type="text" class="form-control"
+                                       @bind="searchBarcode"
+                                       @bind:event="oninput"
+                                       @onkeypress="HandleKeyPress"
+                                       placeholder="@L["Tracing_BarcodePlaceholder"]" />
+                                <button class="btn btn-primary" @onclick="SearchBarcode" disabled="@isSearching">
+                                    @if (isSearching)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="oi oi-magnifying-glass me-1"></span>
+                                    }
+                                    @L["Tracing_Search"]
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 col-lg-6">
+                            @if (!string.IsNullOrEmpty(searchBarcode))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                    <span class="oi oi-x me-1"></span>@L["Tracing_Clear"]
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-warning">
+            <span class="oi oi-warning me-2"></span>@errorMessage
+        </div>
+    }
+
+    @if (tracingRecords != null && tracingRecords.Any())
+    {
+        <!-- 条码信息 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <span class="oi oi-tag me-2"></span>@L["Tracing_BarcodeInfo"]
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 col-md-3 mb-2">
+                                <span class="text-muted">@L["Tracing_Barcode"]:</span>
+                                <div><code class="fs-5">@currentBarcode</code></div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <span class="text-muted">@L["Tracing_RecordCount"]:</span>
+                                <div><strong class="fs-5">@tracingRecords.Count</strong> @L["Tracing_Records"]</div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <span class="text-muted">@L["Tracing_FirstRecord"]:</span>
+                                <div><strong>@tracingRecords.First().CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong></div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <span class="text-muted">@L["Tracing_LastRecord"]:</span>
+                                <div><strong>@tracingRecords.Last().CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 环节统计 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <span class="oi oi-graph me-2"></span>@L["Tracing_StageStats"]
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            @foreach (var stage in GetStageStats())
+                            {
+                                <div class="col-4">
+                                    <div class="border rounded p-3 @stage.BorderClass">
+                                        <div class="text-muted small">@stage.Name</div>
+                                        <div class="fs-3 fw-bold @stage.TextClass">@stage.Weight.ToString("F2")</div>
+                                        <div class="text-muted small">kg (@stage.Count @L["Tracing_Times"])</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @{
+                            var receiving = GetStageWeight(ProcessStage.Receiving);
+                            var shipping = GetStageWeight(ProcessStage.Shipping);
+                            var lossRate = receiving > 0 ? ((receiving - shipping) / receiving * 100) : 0;
+                        }
+                        @if (receiving > 0 && shipping > 0)
+                        {
+                            <div class="mt-3 text-center">
+                                <span class="text-muted">@L["Report_LossRate"]:</span>
+                                <span class="badge @(lossRate > 10 ? "bg-danger" : lossRate > 5 ? "bg-warning text-dark" : "bg-success") fs-6 ms-2">
+                                    @lossRate.ToString("F1")%
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作时间线 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <span class="oi oi-list me-2"></span>@L["Tracing_Timeline"]
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            @foreach (var record in tracingRecords)
+                            {
+                                <div class="timeline-item mb-3 pb-3 border-bottom">
+                                    <div class="d-flex align-items-start">
+                                        <div class="timeline-marker me-3">
+                                            <span class="badge rounded-pill @GetStageBadgeClass(record.ProcessStage) p-2">
+                                                <span class="oi @GetStageIcon(record.ProcessStage)"></span>
+                                            </span>
+                                        </div>
+                                        <div class="timeline-content flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong class="@GetStageTextClass(record.ProcessStage)">
+                                                        @GetLocalizedStageName(record.ProcessStageName)
+                                                    </strong>
+                                                    <span class="ms-2 fs-5 fw-bold">@record.Weight.ToString("F2") kg</span>
+                                                </div>
+                                                <small class="text-muted">
+                                                    @record.CreatedAt.ToString("MM-dd HH:mm:ss")
+                                                </small>
+                                            </div>
+                                            <div class="mt-1 small text-muted">
+                                                @L["Tracing_Operator"]: <strong>@record.CreatedBy</strong>
+                                                @if (!string.IsNullOrEmpty(record.Remarks))
+                                                {
+                                                    <span class="ms-3">@L["Tracing_Remark"]: @record.Remarks</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (hasSearched && (tracingRecords == null || !tracingRecords.Any()))
+    {
+        <div class="text-center py-5">
+            <span class="oi oi-inbox text-muted" style="font-size: 4rem;"></span>
+            <h4 class="mt-3 text-muted">@L["Tracing_NotFound"]</h4>
+            <p class="text-muted">@L["Tracing_NotFoundHint"]</p>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <span class="oi oi-magnifying-glass text-muted" style="font-size: 4rem;"></span>
+            <h4 class="mt-3 text-muted">@L["Tracing_StartHint"]</h4>
+            <p class="text-muted">@L["Tracing_ScanHint"]</p>
+        </div>
+    }
+</div>
+
+@code {
+    private string searchBarcode = string.Empty;
+    private string currentBarcode = string.Empty;
+    private List<WeighingRecordResponse>? tracingRecords;
+    private bool isSearching = false;
+    private bool hasSearched = false;
+    private string? errorMessage;
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SearchBarcode();
+    }
+
+    private async Task SearchBarcode()
+    {
+        if (string.IsNullOrWhiteSpace(searchBarcode)) return;
+
+        isSearching = true;
+        errorMessage = null;
+        hasSearched = true;
+
+        try
+        {
+            currentBarcode = searchBarcode.Trim();
+            tracingRecords = await WeighingRecordService.GetByBarcodeAsync(currentBarcode);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Tracing_QueryFailed"].Value}: {ex.Message}";
+            tracingRecords = null;
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchBarcode = string.Empty;
+        currentBarcode = string.Empty;
+        tracingRecords = null;
+        hasSearched = false;
+        errorMessage = null;
+    }
+
+    private decimal GetStageWeight(ProcessStage stage)
+    {
+        return tracingRecords?.Where(r => r.ProcessStage == stage).Sum(r => r.Weight) ?? 0;
+    }
+
+    private List<StageStatItem> GetStageStats()
+    {
+        return new List<StageStatItem>
+        {
+            new() {
+                Name = L["Stage_Receiving"].Value,
+                Weight = GetStageWeight(ProcessStage.Receiving),
+                Count = tracingRecords?.Count(r => r.ProcessStage == ProcessStage.Receiving) ?? 0,
+                BorderClass = "border-primary",
+                TextClass = "text-primary"
+            },
+            new() {
+                Name = L["Stage_Processing"].Value,
+                Weight = GetStageWeight(ProcessStage.Processing),
+                Count = tracingRecords?.Count(r => r.ProcessStage == ProcessStage.Processing) ?? 0,
+                BorderClass = "border-warning",
+                TextClass = "text-warning"
+            },
+            new() {
+                Name = L["Stage_Shipping"].Value,
+                Weight = GetStageWeight(ProcessStage.Shipping),
+                Count = tracingRecords?.Count(r => r.ProcessStage == ProcessStage.Shipping) ?? 0,
+                BorderClass = "border-success",
+                TextClass = "text-success"
+            }
+        };
+    }
+
+    private string GetStageBadgeClass(ProcessStage stage) => stage switch
+    {
+        ProcessStage.Receiving => "bg-primary",
+        ProcessStage.Processing => "bg-warning",
+        ProcessStage.Shipping => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    private string GetStageTextClass(ProcessStage stage) => stage switch
+    {
+        ProcessStage.Receiving => "text-primary",
+        ProcessStage.Processing => "text-warning",
+        ProcessStage.Shipping => "text-success",
+        _ => "text-secondary"
+    };
+
+    private string GetStageIcon(ProcessStage stage) => stage switch
+    {
+        ProcessStage.Receiving => "oi-arrow-circle-bottom",
+        ProcessStage.Processing => "oi-cog",
+        ProcessStage.Shipping => "oi-arrow-circle-top",
+        _ => "oi-question-mark"
+    };
+
+    private class StageStatItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public decimal Weight { get; set; }
+        public int Count { get; set; }
+        public string BorderClass { get; set; } = string.Empty;
+        public string TextClass { get; set; } = string.Empty;
+    }
+
+    private string GetLocalizedStageName(string stageName)
+    {
+        var normalized = stageName.ToLower().Trim();
+        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
+            return L["Stage_Receiving"];
+        if (normalized.Contains("processing") || normalized.Contains("加工"))
+            return L["Stage_Processing"];
+        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
+            return L["Stage_Shipping"];
+        return stageName;
+    }
+}

@@ -1,0 +1,150 @@
+@page "/"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.Extensions.Localization
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Navigation
+
+<PageTitle>@L["AppName"] - @L["AppTitle"]</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-home me-2"></span>@L["Nav_Workstation"]
+            </h2>
+            <p class="text-muted">@L["AppTitle"]</p>
+        </div>
+    </div>
+
+    <!-- 快捷功能卡片 -->
+    <div class="row g-4">
+        <!-- 生产称重 -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-primary" style="cursor: pointer;" @onclick="GoToWeighing">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="oi oi-scale" style="font-size: 3rem; color: var(--bs-primary);"></span>
+                    </div>
+                    <h4 class="card-title">@L["Weighing_Title"]</h4>
+                    <p class="card-text text-muted">@L["Weighing_Subtitle"]</p>
+                    <button class="btn btn-primary">@L["Nav_Workstation"]</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生产查询 -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-success" style="cursor: pointer;" @onclick="GoToRecords">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="oi oi-list-rich" style="font-size: 3rem; color: var(--bs-success);"></span>
+                    </div>
+                    <h4 class="card-title">@L["Records_Title"]</h4>
+                    <p class="card-text text-muted">@L["Records_MyRecordsHint"]</p>
+                    <button class="btn btn-success">@L["Btn_Search"]</button>
+                </div>
+            </div>
+        </div>
+
+        <AuthorizeView Policy="Admin">
+            <Authorized>
+                <!-- 客户管理 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-info" style="cursor: pointer;" @onclick="GoToCustomers">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <span class="oi oi-person" style="font-size: 3rem; color: var(--bs-info);"></span>
+                            </div>
+                            <h4 class="card-title">@L["Customer_Title"]</h4>
+                            <p class="card-text text-muted">@L["Customer_Subtitle"]</p>
+                            <button class="btn btn-info">@L["Btn_Add"]</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 生产报表 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-warning" style="cursor: pointer;" @onclick="GoToReports">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <span class="oi oi-graph" style="font-size: 3rem; color: var(--bs-warning);"></span>
+                            </div>
+                            <h4 class="card-title">@L["Report_Title"]</h4>
+                            <p class="card-text text-muted">@L["Report_Subtitle"]</p>
+                            <button class="btn btn-warning">@L["Btn_ExportExcel"]</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 用户管理 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-danger" style="cursor: pointer;" @onclick="GoToUsers">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <span class="oi oi-people" style="font-size: 3rem; color: var(--bs-danger);"></span>
+                            </div>
+                            <h4 class="card-title">@L["User_Title"]</h4>
+                            <p class="card-text text-muted">@L["User_Subtitle"]</p>
+                            <button class="btn btn-danger">@L["Nav_Users"]</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统设置 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-secondary" style="cursor: pointer;" @onclick="GoToSettings">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <span class="oi oi-cog" style="font-size: 3rem; color: var(--bs-secondary);"></span>
+                            </div>
+                            <h4 class="card-title">@L["Settings_Title"]</h4>
+                            <p class="card-text text-muted">@L["Settings_Subtitle"]</p>
+                            <button class="btn btn-secondary">@L["Nav_Settings"]</button>
+                        </div>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+
+    <!-- 系统信息 -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <span class="oi oi-info me-2"></span>@L["Settings_AppInfo"]
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>@L["Settings_AppName"]:</strong> MiniMES
+                            </p>
+                            <p class="mb-2">
+                                <strong>@L["Settings_Version"]:</strong> 1.0.0
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>@L["Settings_Framework"]:</strong> .NET 8.0 Blazor Server
+                            </p>
+                            <p class="mb-2">
+                                <strong>@L["Settings_Database"]:</strong> SQLite
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoToWeighing() => Navigation.NavigateTo("/weighing");
+    private void GoToRecords() => Navigation.NavigateTo("/weighing/records");
+    private void GoToCustomers() => Navigation.NavigateTo("/customers");
+    private void GoToReports() => Navigation.NavigateTo("/reports/production");
+    private void GoToUsers() => Navigation.NavigateTo("/users");
+    private void GoToSettings() => Navigation.NavigateTo("/settings");
+}

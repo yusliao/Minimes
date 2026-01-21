@@ -1,0 +1,1155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter</value>
+  </resheader>
+
+  <!-- App Title -->
+  <data name="AppName" xml:space="preserve">
+    <value>MiniMES</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Production Weighing System</value>
+  </data>
+
+  <!-- Navigation Menu -->
+  <data name="Nav_Production" xml:space="preserve">
+    <value>Production</value>
+  </data>
+  <data name="Nav_Workstation" xml:space="preserve">
+    <value>Workstation</value>
+  </data>
+  <data name="Nav_WeighingRecords" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="Nav_BasicData" xml:space="preserve">
+    <value>Master Data</value>
+  </data>
+  <data name="Nav_Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Nav_Products" xml:space="preserve">
+    <value>Batches</value>
+  </data>
+  <data name="Nav_Reports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="Nav_ProductionReport" xml:space="preserve">
+    <value>Production Report</value>
+  </data>
+  <data name="Nav_Tracing" xml:space="preserve">
+    <value>Traceability</value>
+  </data>
+  <data name="Nav_System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Nav_Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Nav_HardwareTest" xml:space="preserve">
+    <value>Hardware Test</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Nav_Profile" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Nav_Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="Nav_Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+
+  <!-- Common Buttons -->
+  <data name="Btn_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Btn_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Btn_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Btn_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Btn_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Btn_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Btn_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Btn_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Btn_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Btn_Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Btn_ExportExcel" xml:space="preserve">
+    <value>Export Excel</value>
+  </data>
+
+  <!-- Common Status -->
+  <data name="Status_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Status_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Status_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Status_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Status_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Status_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Status_Inactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+
+  <!-- User Roles -->
+  <data name="Role_Admin" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="Role_Operator" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="Role_NotLoggedIn" xml:space="preserve">
+    <value>Not Logged In</value>
+  </data>
+
+  <!-- Demo Mode -->
+  <data name="DemoMode" xml:space="preserve">
+    <value>Demo Mode</value>
+  </data>
+
+  <!-- Time Related -->
+  <data name="Time_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Time_ThisWeek" xml:space="preserve">
+    <value>This Week</value>
+  </data>
+  <data name="Time_ThisMonth" xml:space="preserve">
+    <value>This Month</value>
+  </data>
+  <data name="Time_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="Time_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+
+  <!-- Language Selection -->
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Language_Chinese" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+
+  <!-- Weighing Page -->
+  <data name="Weighing_Title" xml:space="preserve">
+    <value>Production Weighing</value>
+  </data>
+  <data name="Weighing_Subtitle" xml:space="preserve">
+    <value>Scan→Weigh→Save</value>
+  </data>
+  <data name="Weighing_Current" xml:space="preserve">
+    <value>Current Weighing</value>
+  </data>
+  <data name="Weighing_Barcode" xml:space="preserve">
+    <value>Barcode</value>
+  </data>
+  <data name="Weighing_BarcodePlaceholder" xml:space="preserve">
+    <value>Scan or enter barcode...</value>
+  </data>
+  <data name="Weighing_Weight" xml:space="preserve">
+    <value>Weight</value>
+  </data>
+  <data name="Weighing_Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Weighing_SelectCustomer" xml:space="preserve">
+    <value>Select Customer</value>
+  </data>
+  <data name="Weighing_Stage" xml:space="preserve">
+    <value>Process Stage</value>
+  </data>
+  <data name="Weighing_Remark" xml:space="preserve">
+    <value>Remark</value>
+  </data>
+  <data name="Weighing_TodayStats" xml:space="preserve">
+    <value>Today's Stats</value>
+  </data>
+  <data name="Weighing_Records" xml:space="preserve">
+    <value>records</value>
+  </data>
+
+  <!-- Process Stages -->
+  <data name="Stage_Receiving" xml:space="preserve">
+    <value>Receiving</value>
+  </data>
+  <data name="Stage_Processing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="Stage_Shipping" xml:space="preserve">
+    <value>Shipping</value>
+  </data>
+
+  <!-- Weighing Page Additional -->
+  <data name="Weighing_BarcodeEntered" xml:space="preserve">
+    <value>Barcode entered</value>
+  </data>
+  <data name="Weighing_BarcodeScanHint" xml:space="preserve">
+    <value>Scan with barcode gun, press Enter to jump to weight</value>
+  </data>
+  <data name="Weighing_WeightPlaceholder" xml:space="preserve">
+    <value>Enter weight</value>
+  </data>
+  <data name="Weighing_WeightHint" xml:space="preserve">
+    <value>Please enter weight (kg)</value>
+  </data>
+  <data name="Weighing_RemarkPlaceholder" xml:space="preserve">
+    <value>Deboning, cutting, vacuum packaging...</value>
+  </data>
+  <data name="Weighing_Optional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="Weighing_SaveRecord" xml:space="preserve">
+    <value>Save Record</value>
+  </data>
+  <data name="Weighing_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Weighing_RecentRecords" xml:space="preserve">
+    <value>Recent Records</value>
+  </data>
+  <data name="Weighing_RecordCount" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="Weighing_TotalWeight" xml:space="preserve">
+    <value>Total(kg)</value>
+  </data>
+  <data name="Weighing_BarcodeCount" xml:space="preserve">
+    <value>Barcodes</value>
+  </data>
+  <data name="Weighing_NoRecords" xml:space="preserve">
+    <value>No records</value>
+  </data>
+  <data name="Weighing_ErrorBarcodeRequired" xml:space="preserve">
+    <value>Please enter barcode</value>
+  </data>
+  <data name="Weighing_ErrorWeightRequired" xml:space="preserve">
+    <value>Please enter weight (must be greater than 0)</value>
+  </data>
+
+  <!-- Records List Page -->
+  <data name="Records_Title" xml:space="preserve">
+    <value>Production Records</value>
+  </data>
+  <data name="Records_MyRecordsHint" xml:space="preserve">
+    <value>Currently showing: My records (Operators can only view their own records)</value>
+  </data>
+  <data name="Records_AllStages" xml:space="preserve">
+    <value>All Stages</value>
+  </data>
+  <data name="Records_StartDate" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="Records_EndDate" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Records_BarcodePlaceholder" xml:space="preserve">
+    <value>Filter by barcode</value>
+  </data>
+  <data name="Records_TotalRecords" xml:space="preserve">
+    <value>Total Records</value>
+  </data>
+  <data name="Records_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Records_Operator" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="Records_Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Records_PrevPage" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Records_NextPage" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Records_ConfirmDelete" xml:space="preserve">
+    <value>Confirm delete this record?</value>
+  </data>
+
+  <!-- Customer Management Page -->
+  <data name="Customer_Title" xml:space="preserve">
+    <value>Customer Management</value>
+  </data>
+  <data name="Customer_Subtitle" xml:space="preserve">
+    <value>Manage customer profiles and contact information</value>
+  </data>
+  <data name="Customer_SearchPlaceholder" xml:space="preserve">
+    <value>Search by customer name, code or contact...</value>
+  </data>
+  <data name="Customer_AddNew" xml:space="preserve">
+    <value>Add Customer</value>
+  </data>
+  <data name="Customer_LoadingData" xml:space="preserve">
+    <value>Loading customer data...</value>
+  </data>
+  <data name="Customer_NoData" xml:space="preserve">
+    <value>No customer data</value>
+  </data>
+  <data name="Customer_Code" xml:space="preserve">
+    <value>Customer Code</value>
+  </data>
+  <data name="Customer_Name" xml:space="preserve">
+    <value>Customer Name</value>
+  </data>
+  <data name="Customer_Contact" xml:space="preserve">
+    <value>Contact Person</value>
+  </data>
+  <data name="Customer_Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Customer_Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Customer_ConfirmDelete" xml:space="preserve">
+    <value>Confirm delete this customer?</value>
+  </data>
+  <data name="Customer_TotalRecords" xml:space="preserve">
+    <value>Total {0} records</value>
+  </data>
+  <data name="Customer_CodeHint" xml:space="preserve">
+    <value>For system identification, must be unique</value>
+  </data>
+  <data name="Customer_CodePlaceholder" xml:space="preserve">
+    <value>e.g.: C001, CUST2026001</value>
+  </data>
+  <data name="Customer_CodeNote" xml:space="preserve">
+    <value>Customer code cannot be modified once created</value>
+  </data>
+  <data name="Customer_NamePlaceholder" xml:space="preserve">
+    <value>e.g.: ABC Food Processing</value>
+  </data>
+  <data name="Customer_ContactPlaceholder" xml:space="preserve">
+    <value>e.g.: John Smith</value>
+  </data>
+  <data name="Customer_PhonePlaceholder" xml:space="preserve">
+    <value>e.g.: 13800138000</value>
+  </data>
+  <data name="Customer_AddressPlaceholder" xml:space="preserve">
+    <value>e.g.: 123 Main Street, City</value>
+  </data>
+  <data name="Customer_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="Customer_SaveFailed" xml:space="preserve">
+    <value>Save failed</value>
+  </data>
+  <data name="Customer_HelpTitle" xml:space="preserve">
+    <value>Instructions</value>
+  </data>
+  <data name="Customer_HelpTip" xml:space="preserve">
+    <value>Customer info is mainly used for weighing record archiving. Optional fields can be left empty.</value>
+  </data>
+  <data name="Common_Required" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="Common_Optional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="Customer_EditTitle" xml:space="preserve">
+    <value>Edit Customer</value>
+  </data>
+  <data name="Customer_NotFound" xml:space="preserve">
+    <value>Customer not found or deleted</value>
+  </data>
+  <data name="Customer_BackToList" xml:space="preserve">
+    <value>Back to List</value>
+  </data>
+  <data name="Customer_CodeReadonly" xml:space="preserve">
+    <value>Read-only</value>
+  </data>
+  <data name="Customer_CodeReadonlyNote" xml:space="preserve">
+    <value>Customer code cannot be modified</value>
+  </data>
+  <data name="Customer_ActiveStatus" xml:space="preserve">
+    <value>Active (customer can be used for production records)</value>
+  </data>
+  <data name="Customer_Info" xml:space="preserve">
+    <value>Customer Info</value>
+  </data>
+  <data name="Customer_CreatedAt" xml:space="preserve">
+    <value>Created At</value>
+  </data>
+  <data name="Customer_UpdatedAt" xml:space="preserve">
+    <value>Last Updated</value>
+  </data>
+  <data name="Customer_NeverUpdated" xml:space="preserve">
+    <value>Never updated</value>
+  </data>
+  <data name="Customer_EditHelpTitle" xml:space="preserve">
+    <value>Edit Instructions</value>
+  </data>
+  <data name="Customer_EditWarning" xml:space="preserve">
+    <value>Modifying customer info won't affect historical records</value>
+  </data>
+  <data name="Customer_LoadFailed" xml:space="preserve">
+    <value>Load customer failed</value>
+  </data>
+
+  <!-- User Management Page -->
+  <data name="User_Title" xml:space="preserve">
+    <value>User Management</value>
+  </data>
+  <data name="User_Subtitle" xml:space="preserve">
+    <value>Manage system user accounts and permissions (Admin only)</value>
+  </data>
+  <data name="User_AddNew" xml:space="preserve">
+    <value>Add User</value>
+  </data>
+  <data name="User_LoadingData" xml:space="preserve">
+    <value>Loading user list...</value>
+  </data>
+  <data name="User_NoData" xml:space="preserve">
+    <value>No user data. Click "Add User" button to create the first user</value>
+  </data>
+  <data name="User_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="User_FullName" xml:space="preserve">
+    <value>Full Name</value>
+  </data>
+  <data name="User_Role" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="User_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="User_CreatedAt" xml:space="preserve">
+    <value>Created At</value>
+  </data>
+  <data name="User_UpdatedAt" xml:space="preserve">
+    <value>Last Updated</value>
+  </data>
+  <data name="User_NeverUpdated" xml:space="preserve">
+    <value>Never updated</value>
+  </data>
+  <data name="User_StatusNormal" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="User_StatusDisabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="User_TotalCount" xml:space="preserve">
+    <value>Total {0} users</value>
+  </data>
+  <data name="User_AdminCount" xml:space="preserve">
+    <value>Administrators</value>
+  </data>
+  <data name="User_OperatorCount" xml:space="preserve">
+    <value>Operators</value>
+  </data>
+  <data name="User_ConfirmDelete" xml:space="preserve">
+    <value>Are you sure to delete user '{0}'? This action cannot be undone!</value>
+  </data>
+  <data name="User_DeleteSuccess" xml:space="preserve">
+    <value>User '{0}' deleted successfully!</value>
+  </data>
+  <data name="User_DeleteFailed" xml:space="preserve">
+    <value>Delete failed</value>
+  </data>
+  <data name="User_NotExist" xml:space="preserve">
+    <value>User does not exist</value>
+  </data>
+  <data name="User_CreateTitle" xml:space="preserve">
+    <value>Add User</value>
+  </data>
+  <data name="User_UsernamePlaceholder" xml:space="preserve">
+    <value>Enter username (login account)</value>
+  </data>
+  <data name="User_UsernameNote" xml:space="preserve">
+    <value>Username is used for login and cannot be changed after creation</value>
+  </data>
+  <data name="User_FullNamePlaceholder" xml:space="preserve">
+    <value>Enter full name</value>
+  </data>
+  <data name="User_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="User_PasswordPlaceholder" xml:space="preserve">
+    <value>Enter password (4-6 characters)</value>
+  </data>
+  <data name="User_ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
+  <data name="User_ConfirmPasswordPlaceholder" xml:space="preserve">
+    <value>Re-enter password</value>
+  </data>
+  <data name="User_RoleOperatorDesc" xml:space="preserve">
+    <value>Operator (weighing, query, customer and product management only)</value>
+  </data>
+  <data name="User_RoleAdminDesc" xml:space="preserve">
+    <value>Administrator (full access)</value>
+  </data>
+  <data name="User_RoleWarning" xml:space="preserve">
+    <value>Be careful with admin permissions! Admins can manage users, view reports, and modify system settings</value>
+  </data>
+  <data name="User_Creating" xml:space="preserve">
+    <value>Creating...</value>
+  </data>
+  <data name="User_CreateUser" xml:space="preserve">
+    <value>Create User</value>
+  </data>
+  <data name="User_PermissionTitle" xml:space="preserve">
+    <value>Permission Guide</value>
+  </data>
+  <data name="User_OperatorPermission" xml:space="preserve">
+    <value>Operator Permissions</value>
+  </data>
+  <data name="User_OperatorPerm1" xml:space="preserve">
+    <value>Production weighing and record query</value>
+  </data>
+  <data name="User_OperatorPerm2" xml:space="preserve">
+    <value>Customer management (CRUD)</value>
+  </data>
+  <data name="User_OperatorPerm3" xml:space="preserve">
+    <value>Product management (CRUD)</value>
+  </data>
+  <data name="User_OperatorPerm4" xml:space="preserve">
+    <value>Change own password</value>
+  </data>
+  <data name="User_AdminPermission" xml:space="preserve">
+    <value>Admin Permissions (Additional)</value>
+  </data>
+  <data name="User_AdminPerm1" xml:space="preserve">
+    <value>All operator permissions</value>
+  </data>
+  <data name="User_AdminPerm2" xml:space="preserve">
+    <value>User management (create, edit, delete users)</value>
+  </data>
+  <data name="User_AdminPerm3" xml:space="preserve">
+    <value>Production report export (Excel)</value>
+  </data>
+  <data name="User_AdminPerm4" xml:space="preserve">
+    <value>Hardware device testing and configuration</value>
+  </data>
+  <data name="User_AdminPerm5" xml:space="preserve">
+    <value>System settings</value>
+  </data>
+  <data name="User_SecurityTip" xml:space="preserve">
+    <value>Security Tips</value>
+  </data>
+  <data name="User_SecurityTip1" xml:space="preserve">
+    <value>Keep admin credentials secure</value>
+  </data>
+  <data name="User_SecurityTip2" xml:space="preserve">
+    <value>Change passwords regularly</value>
+  </data>
+  <data name="User_SecurityTip3" xml:space="preserve">
+    <value>Do not assign admin permissions to regular operators</value>
+  </data>
+  <data name="User_EditTitle" xml:space="preserve">
+    <value>Edit User</value>
+  </data>
+  <data name="User_UsernameReadonly" xml:space="preserve">
+    <value>Username cannot be changed after creation</value>
+  </data>
+  <data name="User_AccountStatus" xml:space="preserve">
+    <value>Account Status</value>
+  </data>
+  <data name="User_DisableNote" xml:space="preserve">
+    <value>Disabled users cannot log in to the system</value>
+  </data>
+  <data name="User_PasswordReset" xml:space="preserve">
+    <value>Password Reset (Optional)</value>
+  </data>
+  <data name="User_NewPassword" xml:space="preserve">
+    <value>New Password</value>
+  </data>
+  <data name="User_NewPasswordPlaceholder" xml:space="preserve">
+    <value>Leave empty to keep current password</value>
+  </data>
+  <data name="User_NewPasswordNote" xml:space="preserve">
+    <value>Enter new password (4-6 characters) to reset</value>
+  </data>
+  <data name="User_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="User_SaveChanges" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="User_Info" xml:space="preserve">
+    <value>User Info</value>
+  </data>
+  <data name="User_UserId" xml:space="preserve">
+    <value>User ID</value>
+  </data>
+  <data name="User_EditNote" xml:space="preserve">
+    <value>Instructions</value>
+  </data>
+  <data name="User_EditNote1" xml:space="preserve">
+    <value>Name changes take effect immediately</value>
+  </data>
+  <data name="User_EditNote2" xml:space="preserve">
+    <value>Role changes affect user permissions</value>
+  </data>
+  <data name="User_EditNote3" xml:space="preserve">
+    <value>Disabled accounts cannot log in</value>
+  </data>
+  <data name="User_EditNote4" xml:space="preserve">
+    <value>Password reset only applies when new password is entered</value>
+  </data>
+  <data name="User_NotFound" xml:space="preserve">
+    <value>User with ID {0} not found</value>
+  </data>
+  <data name="User_BackToList" xml:space="preserve">
+    <value>Back to User List</value>
+  </data>
+  <data name="User_UpdateSuccess" xml:space="preserve">
+    <value>User updated successfully!</value>
+  </data>
+
+  <!-- Production Report Page -->
+  <data name="Report_Title" xml:space="preserve">
+    <value>Production Report</value>
+  </data>
+  <data name="Report_Subtitle" xml:space="preserve">
+    <value>View production statistics, analyze output and loss by stage</value>
+  </data>
+  <data name="Report_Period" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="Report_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Report_Week" xml:space="preserve">
+    <value>This Week</value>
+  </data>
+  <data name="Report_Month" xml:space="preserve">
+    <value>This Month</value>
+  </data>
+  <data name="Report_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="Report_StartDate" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="Report_EndDate" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Report_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Report_ExportExcel" xml:space="preserve">
+    <value>Export Excel</value>
+  </data>
+  <data name="Report_Generating" xml:space="preserve">
+    <value>Generating report...</value>
+  </data>
+  <data name="Report_NoData" xml:space="preserve">
+    <value>No production data in selected period</value>
+  </data>
+  <data name="Report_TotalRecords" xml:space="preserve">
+    <value>Total Records</value>
+  </data>
+  <data name="Report_TotalWeight" xml:space="preserve">
+    <value>Total Weight</value>
+  </data>
+  <data name="Report_AverageWeight" xml:space="preserve">
+    <value>Average Weight</value>
+  </data>
+  <data name="Report_StageStatistics" xml:space="preserve">
+    <value>Statistics by Stage</value>
+  </data>
+  <data name="Report_RecordCount" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="Report_MaxWeight" xml:space="preserve">
+    <value>Max Weight</value>
+  </data>
+  <data name="Report_MinWeight" xml:space="preserve">
+    <value>Min Weight</value>
+  </data>
+  <data name="Report_LossRateTitle" xml:space="preserve">
+    <value>Product Loss Rate - Quality Tracing</value>
+  </data>
+  <data name="Report_LossRateFormula" xml:space="preserve">
+    <value>Loss Rate Formula</value>
+  </data>
+  <data name="Report_LossRateFormulaDesc" xml:space="preserve">
+    <value>(Receiving Weight - Shipping Weight) / Receiving Weight × 100%</value>
+  </data>
+  <data name="Report_ReceivingWeight" xml:space="preserve">
+    <value>Receiving Weight</value>
+  </data>
+  <data name="Report_ProcessingWeight" xml:space="preserve">
+    <value>Processing Weight</value>
+  </data>
+  <data name="Report_ShippingWeight" xml:space="preserve">
+    <value>Shipping Weight</value>
+  </data>
+  <data name="Report_LossWeight" xml:space="preserve">
+    <value>Loss Weight</value>
+  </data>
+  <data name="Report_LossRate" xml:space="preserve">
+    <value>Loss Rate</value>
+  </data>
+  <data name="Report_ExportFailed" xml:space="preserve">
+    <value>Export Excel failed</value>
+  </data>
+  <data name="Report_ExportFileName" xml:space="preserve">
+    <value>Production_Report</value>
+  </data>
+  <data name="Report_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+
+  <!-- Quality Tracing Page -->
+  <data name="Tracing_Title" xml:space="preserve">
+    <value>Quality Tracing</value>
+  </data>
+  <data name="Tracing_Subtitle" xml:space="preserve">
+    <value>Trace complete production process by barcode</value>
+  </data>
+  <data name="Tracing_InputBarcode" xml:space="preserve">
+    <value>Enter Barcode</value>
+  </data>
+  <data name="Tracing_BarcodePlaceholder" xml:space="preserve">
+    <value>Enter or scan barcode...</value>
+  </data>
+  <data name="Tracing_BarcodeInfo" xml:space="preserve">
+    <value>Barcode Info</value>
+  </data>
+  <data name="Tracing_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Tracing_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Tracing_Barcode" xml:space="preserve">
+    <value>Barcode</value>
+  </data>
+  <data name="Tracing_RecordCount" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="Tracing_FirstRecord" xml:space="preserve">
+    <value>First Record</value>
+  </data>
+  <data name="Tracing_LastRecord" xml:space="preserve">
+    <value>Last Record</value>
+  </data>
+  <data name="Tracing_StageStats" xml:space="preserve">
+    <value>Stage Statistics</value>
+  </data>
+  <data name="Tracing_Timeline" xml:space="preserve">
+    <value>Operation Timeline</value>
+  </data>
+  <data name="Tracing_Operator" xml:space="preserve">
+    <value>Operator</value>
+  </data>
+  <data name="Tracing_Remark" xml:space="preserve">
+    <value>Remark</value>
+  </data>
+  <data name="Tracing_NotFound" xml:space="preserve">
+    <value>No records found for this barcode</value>
+  </data>
+  <data name="Tracing_NotFoundHint" xml:space="preserve">
+    <value>Please check if the barcode is correct, or it has not been entered into the system</value>
+  </data>
+  <data name="Tracing_StartHint" xml:space="preserve">
+    <value>Enter barcode to start tracing</value>
+  </data>
+  <data name="Tracing_ScanHint" xml:space="preserve">
+    <value>Supports barcode scanner or manual input</value>
+  </data>
+  <data name="Tracing_QueryFailed" xml:space="preserve">
+    <value>Query failed</value>
+  </data>
+  <data name="Tracing_Times" xml:space="preserve">
+    <value>times</value>
+  </data>
+  <data name="Tracing_Records" xml:space="preserve">
+    <value>records</value>
+  </data>
+
+  <!-- System Settings Page -->
+  <data name="Settings_Title" xml:space="preserve">
+    <value>System Settings</value>
+  </data>
+  <data name="Settings_Subtitle" xml:space="preserve">
+    <value>Admin only - Configure system parameters and hardware settings</value>
+  </data>
+  <data name="Settings_AppInfo" xml:space="preserve">
+    <value>Application Info</value>
+  </data>
+  <data name="Settings_AppName" xml:space="preserve">
+    <value>App Name</value>
+  </data>
+  <data name="Settings_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Settings_Framework" xml:space="preserve">
+    <value>Framework</value>
+  </data>
+  <data name="Settings_Database" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="Settings_SystemStatus" xml:space="preserve">
+    <value>System Status</value>
+  </data>
+  <data name="Settings_StartTime" xml:space="preserve">
+    <value>Start Time</value>
+  </data>
+  <data name="Settings_Uptime" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="Settings_DbSize" xml:space="preserve">
+    <value>Database Size</value>
+  </data>
+  <data name="Settings_RecordCount" xml:space="preserve">
+    <value>Weighing Records</value>
+  </data>
+  <data name="Settings_ScaleSettings" xml:space="preserve">
+    <value>Scale Settings</value>
+  </data>
+  <data name="Settings_PortName" xml:space="preserve">
+    <value>Port Name</value>
+  </data>
+  <data name="Settings_BaudRate" xml:space="preserve">
+    <value>Baud Rate</value>
+  </data>
+  <data name="Settings_Protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="Settings_HardwareNote" xml:space="preserve">
+    <value>Edit appsettings.json to modify hardware settings, restart required</value>
+  </data>
+  <data name="Settings_DbManagement" xml:space="preserve">
+    <value>Database Management</value>
+  </data>
+  <data name="Settings_DbFile" xml:space="preserve">
+    <value>Database File</value>
+  </data>
+  <data name="Settings_FileSize" xml:space="preserve">
+    <value>File Size</value>
+  </data>
+  <data name="Settings_BackupDb" xml:space="preserve">
+    <value>Backup Database</value>
+  </data>
+  <data name="Settings_QuickLinks" xml:space="preserve">
+    <value>Quick Links</value>
+  </data>
+  <data name="Settings_TechStack" xml:space="preserve">
+    <value>Tech Stack</value>
+  </data>
+  <data name="Settings_Validation" xml:space="preserve">
+    <value>Validation</value>
+  </data>
+  <data name="Settings_Realtime" xml:space="preserve">
+    <value>Realtime</value>
+  </data>
+  <data name="Settings_NotConfigured" xml:space="preserve">
+    <value>Not Configured</value>
+  </data>
+  <data name="Settings_NotFound" xml:space="preserve">
+    <value>Not Found</value>
+  </data>
+  <data name="Settings_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Settings_Calculating" xml:space="preserve">
+    <value>Calculating...</value>
+  </data>
+  <data name="Settings_Minutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="Settings_Hours" xml:space="preserve">
+    <value>hours</value>
+  </data>
+  <data name="Settings_Days" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="Settings_DbNotExist" xml:space="preserve">
+    <value>Database file does not exist</value>
+  </data>
+  <data name="Settings_BackupSuccess" xml:space="preserve">
+    <value>Backup successful! File</value>
+  </data>
+  <data name="Settings_BackupFailed" xml:space="preserve">
+    <value>Backup failed</value>
+  </data>
+
+  <!-- Profile Page -->
+  <data name="Profile_Title" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="Profile_Subtitle" xml:space="preserve">
+    <value>View account information and operation statistics</value>
+  </data>
+  <data name="Profile_AccountInfo" xml:space="preserve">
+    <value>Account Info</value>
+  </data>
+  <data name="Profile_MyStats" xml:space="preserve">
+    <value>My Statistics</value>
+  </data>
+  <data name="Profile_RecentRecords" xml:space="preserve">
+    <value>My Recent Records</value>
+  </data>
+  <data name="Profile_TodayRecords" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Profile_MonthRecords" xml:space="preserve">
+    <value>This Month</value>
+  </data>
+  <data name="Profile_TotalRecordsCount" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Profile_NoRecords" xml:space="preserve">
+    <value>No operation records</value>
+  </data>
+  <data name="Profile_UpdateName" xml:space="preserve">
+    <value>Update Name</value>
+  </data>
+  <data name="Profile_NewName" xml:space="preserve">
+    <value>New Name</value>
+  </data>
+  <data name="Profile_NewNamePlaceholder" xml:space="preserve">
+    <value>Enter new name</value>
+  </data>
+  <data name="Profile_SaveName" xml:space="preserve">
+    <value>Save Name</value>
+  </data>
+  <data name="Profile_ChangePassword" xml:space="preserve">
+    <value>Change Password</value>
+  </data>
+  <data name="Profile_CurrentPassword" xml:space="preserve">
+    <value>Current Password</value>
+  </data>
+  <data name="Profile_CurrentPasswordPlaceholder" xml:space="preserve">
+    <value>Enter current password</value>
+  </data>
+  <data name="Profile_NewPasswordPlaceholder" xml:space="preserve">
+    <value>4-6 characters</value>
+  </data>
+  <data name="Profile_ConfirmNewPasswordPlaceholder" xml:space="preserve">
+    <value>Re-enter new password</value>
+  </data>
+  <data name="Profile_SavePassword" xml:space="preserve">
+    <value>Change Password</value>
+  </data>
+  <data name="Profile_LoadingStats" xml:space="preserve">
+    <value>Loading statistics...</value>
+  </data>
+  <data name="Profile_NameUpdateSuccess" xml:space="preserve">
+    <value>Name updated successfully!</value>
+  </data>
+  <data name="Profile_PasswordUpdateSuccess" xml:space="preserve">
+    <value>Password changed successfully!</value>
+  </data>
+  <data name="Profile_UpdateFailed" xml:space="preserve">
+    <value>Update failed</value>
+  </data>
+  <data name="Profile_NameSameError" xml:space="preserve">
+    <value>New name is the same as current name</value>
+  </data>
+  <data name="Profile_NameRequired" xml:space="preserve">
+    <value>Name is required</value>
+  </data>
+  <data name="Profile_LoadUserFailed" xml:space="preserve">
+    <value>Failed to load user info</value>
+  </data>
+
+  <!-- Hardware Test Page -->
+  <data name="Hardware_Title" xml:space="preserve">
+    <value>Hardware Test</value>
+  </data>
+  <data name="Hardware_DeviceTest" xml:space="preserve">
+    <value>Hardware Device Test</value>
+  </data>
+  <data name="Hardware_Scale" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="Hardware_Scanner" xml:space="preserve">
+    <value>Barcode Scanner</value>
+  </data>
+  <data name="Hardware_ConnectionStatus" xml:space="preserve">
+    <value>Connection Status</value>
+  </data>
+  <data name="Hardware_ListeningStatus" xml:space="preserve">
+    <value>Listening Status</value>
+  </data>
+  <data name="Hardware_WeightStable" xml:space="preserve">
+    <value>Weight Stable</value>
+  </data>
+  <data name="Hardware_WeightChanging" xml:space="preserve">
+    <value>Weight Changing</value>
+  </data>
+  <data name="Hardware_Connect" xml:space="preserve">
+    <value>Connect Scale</value>
+  </data>
+  <data name="Hardware_Disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="Hardware_LastUpdate" xml:space="preserve">
+    <value>Last Update</value>
+  </data>
+  <data name="Hardware_Listening" xml:space="preserve">
+    <value>Listening</value>
+  </data>
+  <data name="Hardware_NotStarted" xml:space="preserve">
+    <value>Not Started</value>
+  </data>
+  <data name="Hardware_SimulateScanning" xml:space="preserve">
+    <value>Simulate Scanning</value>
+  </data>
+  <data name="Hardware_SimulateScan" xml:space="preserve">
+    <value>Simulate Scan</value>
+  </data>
+  <data name="Hardware_BarcodePlaceholder" xml:space="preserve">
+    <value>Enter barcode...</value>
+  </data>
+  <data name="Hardware_RecentScan" xml:space="preserve">
+    <value>Recent Scan</value>
+  </data>
+  <data name="Hardware_NoScanRecord" xml:space="preserve">
+    <value>No scan records</value>
+  </data>
+  <data name="Hardware_EventLog" xml:space="preserve">
+    <value>Event Log</value>
+  </data>
+  <data name="Hardware_NoLogRecord" xml:space="preserve">
+    <value>No log records</value>
+  </data>
+  <data name="Hardware_LogReceiveWeight" xml:space="preserve">
+    <value>Received weight</value>
+  </data>
+  <data name="Hardware_LogWeightStable" xml:space="preserve">
+    <value>stable</value>
+  </data>
+  <data name="Hardware_LogScanSuccess" xml:space="preserve">
+    <value>Scan successful</value>
+  </data>
+  <data name="Hardware_LogSignalRConnected" xml:space="preserve">
+    <value>SignalR connection established</value>
+  </data>
+  <data name="Hardware_LogScaleConnected" xml:space="preserve">
+    <value>Scale connected successfully</value>
+  </data>
+  <data name="Hardware_LogScaleFailed" xml:space="preserve">
+    <value>Scale connection failed</value>
+  </data>
+  <data name="Hardware_LogScaleDisconnected" xml:space="preserve">
+    <value>Scale disconnected</value>
+  </data>
+  <data name="Hardware_LogSimulateScan" xml:space="preserve">
+    <value>Simulated scan</value>
+  </data>
+
+  <!-- Login Page -->
+  <data name="Login_Title" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Login_Header" xml:space="preserve">
+    <value>MiniMES Login</value>
+  </data>
+  <data name="Login_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Login_UsernamePlaceholder" xml:space="preserve">
+    <value>Enter username</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Enter password</value>
+  </data>
+  <data name="Login_RememberMe" xml:space="preserve">
+    <value>Remember me (30 days)</value>
+  </data>
+  <data name="Login_Submit" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Login_DemoLogin" xml:space="preserve">
+    <value>Demo Login (Quick Start)</value>
+  </data>
+  <data name="Login_DemoAccount" xml:space="preserve">
+    <value>Demo Account:</value>
+  </data>
+  <data name="Login_AdminAccount" xml:space="preserve">
+    <value>Admin Account:</value>
+  </data>
+  <data name="Login_ErrorEmpty" xml:space="preserve">
+    <value>Username and password cannot be empty</value>
+  </data>
+  <data name="Login_ErrorFailed" xml:space="preserve">
+    <value>Login failed, please check your username and password</value>
+  </data>
+  <data name="Login_ErrorException" xml:space="preserve">
+    <value>Login failed: </value>
+  </data>
+
+</root>

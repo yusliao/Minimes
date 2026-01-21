@@ -1,0 +1,171 @@
+@page "/users"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.User
+@using Minimes.Domain.Enums
+@using Microsoft.JSInterop
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@L["User_Title"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-people me-2"></span>@L["User_Title"]
+            </h2>
+            <p class="text-muted">@L["User_Subtitle"]</p>
+        </div>
+        <div class="col-auto">
+            <a href="/users/create" class="btn btn-primary">
+                <span class="oi oi-plus me-1"></span>@L["User_AddNew"]
+            </a>
+        </div>
+    </div>
+
+    @if (users == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-3 text-muted">@L["User_LoadingData"]</p>
+        </div>
+    }
+    else if (!users.Any())
+    {
+        <div class="alert alert-info">
+            <span class="oi oi-info me-2"></span>
+            @L["User_NoData"]
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@L["User_Username"]</th>
+                                <th>@L["User_FullName"]</th>
+                                <th>@L["User_Role"]</th>
+                                <th>@L["User_Status"]</th>
+                                <th>@L["User_CreatedAt"]</th>
+                                <th>@L["User_UpdatedAt"]</th>
+                                <th style="width: 150px;">@L["Records_Action"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in users)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@user.Username</strong>
+                                    </td>
+                                    <td>@user.FullName</td>
+                                    <td>
+                                        @if (user.Role == UserRole.Administrator)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <span class="oi oi-shield me-1"></span>@L["Role_Admin"]
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">
+                                                <span class="oi oi-person me-1"></span>@L["Role_Operator"]
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="badge bg-success">@L["User_StatusNormal"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@L["User_StatusDisabled"]</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@user.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@(user.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? L["User_NeverUpdated"])</small>
+                                    </td>
+                                    <td>
+                                        <a href="/users/edit/@user.Id" class="btn btn-sm btn-outline-primary me-1" title="@L["Btn_Edit"]">
+                                            <span class="oi oi-pencil"></span>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => DeleteUser(user.Id, user.Username)"
+                                                title="@L["Btn_Delete"]">
+                                            <span class="oi oi-trash"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <p class="text-muted mb-0">
+                        @string.Format(L["User_TotalCount"], users.Count())
+                        （@L["User_AdminCount"]：<strong>@users.Count(u => u.Role == UserRole.Administrator)</strong>，
+                        @L["User_OperatorCount"]：<strong>@users.Count(u => u.Role == UserRole.Operator)</strong>）
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<UserResponse>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        users = await UserService.GetAllAsync();
+    }
+
+    private async Task DeleteUser(int userId, string username)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>(
+            "confirm",
+            string.Format(L["User_ConfirmDelete"].Value, username)
+        );
+
+        if (confirmed)
+        {
+            try
+            {
+                var success = await UserService.DeleteAsync(userId);
+                if (success)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", string.Format(L["User_DeleteSuccess"].Value, username));
+                    await LoadUsers();
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"{L["User_DeleteFailed"]}: {L["User_NotExist"]}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["User_DeleteFailed"]}: {ex.Message}");
+            }
+        }
+    }
+}

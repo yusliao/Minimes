@@ -1,0 +1,237 @@
+@page "/products/edit/{id:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Operator")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Product
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+
+<PageTitle>编辑批次 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-pencil me-2"></span>编辑批次
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/products">批次管理</a></li>
+                    <li class="breadcrumb-item active">编辑批次</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+            <p class="mt-2 text-muted">加载批次数据中...</p>
+        </div>
+    }
+    else if (product == null)
+    {
+        <div class="alert alert-danger">
+            <span class="oi oi-warning me-2"></span>
+            批次不存在或已被删除
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <EditForm Model="request" OnValidSubmit="HandleSubmit">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>二维码 *</strong>
+                                    <span class="badge bg-secondary ms-2">不可修改</span>
+                                </label>
+                                <input type="text" class="form-control" value="@product.Barcode" disabled />
+                                <small class="form-text text-muted">
+                                    批次二维码不可修改，以保证数据一致性
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>批次名称 *</strong>
+                                </label>
+                                <input type="text" class="form-control" @bind="request.Name" required />
+                                <ValidationMessage For="@(() => request.Name)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    供应商/规格说明
+                                </label>
+                                <textarea class="form-control" @bind="request.Specification" rows="3"></textarea>
+                                <ValidationMessage For="@(() => request.Specification)" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">单位</label>
+                                    <input type="text" class="form-control" @bind="request.Unit" />
+                                    <ValidationMessage For="@(() => request.Unit)" />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        参考价格（可选）
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">¥</span>
+                                        <input type="number" step="0.01" class="form-control" @bind="request.ReferencePrice" />
+                                    </div>
+                                    <ValidationMessage For="@(() => request.ReferencePrice)" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="isActive" @bind="request.IsActive" />
+                                <label class="form-check-label" for="isActive">
+                                    激活状态（勾选后批次可用于生产）
+                                </label>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">
+                                    <span class="oi oi-x me-1"></span>取消
+                                </button>
+                                <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                    @if (isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1"></span>
+                                        <span>保存中...</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="oi oi-check me-1"></span>
+                                        <span>保存修改</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧批次信息 -->
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span class="oi oi-info me-2"></span>批次信息
+                        </h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">创建时间:</dt>
+                            <dd class="col-sm-7">@product.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+                            @if (product.UpdatedAt.HasValue)
+                            {
+                                <dt class="col-sm-5">最后更新:</dt>
+                                <dd class="col-sm-7">@product.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</dd>
+                            }
+
+                            <dt class="col-sm-5">当前状态:</dt>
+                            <dd class="col-sm-7">
+                                @if (product.IsActive)
+                                {
+                                    <span class="badge bg-success">激活</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">停用</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card bg-light mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <span class="oi oi-warning me-1"></span>注意事项
+                        </h6>
+                        <ul class="small mb-0">
+                            <li>修改批次信息不会影响已有的称重记录</li>
+                            <li>停用批次后将无法在称重时选择该批次</li>
+                            <li>批次二维码一旦创建不可修改</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProductResponse? product;
+    private UpdateProductRequest request = new();
+    private bool isLoading = true;
+    private bool isSaving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProduct();
+    }
+
+    private async Task LoadProduct()
+    {
+        isLoading = true;
+        try
+        {
+            product = await ProductService.GetByIdAsync(Id);
+            if (product != null)
+            {
+                // 映射到编辑请求对象
+                request.Id = product.Id;
+                request.Name = product.Name;
+                request.Specification = product.Specification;
+                request.Unit = product.Unit;
+                request.ReferencePrice = product.ReferencePrice;
+                request.IsActive = product.IsActive;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            request.Id = Id;  // 确保ID被正确设置
+            await ProductService.UpdateAsync(request);
+            NavigationManager.NavigateTo("/products");
+        }
+        catch (Exception ex)
+        {
+            // TODO: 显示错误消息
+            Console.WriteLine($"保存失败: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+}

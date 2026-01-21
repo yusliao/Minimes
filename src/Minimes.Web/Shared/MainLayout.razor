@@ -1,0 +1,65 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.Extensions.Localization
+@using Minimes.Web.Resources
+
+@inject IStringLocalizer<SharedResource> L
+
+<PageTitle>@L["AppName"] - @L["AppTitle"]</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 auth">
+            <div class="d-flex align-items-center me-auto">
+                <CultureSelector />
+            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3 text-muted">
+                            <span class="oi oi-clock me-1"></span>
+                            @DateTime.Now.ToString("yyyy-MM-dd HH:mm")
+                        </span>
+                        <span class="me-3">
+                            <span class="oi oi-person me-1"></span>
+                            <strong>@context.User.Identity?.Name</strong>
+                        </span>
+                        @if (context.User.IsInRole("Administrator"))
+                        {
+                            <span class="badge bg-danger">@L["Role_Admin"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info">@L["Role_Operator"]</span>
+                        }
+                        @if (context.User.FindFirst("IsDemoMode")?.Value == "True")
+                        {
+                            <span class="badge bg-warning text-dark ms-2">
+                                <span class="oi oi-eye me-1"></span>@L["DemoMode"]
+                            </span>
+                        }
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3 text-muted">
+                            <span class="oi oi-clock me-1"></span>
+                            @DateTime.Now.ToString("yyyy-MM-dd HH:mm")
+                        </span>
+                        <span class="text-muted">
+                            <span class="oi oi-account-login me-1"></span>
+                            @L["Role_NotLoggedIn"]
+                        </span>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>

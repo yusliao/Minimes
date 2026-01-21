@@ -1,0 +1,307 @@
+@page "/hardware-test"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.AspNetCore.SignalR.Client
+@using Minimes.Application.Interfaces
+@using Microsoft.Extensions.Localization
+@using Minimes.Web.Resources
+@inject IScaleService ScaleService
+@inject IBarcodeScannerService ScannerService
+@inject NavigationManager Navigation
+@inject IStringLocalizer<SharedResource> L
+@implements IAsyncDisposable
+
+<PageTitle>@L["Hardware_Title"]</PageTitle>
+
+<h3>🔧 @L["Hardware_DeviceTest"]</h3>
+
+<div class="row mt-4">
+    <!-- 电子秤测试 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>⚖️ @L["Hardware_Scale"]</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>@L["Hardware_ConnectionStatus"]：</strong>
+                    @if (ScaleService.IsConnected)
+                    {
+                        <span class="badge bg-success">@L["Status_Connected"]</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">@L["Status_Disconnected"]</span>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <h2 class="text-center">
+                        <span class="badge @(isStable ? "bg-success" : "bg-warning")">
+                            @currentWeight.ToString("F2") g
+                        </span>
+                    </h2>
+                    <p class="text-center text-muted">
+                        @(isStable ? "✓ " + L["Hardware_WeightStable"] : "⚠ " + L["Hardware_WeightChanging"])
+                    </p>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" @onclick="ConnectScale" disabled="@ScaleService.IsConnected">
+                        @L["Hardware_Connect"]
+                    </button>
+                    <button class="btn btn-danger" @onclick="DisconnectScale" disabled="@(!ScaleService.IsConnected)">
+                        @L["Hardware_Disconnect"]
+                    </button>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">@L["Hardware_LastUpdate"]：@lastWeightUpdate.ToString("HH:mm:ss")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 扫码枪测试 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>📷 @L["Hardware_Scanner"]</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>@L["Hardware_ListeningStatus"]：</strong>
+                    @if (ScannerService.IsListening)
+                    {
+                        <span class="badge bg-success">@L["Hardware_Listening"]</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@L["Hardware_NotStarted"]</span>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">@L["Hardware_SimulateScanning"]：</label>
+                    <input type="text" class="form-control" @bind="testBarcode" placeholder="@L["Hardware_BarcodePlaceholder"]" />
+                </div>
+
+                <div class="d-grid gap-2 mb-3">
+                    <button class="btn btn-success" @onclick="SimulateScan">
+                        @L["Hardware_SimulateScan"]
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <strong>@L["Hardware_RecentScan"]：</strong>
+                    @if (!string.IsNullOrEmpty(lastBarcode))
+                    {
+                        <div class="alert alert-success mt-2">
+                            <strong>@lastBarcode</strong>
+                            <br />
+                            <small>@lastBarcodeTime.ToString("HH:mm:ss") (@lastBarcodeType)</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">@L["Hardware_NoScanRecord"]</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 日志记录 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5>📋 @L["Hardware_EventLog"]</h5>
+                <button class="btn btn-sm btn-outline-light float-end" @onclick="ClearLog">@L["Btn_Clear"]</button>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                @foreach (var log in eventLogs.OrderByDescending(l => l.Time))
+                {
+                    <div class="alert alert-@log.Level mb-2">
+                        <strong>[@log.Time.ToString("HH:mm:ss")]</strong> @log.Message
+                    </div>
+                }
+                @if (!eventLogs.Any())
+                {
+                    <p class="text-muted">@L["Hardware_NoLogRecord"]</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // SignalR连接
+    private HubConnection? hubConnection;
+
+    // 电子秤状态
+    private decimal currentWeight = 0;
+    private bool isStable = false;
+    private DateTime lastWeightUpdate = DateTime.Now;
+
+    // 扫码枪状态
+    private string testBarcode = "6901234567890";
+    private string lastBarcode = string.Empty;
+    private DateTime lastBarcodeTime = DateTime.Now;
+    private string lastBarcodeType = string.Empty;
+
+    // 日志
+    private List<EventLog> eventLogs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 初始化SignalR连接
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/hardwareHub"))
+            .Build();
+
+        // 订阅重量变化事件
+        hubConnection.On<object>("ReceiveWeight", (data) =>
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(data);
+            var weightData = System.Text.Json.JsonSerializer.Deserialize<WeightData>(json);
+
+            if (weightData != null)
+            {
+                currentWeight = weightData.weight;
+                isStable = weightData.isStable;
+                lastWeightUpdate = weightData.timestamp;
+
+                AddLog("info", $"{L["Hardware_LogReceiveWeight"]}: {currentWeight:F2}g {(isStable ? "(" + L["Hardware_LogWeightStable"] + ")" : "")}");
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        // 订阅扫码事件
+        hubConnection.On<object>("ReceiveBarcode", (data) =>
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(data);
+            var barcodeData = System.Text.Json.JsonSerializer.Deserialize<BarcodeData>(json);
+
+            if (barcodeData != null)
+            {
+                lastBarcode = barcodeData.barcode;
+                lastBarcodeTime = barcodeData.timestamp;
+                lastBarcodeType = barcodeData.scannerType;
+
+                AddLog("success", $"{L["Hardware_LogScanSuccess"]}: {lastBarcode} ({lastBarcodeType})");
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        // 订阅错误事件
+        hubConnection.On<object>("ReceiveError", (data) =>
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(data);
+            var errorData = System.Text.Json.JsonSerializer.Deserialize<ErrorData>(json);
+
+            if (errorData != null)
+            {
+                AddLog("danger", $"[{errorData.source}] {errorData.errorMessage}");
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        await hubConnection.StartAsync();
+        AddLog("info", L["Hardware_LogSignalRConnected"]);
+    }
+
+    private async Task ConnectScale()
+    {
+        var success = await ScaleService.ConnectAsync();
+        if (success)
+        {
+            ScaleService.StartReading();
+            AddLog("success", L["Hardware_LogScaleConnected"]);
+        }
+        else
+        {
+            AddLog("danger", L["Hardware_LogScaleFailed"]);
+        }
+    }
+
+    private async Task DisconnectScale()
+    {
+        await ScaleService.DisconnectAsync();
+        AddLog("warning", L["Hardware_LogScaleDisconnected"]);
+    }
+
+    private async Task TareScale()
+    {
+        await ScaleService.TareAsync();
+        AddLog("info", "Tare operation executed"); // 保留英文，去皮功能已被注释
+    }
+
+    private void SimulateScan()
+    {
+        if (!string.IsNullOrWhiteSpace(testBarcode))
+        {
+            ScannerService.SimulateScan(testBarcode);
+            AddLog("info", $"{L["Hardware_LogSimulateScan"]}: {testBarcode}");
+        }
+    }
+
+    private void AddLog(string level, string message)
+    {
+        eventLogs.Add(new EventLog
+            {
+                Time = DateTime.Now,
+                Level = level,
+                Message = message
+            });
+
+        // 保留最近50条日志
+        if (eventLogs.Count > 50)
+        {
+            eventLogs.RemoveAt(0);
+        }
+    }
+
+    private void ClearLog()
+    {
+        eventLogs.Clear();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    // 数据模型
+    private class WeightData
+    {
+        public decimal weight { get; set; }
+        public string unit { get; set; } = "g";
+        public bool isStable { get; set; }
+        public DateTime timestamp { get; set; }
+    }
+
+    private class BarcodeData
+    {
+        public string barcode { get; set; } = string.Empty;
+        public string scannerType { get; set; } = string.Empty;
+        public DateTime timestamp { get; set; }
+    }
+
+    private class ErrorData
+    {
+        public string errorMessage { get; set; } = string.Empty;
+        public string source { get; set; } = string.Empty;
+        public DateTime timestamp { get; set; }
+    }
+
+    private class EventLog
+    {
+        public DateTime Time { get; set; }
+        public string Level { get; set; } = "info";
+        public string Message { get; set; } = string.Empty;
+    }
+}

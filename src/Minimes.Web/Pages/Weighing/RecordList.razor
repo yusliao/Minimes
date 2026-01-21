@@ -1,0 +1,262 @@
+@page "/weighing/records"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Operator")]
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.WeighingRecord
+@using Minimes.Domain.Enums
+@using Minimes.Web.Resources
+@using System.Security.Claims
+@inject IStringLocalizer<SharedResource> L
+@inject IWeighingRecordService WeighingRecordService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@L["Records_Title"]</PageTitle>
+
+<h3>📋 @L["Records_Title"]</h3>
+
+@if (!isAdmin)
+{
+    <div class="alert alert-info mb-3">
+        <span class="oi oi-info me-2"></span>
+        @L["Records_MyRecordsHint"]
+    </div>
+}
+
+<!-- 查询条件 -->
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">@L["Weighing_Barcode"]</label>
+                <input type="text" class="form-control" @bind="queryRequest.Barcode" placeholder="@L["Records_BarcodePlaceholder"]" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@L["Weighing_Stage"]</label>
+                <select class="form-select" @bind="selectedProcessStage">
+                    <option value="">@L["Records_AllStages"]</option>
+                    <option value="@ProcessStage.Receiving">@L["Stage_Receiving"]</option>
+                    <option value="@ProcessStage.Processing">@L["Stage_Processing"]</option>
+                    <option value="@ProcessStage.Shipping">@L["Stage_Shipping"]</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@L["Records_StartDate"]</label>
+                <input type="date" class="form-control" @bind="startDateInput" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@L["Records_EndDate"]</label>
+                <input type="date" class="form-control" @bind="endDateInput" />
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100" @onclick="Search">
+                    <span class="oi oi-magnifying-glass"></span> @L["Btn_Search"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计信息 -->
+@if (records.Any())
+{
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">@L["Records_TotalRecords"]</h6>
+                    <h3>@totalCount @L["Weighing_Records"]</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">@L["Weighing_TotalWeight"]</h6>
+                    <h3>@records.Sum(r => r.Weight).ToString("F3") kg</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 记录列表 -->
+<div class="card">
+    <div class="card-body">
+        @if (isLoading)
+        {
+            <p class="text-center text-muted">@L["Status_Loading"]</p>
+        }
+        else if (!records.Any())
+        {
+            <p class="text-center text-muted">@L["Weighing_NoRecords"]</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>@L["Records_Time"]</th>
+                            <th>@L["Weighing_Barcode"]</th>
+                            <th>@L["Weighing_Stage"]</th>
+                            <th>@L["Weighing_Weight"] (kg)</th>
+                            <th>@L["Records_Operator"]</th>
+                            <th>@L["Weighing_Remark"]</th>
+                            <th>@L["Records_Action"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in records)
+                        {
+                            <tr>
+                                <td>@record.CreatedAt.ToString("MM-dd HH:mm")</td>
+                                <td><code>@record.Barcode</code></td>
+                                <td><span class="badge bg-info">@GetLocalizedStageName(record.ProcessStageName)</span></td>
+                                <td>@record.Weight.ToString("F3")</td>
+                                <td>@record.CreatedBy</td>
+                                <td>@record.Remarks</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteRecord(record.Id)">
+                                        <span class="oi oi-trash"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(queryRequest.PageNumber == 1 ? "disabled" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(queryRequest.PageNumber - 1)">@L["Records_PrevPage"]</button>
+                    </li>
+
+                    @for (int i = Math.Max(1, queryRequest.PageNumber - 2); i <= Math.Min(totalPages, queryRequest.PageNumber + 2); i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(pageNum == queryRequest.PageNumber ? "active" : "")">
+                            <button class="page-link" @onclick="() => ChangePage(pageNum)">@pageNum</button>
+                        </li>
+                    }
+
+                    <li class="page-item @(queryRequest.PageNumber >= totalPages ? "disabled" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(queryRequest.PageNumber + 1)">@L["Records_NextPage"]</button>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private WeighingRecordQueryRequest queryRequest = new();
+    private List<WeighingRecordResponse> records = new();
+    private int totalCount = 0;
+    private int totalPages => (int)Math.Ceiling((double)totalCount / queryRequest.PageSize);
+
+    private DateTime? startDateInput;
+    private DateTime? endDateInput;
+    private string? selectedProcessStage;
+    private bool isLoading = false;
+
+    // 角色和用户信息
+    private bool isAdmin = false;
+    private string currentUsername = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserRole();
+        await Search();
+    }
+
+    private async Task LoadUserRole()
+    {
+        if (AuthenticationStateTask != null)
+        {
+            var authState = await AuthenticationStateTask;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                currentUsername = user.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
+                // 检查是否是管理员
+                isAdmin = user.IsInRole("Administrator");
+
+                // 操作员只能查看自己的记录
+                if (!isAdmin && !string.IsNullOrEmpty(currentUsername))
+                {
+                    queryRequest.CreatedBy = currentUsername;
+                }
+            }
+        }
+    }
+
+    private async Task Search()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        queryRequest.StartDate = startDateInput;
+        queryRequest.EndDate = endDateInput;
+        queryRequest.ProcessStage = string.IsNullOrEmpty(selectedProcessStage)
+            ? null
+            : Enum.Parse<ProcessStage>(selectedProcessStage);
+        queryRequest.PageNumber = 1; // 重置到第一页
+
+        var (foundRecords, count) = await WeighingRecordService.QueryAsync(queryRequest);
+        records = foundRecords;
+        totalCount = count;
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages)
+        {
+            return;
+        }
+
+        isLoading = true;
+        queryRequest.PageNumber = pageNumber;
+
+        var (foundRecords, count) = await WeighingRecordService.QueryAsync(queryRequest);
+        records = foundRecords;
+        totalCount = count;
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteRecord(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Records_ConfirmDelete"].Value))
+        {
+            return;
+        }
+
+        var success = await WeighingRecordService.DeleteAsync(id);
+        if (success)
+        {
+            await Search(); // 重新加载列表
+        }
+    }
+
+    private string GetLocalizedStageName(string stageName)
+    {
+        var normalized = stageName.ToLower().Trim();
+        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
+            return L["Stage_Receiving"];
+        if (normalized.Contains("processing") || normalized.Contains("加工"))
+            return L["Stage_Processing"];
+        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
+            return L["Stage_Shipping"];
+        return stageName;
+    }
+}

@@ -1,0 +1,58 @@
+# ============================================
+# MiniMES Docker Compose - 开发/演示环境
+# Author: 老王 (暴躁技术流)
+# 用法: docker compose -f docker-compose.dev.yml up -d
+# 这个用SQLite，开箱即用，演示贼方便
+# ============================================
+
+services:
+  # ==========================================
+  # MiniMES 应用服务（SQLite模式）
+  # ==========================================
+  minimes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minimes-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # 使用SQLite（开发/演示用，简单粗暴）
+      - Database__Provider=SQLite
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/minimes.db
+      # ASP.NET Core配置
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      # 时区设置
+      - TZ=Asia/Shanghai
+    volumes:
+      # SQLite数据库持久化（这个很重要）
+      - minimes-data:/app/data
+      # 日志持久化
+      - minimes-logs:/app/logs
+    networks:
+      - minimes-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ==========================================
+# 数据卷定义
+# ==========================================
+volumes:
+  minimes-data:
+    name: minimes-dev-data
+  minimes-logs:
+    name: minimes-dev-logs
+
+# ==========================================
+# 网络定义
+# ==========================================
+networks:
+  minimes-network:
+    name: minimes-dev-network
+    driver: bridge
