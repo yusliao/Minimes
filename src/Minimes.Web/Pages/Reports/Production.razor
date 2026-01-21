@@ -1,4 +1,4 @@
-@page "/reports/production"
+﻿@page "/reports/production"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
 @using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
@@ -53,7 +53,8 @@
                         }
 
                         <div class="col-12 col-md-6 col-lg-3">
-                            <label class="form-label"><strong>@L["Weighing_ProcessStage"]</strong></label>
+                            @* <label class="form-label"><strong>@L["Weighing_ProcessStage"]</strong></label> *@
+                            <label class="form-label"><strong>@L["Weighing_Stage"]</strong></label>
                             <select class="form-select form-select-lg" @onchange="HandleStageChange">
                                 <option value="">@L["Records_AllStages"]</option>
                                 <option value="@ProcessStage.Receiving">@L["Stage_Receiving"]</option>
@@ -179,7 +180,8 @@
                             <table class="table table-sm">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>@L["Weighing_ProcessStage"]</th>
+                                        @* <th>@L["Weighing_ProcessStage"]</th> *@
+                                        <th>@L["Weighing_Stage"]</th>
                                         <th>@L["Report_RecordCount"]</th>
                                         <th>@L["Report_TotalWeight"] (kg)</th>
                                         <th>@L["Report_AverageWeight"] (kg)</th>
