@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Minimes.Domain.Entities;
-using Minimes.Domain.Enums;
 using Minimes.Domain.Interfaces;
 using Minimes.Domain.QueryResults;
 using Minimes.Infrastructure.Persistence;
@@ -19,6 +18,8 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
     public async Task<IEnumerable<WeighingRecord>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         return await _dbSet
+            .Include(w => w.ProcessStage)
+            .Include(w => w.MeatType)
             .Where(w => w.CreatedAt >= startDate && w.CreatedAt <= endDate)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
@@ -27,6 +28,8 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
     public async Task<IEnumerable<WeighingRecord>> GetByBarcodeAsync(string barcode)
     {
         return await _dbSet
+            .Include(w => w.ProcessStage)
+            .Include(w => w.MeatType)
             .Where(w => w.Barcode == barcode)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
@@ -35,6 +38,8 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
     public async Task<IEnumerable<WeighingRecord>> GetLatestAsync(int count)
     {
         return await _dbSet
+            .Include(w => w.ProcessStage)
+            .Include(w => w.MeatType)
             .OrderByDescending(w => w.CreatedAt)
             .Take(count)
             .ToListAsync();
@@ -42,7 +47,7 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
 
     public async Task<(List<WeighingRecord> Records, int TotalCount)> QueryPagedAsync(
         string? barcode,
-        ProcessStage? processStage,
+        int? processStageId,
         DateTime? startDate,
         DateTime? endDate,
         string? createdBy,
@@ -57,10 +62,10 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
             query = query.Where(r => r.Barcode.Contains(barcode));
         }
 
-        // 加工环节过滤
-        if (processStage.HasValue)
+        // 工序过滤
+        if (processStageId.HasValue)
         {
-            query = query.Where(r => r.ProcessStage == processStage.Value);
+            query = query.Where(r => r.ProcessStageId == processStageId.Value);
         }
 
         // 日期范围过滤
@@ -84,8 +89,10 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         // 获取总数（在过滤后计算）
         var totalCount = await query.CountAsync();
 
-        // 排序和分页
+        // 排序和分页（加载工序和肉类类型导航属性）
         var records = await query
+            .Include(r => r.ProcessStage)
+            .Include(r => r.MeatType)
             .OrderByDescending(r => r.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)

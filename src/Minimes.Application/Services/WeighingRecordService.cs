@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Minimes.Application.Configuration;
 using Minimes.Application.DTOs.WeighingRecord;
 using Minimes.Application.Interfaces;
 using Minimes.Domain.Entities;
-using Minimes.Domain.Enums;
 using Minimes.Domain.Interfaces;
 
 namespace Minimes.Application.Services;
@@ -13,14 +14,20 @@ namespace Minimes.Application.Services;
 public class WeighingRecordService : IWeighingRecordService
 {
     private readonly IWeighingRecordRepository _recordRepository;
+    private readonly IProcessStageRepository _processStageRepository;
     private readonly ILogger<WeighingRecordService> _logger;
+    private readonly WeightValidationConfig _weightConfig;
 
     public WeighingRecordService(
         IWeighingRecordRepository recordRepository,
-        ILogger<WeighingRecordService> logger)
+        IProcessStageRepository processStageRepository,
+        ILogger<WeighingRecordService> logger,
+        IOptions<WeightValidationConfig> weightConfig)
     {
         _recordRepository = recordRepository;
+        _processStageRepository = processStageRepository;
         _logger = logger;
+        _weightConfig = weightConfig.Value;
     }
 
     public async Task<WeighingRecordResponse> CreateAsync(CreateWeighingRecordRequest request, string createdBy)
@@ -35,19 +42,41 @@ public class WeighingRecordService : IWeighingRecordService
             throw new InvalidOperationException("重量必须大于0");
         }
 
-        // 检查同一条码+同一加工环节是否已存在记录
-        var existingRecords = await _recordRepository.GetByBarcodeAsync(request.Barcode.Trim());
-        if (existingRecords.Any(r => r.ProcessStage == request.ProcessStage))
+        // 验证工序是否存在且激活
+        var processStage = await _processStageRepository.GetByIdAsync(request.ProcessStageId);
+        if (processStage == null)
         {
-            var stageName = GetProcessStageName(request.ProcessStage);
-            throw new InvalidOperationException($"条码 [{request.Barcode}] 在 [{stageName}] 环节已有记录，不能重复录入");
+            throw new InvalidOperationException($"工序ID {request.ProcessStageId} 不存在！");
+        }
+
+        if (!processStage.IsActive)
+        {
+            throw new InvalidOperationException($"工序 [{processStage.Name}] 已停用，不能使用！");
+        }
+
+        // 将磅转换为千克
+        decimal weightInKg = request.Weight * 0.45359237m;
+
+        // 验证重量上下限
+        if (weightInKg < _weightConfig.MinWeightKg)
+        {
+            var minPounds = _weightConfig.MinWeightKg / 0.45359237m;
+            throw new InvalidOperationException($"重量过轻，最小重量为 {minPounds:F3} 磅");
+        }
+
+        if (weightInKg > _weightConfig.MaxWeightKg)
+        {
+            var maxPounds = _weightConfig.MaxWeightKg / 0.45359237m;
+            throw new InvalidOperationException($"重量过重，最大重量为 {maxPounds:F1} 磅");
         }
 
         var record = new WeighingRecord
         {
             Barcode = request.Barcode.Trim(),
-            Weight = request.Weight,
-            ProcessStage = request.ProcessStage,
+            Code = request.Code.Trim(),
+            MeatTypeId = request.MeatTypeId,
+            Weight = weightInKg,  // 存储千克
+            ProcessStageId = request.ProcessStageId,
             Remarks = request.Remarks,
             CreatedBy = createdBy
         };
@@ -55,8 +84,8 @@ public class WeighingRecordService : IWeighingRecordService
         await _recordRepository.AddAsync(record);
         await _recordRepository.SaveChangesAsync();
 
-        _logger.LogInformation("创建称重记录: 条码={Barcode}, 重量={Weight}g, 环节={Stage}",
-            record.Barcode, record.Weight, record.ProcessStage);
+        _logger.LogInformation("创建称重记录: 条码={Barcode}, 重量={WeightKg}kg ({WeightLb}lb), 环节={Stage}",
+            record.Barcode, record.Weight, request.Weight, processStage.Name);
 
         return ToResponse(record);
     }
@@ -72,7 +101,7 @@ public class WeighingRecordService : IWeighingRecordService
         // 使用新的Repository方法 - 数据库层面过滤和分页（性能优化）
         var (records, totalCount) = await _recordRepository.QueryPagedAsync(
             request.Barcode,
-            request.ProcessStage,
+            request.ProcessStageId,
             request.StartDate,
             request.EndDate,
             request.CreatedBy,
@@ -152,23 +181,16 @@ public class WeighingRecordService : IWeighingRecordService
         {
             Id = record.Id,
             Barcode = record.Barcode,
+            Code = record.Code,
+            MeatTypeId = record.MeatTypeId,
+            MeatTypeName = record.MeatType.Name,
             Weight = record.Weight,
-            ProcessStage = record.ProcessStage,
-            ProcessStageName = GetProcessStageName(record.ProcessStage),
+            ProcessStageId = record.ProcessStageId,
+            ProcessStageCode = record.ProcessStage.Code,
+            ProcessStageName = record.ProcessStage.Name,
             Remarks = record.Remarks,
             CreatedAt = record.CreatedAt,
             CreatedBy = record.CreatedBy
-        };
-    }
-
-    private static string GetProcessStageName(ProcessStage stage)
-    {
-        return stage switch
-        {
-            ProcessStage.Receiving => "原料入库",
-            ProcessStage.Processing => "加工过程",
-            ProcessStage.Shipping => "成品出库",
-            _ => "未知"
         };
     }
 }

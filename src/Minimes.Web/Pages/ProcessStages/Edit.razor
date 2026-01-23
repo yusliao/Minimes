@@ -1,0 +1,244 @@
+@page "/processstages/edit/{id:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.ProcessStage
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IProcessStageService ProcessStageService
+@inject NavigationManager Navigation
+
+<PageTitle>编辑工序 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-pencil me-2"></span>编辑工序
+            </h2>
+            <p class="text-muted">修改工序信息</p>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+            <p class="text-muted mt-2">加载工序信息...</p>
+        </div>
+    }
+    else if (stage == null)
+    {
+        <div class="alert alert-warning">
+            <strong>提示：</strong>未找到指定的工序
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <EditForm Model="@request" OnValidSubmit="HandleSubmit">
+                            <DataAnnotationsValidator />
+
+                            <!-- 工序代码（只读） -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>工序代码</strong>
+                                </label>
+                                <input type="text" class="form-control" value="@stage.Code" readonly disabled />
+                                <small class="text-muted">工序代码创建后不可修改</small>
+                            </div>
+
+                            <!-- 工序名称 -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>工序名称</strong> <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="request.Name" />
+                                <ValidationMessage For="@(() => request.Name)" />
+                            </div>
+
+                            <!-- 显示顺序 -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>显示顺序</strong> <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control" @bind-Value="request.DisplayOrder" />
+                                <ValidationMessage For="@(() => request.DisplayOrder)" />
+                                <small class="text-muted">数字越小越靠前</small>
+                            </div>
+
+                            <!-- 工序类型 -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>工序类型</strong> <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-select" @bind-Value="request.StageType">
+                                    <option value="Start">起始环节（如：原料入库）</option>
+                                    <option value="Middle">中间环节（如：加工过程）</option>
+                                    <option value="End">结束环节（如：成品出库）</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => request.StageType)" />
+                            </div>
+
+                            <!-- 激活状态 -->
+                            <div class="mb-3 form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="request.IsActive" id="isActive" />
+                                <label class="form-check-label" for="isActive">
+                                    激活工序
+                                </label>
+                                <div><small class="text-muted">停用后，该工序将不能用于新的称重记录</small></div>
+                            </div>
+
+                            <!-- 计入损耗率 -->
+                            <div class="mb-3 form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="request.IncludeInLossRate" id="includeLossRate" />
+                                <label class="form-check-label" for="includeLossRate">
+                                    计入损耗率计算
+                                </label>
+                            </div>
+
+                            <!-- 描述说明 -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <strong>描述说明</strong>
+                                </label>
+                                <InputTextArea class="form-control" @bind-Value="request.Description" rows="3" />
+                                <ValidationMessage For="@(() => request.Description)" />
+                            </div>
+
+                            <!-- 错误提示 -->
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="alert alert-danger">
+                                    <strong>错误：</strong>@errorMessage
+                                </div>
+                            }
+
+                            <!-- 操作按钮 -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1"></span>
+                                    }
+                                    <span class="oi oi-check me-1"></span>
+                                    保存
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">
+                                    <span class="oi oi-x me-1"></span>
+                                    取消
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧信息面板 -->
+            <div class="col-md-4">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <span class="oi oi-info me-1"></span>工序信息
+                        </h6>
+                        <ul class="list-unstyled small mb-0">
+                            <li><strong>工序代码：</strong><code>@stage.Code</code></li>
+                            <li><strong>创建时间：</strong>@stage.CreatedAt.ToString("yyyy-MM-dd HH:mm")</li>
+                            <li><strong>关联记录数：</strong>@stage.RecordCount 条</li>
+                        </ul>
+                    </div>
+                </div>
+
+                @if (stage.RecordCount > 0)
+                {
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">
+                                <span class="oi oi-warning me-1"></span>使用提示
+                            </h6>
+                            <p class="small mb-0">
+                                该工序已被 <strong>@stage.RecordCount</strong> 条称重记录使用，不能删除。
+                                如需停用，请取消勾选"激活工序"选项。
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProcessStageResponse? stage;
+    private UpdateProcessStageRequest request = new();
+    private bool isLoading = false;
+    private bool isSubmitting = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStage();
+    }
+
+    private async Task LoadStage()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            stage = await ProcessStageService.GetByIdAsync(Id);
+            if (stage != null)
+            {
+                // 填充表单数据
+                request.Name = stage.Name;
+                request.DisplayOrder = stage.DisplayOrder;
+                request.IsActive = stage.IsActive;
+                request.StageType = stage.StageType;
+                request.IncludeInLossRate = stage.IncludeInLossRate;
+                request.Description = stage.Description;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"加载工序信息失败：{ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            await ProcessStageService.UpdateAsync(Id, request);
+            Navigation.NavigateTo("/processstages");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/processstages");
+    }
+}

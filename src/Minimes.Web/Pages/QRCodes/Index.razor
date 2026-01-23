@@ -1,0 +1,318 @@
+@page "/qrcodes"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.QRCode
+@using Minimes.Application.DTOs.MeatType
+@inject IQRCodeService QRCodeService
+@inject IMeatTypeService MeatTypeService
+@inject IExcelExportService ExcelExportService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>二维码管理 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-qrcode me-2"></span>二维码管理
+            </h2>
+            <p class="text-muted">管理肉类产品二维码标签</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-success me-2" @onclick="NavigateToBatchCreate">
+                <span class="oi oi-layers me-1"></span>批量创建
+            </button>
+            <button class="btn btn-primary" @onclick="NavigateToCreate">
+                <span class="oi oi-plus me-1"></span>新增二维码
+            </button>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    @if (statistics != null)
+    {
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">二维码总数</h6>
+                        <h3>@statistics.TotalCount</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">激活数量</h6>
+                        <h3 class="text-success">@statistics.ActiveCount</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">总打印次数</h6>
+                        <h3 class="text-info">@statistics.TotalPrintCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 筛选条件 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">肉类类型</label>
+                    <select class="form-select" @bind="filterMeatTypeId">
+                        <option value="0">全部</option>
+                        @foreach (var meatType in meatTypes)
+                        {
+                            <option value="@meatType.Id">@meatType.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">批次号</label>
+                    <input type="text" class="form-control" @bind="filterBatchNumber" placeholder="输入批次号" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">状态</label>
+                    <select class="form-select" @bind="filterIsActive">
+                        <option value="">全部</option>
+                        <option value="true">激活</option>
+                        <option value="false">未激活</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button class="btn btn-primary me-2" @onclick="ApplyFilter">
+                            <span class="oi oi-magnifying-glass me-1"></span>查询
+                        </button>
+                        <button class="btn btn-secondary me-2" @onclick="ResetFilter">
+                            <span class="oi oi-reload me-1"></span>重置
+                        </button>
+                        <button class="btn btn-success" @onclick="ExportToExcel" disabled="@(!filteredQRCodes.Any())">
+                            <span class="oi oi-data-transfer-download me-1"></span>导出Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二维码列表 -->
+    <div class="card">
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <p class="text-center text-muted">加载中...</p>
+            }
+            else if (!filteredQRCodes.Any())
+            {
+                <p class="text-center text-muted">暂无二维码数据</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>编号</th>
+                                <th>肉类类型</th>
+                                <th>二维码内容</th>
+                                <th>二维码图片</th>
+                                <th>批次号</th>
+                                <th>打印次数</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var qrCode in filteredQRCodes)
+                            {
+                                <tr>
+                                    <td>@qrCode.Id</td>
+                                    <td>@qrCode.Code</td>
+                                    <td>@qrCode.MeatTypeName</td>
+                                    <td><code>@qrCode.Content</code></td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(qrCode.ImageBase64))
+                                        {
+                                            <img src="data:image/png;base64,@qrCode.ImageBase64"
+                                                 alt="QR Code"
+                                                 style="width: 60px; height: 60px;" />
+                                        }
+                                    </td>
+                                    <td>@(qrCode.BatchNumber ?? "-")</td>
+                                    <td>@qrCode.PrintCount</td>
+                                    <td>
+                                        @if (qrCode.IsActive)
+                                        {
+                                            <span class="badge bg-success">激活</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">未激活</span>
+                                        }
+                                    </td>
+                                    <td>@qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1"
+                                                @onclick="() => NavigateToEdit(qrCode.Id)">
+                                            <span class="oi oi-pencil"></span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info me-1"
+                                                @onclick="() => ToggleActive(qrCode.Id)">
+                                            <span class="oi oi-power-standby"></span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => DeleteQRCode(qrCode.Id)">
+                                            <span class="oi oi-trash"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<QRCodeResponse> qrCodes = new();
+    private List<QRCodeResponse> filteredQRCodes = new();
+    private List<MeatTypeResponse> meatTypes = new();
+    private QRCodeStatistics? statistics;
+    private bool isLoading = true;
+
+    // 筛选条件
+    private int filterMeatTypeId = 0;
+    private string filterBatchNumber = string.Empty;
+    private string? filterIsActive = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            qrCodes = await QRCodeService.GetAllAsync();
+            meatTypes = await MeatTypeService.GetAllAsync();
+            statistics = await QRCodeService.GetStatisticsAsync();
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"加载数据失败: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        filteredQRCodes = qrCodes;
+
+        // 按肉类类型筛选
+        if (filterMeatTypeId > 0)
+        {
+            filteredQRCodes = filteredQRCodes.Where(q => q.MeatTypeId == filterMeatTypeId).ToList();
+        }
+
+        // 按批次号筛选
+        if (!string.IsNullOrWhiteSpace(filterBatchNumber))
+        {
+            filteredQRCodes = filteredQRCodes.Where(q =>
+                !string.IsNullOrEmpty(q.BatchNumber) &&
+                q.BatchNumber.Contains(filterBatchNumber, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        // 按状态筛选
+        if (!string.IsNullOrEmpty(filterIsActive))
+        {
+            var isActive = bool.Parse(filterIsActive);
+            filteredQRCodes = filteredQRCodes.Where(q => q.IsActive == isActive).ToList();
+        }
+    }
+
+    private void ResetFilter()
+    {
+        filterMeatTypeId = 0;
+        filterBatchNumber = string.Empty;
+        filterIsActive = null;
+        ApplyFilter();
+    }
+
+    private void NavigateToCreate()
+    {
+        Navigation.NavigateTo("/qrcodes/create");
+    }
+
+    private void NavigateToBatchCreate()
+    {
+        Navigation.NavigateTo("/qrcodes/batch-create");
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        Navigation.NavigateTo($"/qrcodes/edit/{id}");
+    }
+
+    private async Task ToggleActive(int id)
+    {
+        try
+        {
+            await QRCodeService.ToggleActiveAsync(id);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"切换状态失败: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteQRCode(int id)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个二维码吗？");
+        if (!confirmed) return;
+
+        try
+        {
+            await QRCodeService.DeleteAsync(id);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"删除失败: {ex.Message}");
+        }
+    }
+
+    private async Task ExportToExcel()
+    {
+        try
+        {
+            var excelBytes = await ExcelExportService.ExportQRCodesAsync(filteredQRCodes);
+            var fileName = $"二维码列表_{DateTime.Now:yyyyMMdd}.xlsx";
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(excelBytes));
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"导出失败: {ex.Message}");
+        }
+    }
+}

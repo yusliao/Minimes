@@ -1,0 +1,228 @@
+@page "/meattypes"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.MeatType
+@inject IMeatTypeService MeatTypeService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>肉类类型管理 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-list-rich me-2"></span>肉类类型管理
+            </h2>
+            <p class="text-muted">管理不同种类的生肉分类</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="NavigateToCreate">
+                <span class="oi oi-plus me-1"></span>新增类型
+            </button>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    @if (meatTypes.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">总类型数</h6>
+                        <h3>@meatTypes.Count</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">激活类型</h6>
+                        <h3 class="text-success">@meatTypes.Count(m => m.IsActive)</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">停用类型</h6>
+                        <h3 class="text-secondary">@meatTypes.Count(m => !m.IsActive)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 肉类类型列表 -->
+    <div class="card">
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <p class="text-center text-muted">加载中...</p>
+            }
+            else if (!meatTypes.Any())
+            {
+                <p class="text-center text-muted">暂无肉类类型数据</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>排序</th>
+                                <th>类型代码</th>
+                                <th>类型名称</th>
+                                <th>描述</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var meatType in meatTypes.OrderBy(m => m.DisplayOrder))
+                            {
+                                <tr>
+                                    <td>@meatType.DisplayOrder</td>
+                                    <td><code>@meatType.Code</code></td>
+                                    <td><strong>@meatType.Name</strong></td>
+                                    <td>@(string.IsNullOrEmpty(meatType.Description) ? "-" : meatType.Description)</td>
+                                    <td>
+                                        @if (meatType.IsActive)
+                                        {
+                                            <span class="badge bg-success">激活</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">停用</span>
+                                        }
+                                    </td>
+                                    <td>@meatType.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" @onclick="() => NavigateToEdit(meatType.Id)">
+                                                <span class="oi oi-pencil"></span>
+                                            </button>
+                                            <button class="btn @(meatType.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                    @onclick="() => ToggleActive(meatType.Id)">
+                                                <span class="oi @(meatType.IsActive ? "oi-ban" : "oi-check")"></span>
+                                            </button>
+                                            <button class="btn btn-outline-danger"
+                                                    @onclick="() => DeleteMeatType(meatType.Id)">
+                                                <span class="oi oi-trash"></span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>错误：</strong>@errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success mt-3">
+            <strong>成功：</strong>@successMessage
+        </div>
+    }
+</div>
+
+@code {
+    private List<MeatTypeResponse> meatTypes = new();
+    private bool isLoading = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMeatTypes();
+    }
+
+    private async Task LoadMeatTypes()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            meatTypes = await MeatTypeService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"加载肉类类型列表失败：{ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateToCreate()
+    {
+        Navigation.NavigateTo("/meattypes/create");
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        Navigation.NavigateTo($"/meattypes/edit/{id}");
+    }
+
+    private async Task ToggleActive(int id)
+    {
+        try
+        {
+            var success = await MeatTypeService.ToggleActiveAsync(id);
+            if (success)
+            {
+                successMessage = "类型状态已更新";
+                await LoadMeatTypes();
+            }
+            else
+            {
+                errorMessage = "更新类型状态失败";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"操作失败：{ex.Message}";
+        }
+    }
+
+    private async Task DeleteMeatType(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个肉类类型吗？此操作不可恢复！"))
+        {
+            return;
+        }
+
+        try
+        {
+            var success = await MeatTypeService.DeleteAsync(id);
+            if (success)
+            {
+                successMessage = "肉类类型已删除";
+                await LoadMeatTypes();
+            }
+            else
+            {
+                errorMessage = "删除肉类类型失败";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"删除失败：{ex.Message}";
+        }
+    }
+}

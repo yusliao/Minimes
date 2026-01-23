@@ -13,6 +13,122 @@ public static class SeedData
     {
         context.Database.EnsureCreated();
 
+        // 初始化工序数据（必须在WeighingRecord之前）
+        if (!context.ProcessStages.Any())
+        {
+            var stages = new[]
+            {
+                new Domain.Entities.ProcessStage
+                {
+                    Id = 1,
+                    Code = "RECEIVING",
+                    Name = "原料入库",
+                    DisplayOrder = 1,
+                    IsActive = true,
+                    StageType = StageType.Start,
+                    IncludeInLossRate = true,
+                    Description = "供应商送货，原料入库称重",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Domain.Entities.ProcessStage
+                {
+                    Id = 2,
+                    Code = "PROCESSING",
+                    Name = "加工过程",
+                    DisplayOrder = 2,
+                    IsActive = true,
+                    StageType = StageType.Middle,
+                    IncludeInLossRate = true,
+                    Description = "分割、去骨、腌制等加工环节称重",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Domain.Entities.ProcessStage
+                {
+                    Id = 3,
+                    Code = "SHIPPING",
+                    Name = "成品出库",
+                    DisplayOrder = 3,
+                    IsActive = true,
+                    StageType = StageType.End,
+                    IncludeInLossRate = true,
+                    Description = "最终成品包装后出库称重",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+            context.ProcessStages.AddRange(stages);
+            context.SaveChanges();
+        }
+
+        // 初始化肉类类型数据
+        if (!context.MeatTypes.Any())
+        {
+            var meatTypes = new[]
+            {
+                new MeatType
+                {
+                    Id = 1,
+                    Code = "PORK",
+                    Name = "猪肉",
+                    DisplayOrder = 1,
+                    IsActive = true,
+                    Description = "猪肉及其制品",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new MeatType
+                {
+                    Id = 2,
+                    Code = "BEEF",
+                    Name = "牛肉",
+                    DisplayOrder = 2,
+                    IsActive = true,
+                    Description = "牛肉及其制品",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new MeatType
+                {
+                    Id = 3,
+                    Code = "MUTTON",
+                    Name = "羊肉",
+                    DisplayOrder = 3,
+                    IsActive = true,
+                    Description = "羊肉及其制品",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new MeatType
+                {
+                    Id = 4,
+                    Code = "CHICKEN",
+                    Name = "鸡肉",
+                    DisplayOrder = 4,
+                    IsActive = true,
+                    Description = "鸡肉及其制品",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new MeatType
+                {
+                    Id = 5,
+                    Code = "DUCK",
+                    Name = "鸭肉",
+                    DisplayOrder = 5,
+                    IsActive = true,
+                    Description = "鸭肉及其制品",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new MeatType
+                {
+                    Id = 6,
+                    Code = "FISH",
+                    Name = "鱼肉",
+                    DisplayOrder = 6,
+                    IsActive = true,
+                    Description = "鱼类及其制品",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+            context.MeatTypes.AddRange(meatTypes);
+            context.SaveChanges();
+        }
+
         // 管理员账号
         if (!context.Users.Any(u => u.Username == "admin"))
         {
@@ -69,7 +185,7 @@ public static class SeedData
             {
                 Barcode = "PORK2026010701",
                 Weight = 120.5m,
-                ProcessStage = ProcessStage.Receiving,
+                ProcessStageId = 1, // 原料入库
                 Remarks = "早班入库",
                 CreatedBy = "operator",
                 CreatedAt = DateTime.UtcNow.AddHours(-3)
@@ -78,7 +194,7 @@ public static class SeedData
             {
                 Barcode = "PORK2026010701",
                 Weight = 115.2m,
-                ProcessStage = ProcessStage.Processing,
+                ProcessStageId = 2, // 加工过程
                 Remarks = "去骨分割",
                 CreatedBy = "operator",
                 CreatedAt = DateTime.UtcNow.AddHours(-2)
@@ -87,7 +203,7 @@ public static class SeedData
             {
                 Barcode = "PORK2026010701",
                 Weight = 110.8m,
-                ProcessStage = ProcessStage.Shipping,
+                ProcessStageId = 3, // 成品出库
                 Remarks = "装箱出库",
                 CreatedBy = "operator",
                 CreatedAt = DateTime.UtcNow.AddHours(-1)
@@ -97,7 +213,7 @@ public static class SeedData
             {
                 Barcode = "BEEF2026010701",
                 Weight = 85.3m,
-                ProcessStage = ProcessStage.Receiving,
+                ProcessStageId = 1, // 原料入库
                 Remarks = "早班入库",
                 CreatedBy = "operator",
                 CreatedAt = DateTime.UtcNow.AddHours(-2)
@@ -106,7 +222,7 @@ public static class SeedData
             {
                 Barcode = "BEEF2026010701",
                 Weight = 81.7m,
-                ProcessStage = ProcessStage.Processing,
+                ProcessStageId = 2, // 加工过程
                 Remarks = "去筋膜处理",
                 CreatedBy = "operator",
                 CreatedAt = DateTime.UtcNow.AddHours(-1)
@@ -116,7 +232,7 @@ public static class SeedData
             {
                 Barcode = "CHICKEN2026010701",
                 Weight = 95.6m,
-                ProcessStage = ProcessStage.Receiving,
+                ProcessStageId = 1, // 原料入库
                 Remarks = "晚班入库",
                 CreatedBy = "operator",
                 CreatedAt = DateTime.UtcNow.AddMinutes(-30)

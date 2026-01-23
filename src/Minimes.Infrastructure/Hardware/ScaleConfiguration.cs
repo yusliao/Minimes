@@ -16,4 +16,14 @@ public class ScaleConfiguration
     public int ReadIntervalMs { get; set; } = 500; // 读取间隔毫秒
     public int StableThresholdMs { get; set; } = 1000; // 稳定阈值毫秒
     public decimal StableWeightTolerance { get; set; } = 0.5m; // 稳定重量容差（克）
+
+    /// <summary>
+    /// 最小重量（千克）- 低于此值将被拒绝
+    /// </summary>
+    public decimal MinWeightKg { get; set; } = 0.001m; // 默认1克
+
+    /// <summary>
+    /// 最大重量（千克）- 超过此值将被拒绝
+    /// </summary>
+    public decimal MaxWeightKg { get; set; } = 200m; // 默认200千克
 }

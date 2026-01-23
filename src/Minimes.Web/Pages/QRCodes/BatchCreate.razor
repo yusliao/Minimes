@@ -1,0 +1,347 @@
+@page "/qrcodes/batch-create"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.QRCode
+@using Minimes.Application.DTOs.MeatType
+@inject IQRCodeService QRCodeService
+@inject IMeatTypeService MeatTypeService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>批量创建二维码 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-layers me-2"></span>批量创建二维码
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/qrcodes">二维码管理</a></li>
+                    <li class="breadcrumb-item active">批量创建</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 左侧表单 -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">批量创建参数</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>错误：</strong> @errorMessage
+                            <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <strong>成功：</strong> @successMessage
+                            <button type="button" class="btn-close" @onclick="() => successMessage = string.Empty"></button>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label">肉类类型 <span class="text-danger">*</span></label>
+                        <select class="form-select" @bind="request.MeatTypeId" @bind:after="OnParameterChanged">
+                            <option value="0">-- 请选择肉类类型 --</option>
+                            @foreach (var meatType in meatTypes)
+                            {
+                                <option value="@meatType.Id">@meatType.Name (@meatType.Code)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">起始编号 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" @bind="request.StartNumber" @bind:after="OnParameterChanged"
+                                   min="1" placeholder="例如：1" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">结束编号 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" @bind="request.EndNumber" @bind:after="OnParameterChanged"
+                                   min="1" placeholder="例如：100" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">编号前缀</label>
+                            <input type="text" class="form-control" @bind="request.Prefix" @bind:after="OnParameterChanged"
+                                   placeholder="例如：A, B, 空" maxlength="10" />
+                            <div class="form-text">可选，留空则无前缀</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">补零位数 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" @bind="request.PaddingLength" @bind:after="OnParameterChanged"
+                                   min="1" max="10" placeholder="例如：3" />
+                            <div class="form-text">例如：3位补零 → 001, 002</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">批次号</label>
+                        <input type="text" class="form-control" @bind="request.BatchNumber"
+                               placeholder="例如：20260123-A" maxlength="50" />
+                        <div class="form-text">建议填写，便于批量管理</div>
+                    </div>
+
+                    @if (isCreating)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">创建进度</label>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     style="width: @(progressPercentage)%"
+                                     aria-valuenow="@progressPercentage"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                    @progressPercentage%
+                                </div>
+                            </div>
+                            <div class="form-text mt-2">
+                                已创建 @createdCount / @totalCount 个二维码
+                            </div>
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success" @onclick="BatchCreateQRCodes" disabled="@(isCreating || previewCodes.Count == 0)">
+                            @if (isCreating)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                                <span>创建中...</span>
+                            }
+                            else
+                            {
+                                <span class="oi oi-check me-1"></span>
+                                <span>批量创建 (@previewCodes.Count 个)</span>
+                            }
+                        </button>
+                        <button class="btn btn-secondary" @onclick="Cancel" disabled="@isCreating">
+                            <span class="oi oi-x me-1"></span>取消
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧预览 -->
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">编号预览</h5>
+                    @if (previewCodes.Count > 0)
+                    {
+                        <span class="badge bg-primary">共 @previewCodes.Count 个</span>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (previewCodes.Count == 0)
+                    {
+                        <div class="text-center text-muted py-5">
+                            <span class="oi oi-eye" style="font-size: 48px;"></span>
+                            <p class="mt-2">填写参数后将显示编号预览</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <strong>生成规则：</strong>
+                            <br/>格式：@selectedMeatTypeCode-@(string.IsNullOrEmpty(request.Prefix) ? "" : request.Prefix)[编号]
+                            <br/>示例：@previewCodes.FirstOrDefault()
+                        </div>
+
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">序号</th>
+                                        <th>二维码内容</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var (code, index) in previewCodes.Select((c, i) => (c, i + 1)))
+                                    {
+                                        <tr>
+                                            <td>@index</td>
+                                            <td><code>@(code)</code></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (previewCodes.Count > 100)
+                        {
+                            <div class="alert alert-warning mt-2 mb-0">
+                                <span class="oi oi-warning me-1"></span>
+                                <strong>提示：</strong>批量创建超过100个二维码可能需要较长时间，请耐心等待。
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private BatchCreateQRCodeRequest request = new() { PaddingLength = 3 };
+    private List<MeatTypeResponse> meatTypes = new();
+    private List<string> previewCodes = new();
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+    private bool isCreating = false;
+    private string selectedMeatTypeCode = string.Empty;
+
+    // 进度相关
+    private int progressPercentage = 0;
+    private int createdCount = 0;
+    private int totalCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMeatTypes();
+    }
+
+    private async Task LoadMeatTypes()
+    {
+        try
+        {
+            meatTypes = await MeatTypeService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"加载肉类类型失败: {ex.Message}";
+        }
+    }
+
+    private void OnParameterChanged()
+    {
+        UpdatePreview();
+    }
+
+    private void UpdatePreview()
+    {
+        previewCodes.Clear();
+        errorMessage = string.Empty;
+        selectedMeatTypeCode = string.Empty;
+
+        // 验证参数
+        if (request.MeatTypeId <= 0)
+        {
+            return;
+        }
+
+        if (request.StartNumber <= 0 || request.EndNumber <= 0)
+        {
+            return;
+        }
+
+        if (request.StartNumber > request.EndNumber)
+        {
+            errorMessage = "起始编号不能大于结束编号";
+            return;
+        }
+
+        if (request.PaddingLength < 1 || request.PaddingLength > 10)
+        {
+            errorMessage = "补零位数必须在1-10之间";
+            return;
+        }
+
+        // 检查数量限制
+        int count = request.EndNumber - request.StartNumber + 1;
+        if (count > 1000)
+        {
+            errorMessage = "单次批量创建不能超过1000个二维码";
+            return;
+        }
+
+        // 获取选中的肉类类型
+        var selectedMeatType = meatTypes.FirstOrDefault(m => m.Id == request.MeatTypeId);
+        if (selectedMeatType == null)
+        {
+            return;
+        }
+
+        selectedMeatTypeCode = selectedMeatType.Code;
+
+        // 生成预览列表
+        for (int i = request.StartNumber; i <= request.EndNumber; i++)
+        {
+            var code = $"{request.Prefix}{i.ToString().PadLeft(request.PaddingLength, '0')}";
+            var content = $"{selectedMeatType.Code}-{code}";
+            previewCodes.Add(content);
+        }
+    }
+
+    private async Task BatchCreateQRCodes()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        isCreating = true;
+        progressPercentage = 0;
+        createdCount = 0;
+        totalCount = previewCodes.Count;
+
+        try
+        {
+            // 基本验证
+            if (request.MeatTypeId <= 0)
+            {
+                errorMessage = "请选择肉类类型";
+                return;
+            }
+
+            if (request.StartNumber <= 0 || request.EndNumber <= 0)
+            {
+                errorMessage = "请输入有效的起始和结束编号";
+                return;
+            }
+
+            if (request.StartNumber > request.EndNumber)
+            {
+                errorMessage = "起始编号不能大于结束编号";
+                return;
+            }
+
+            // 调用服务批量创建
+            await QRCodeService.BatchCreateAsync(request);
+
+            // 成功
+            successMessage = $"成功创建 {totalCount} 个二维码！";
+            progressPercentage = 100;
+            createdCount = totalCount;
+
+            // 延迟2秒后跳转
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/qrcodes");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            progressPercentage = 0;
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/qrcodes");
+    }
+}

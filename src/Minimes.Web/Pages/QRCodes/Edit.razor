@@ -1,0 +1,255 @@
+@page "/qrcodes/edit/{id:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.QRCode
+@inject IQRCodeService QRCodeService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>编辑二维码 - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-pencil me-2"></span>编辑二维码
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/qrcodes">二维码管理</a></li>
+                    <li class="breadcrumb-item active">编辑</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+            <p class="text-muted mt-2">加载数据中...</p>
+        </div>
+    }
+    else if (qrCode == null)
+    {
+        <div class="alert alert-warning">
+            <span class="oi oi-warning me-2"></span>未找到指定的二维码记录
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- 左侧表单 -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">基本信息</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>错误：</strong> @errorMessage
+                                <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+                            </div>
+                        }
+
+                        <!-- 只读信息 -->
+                        <div class="mb-3">
+                            <label class="form-label">ID</label>
+                            <input type="text" class="form-control" value="@qrCode.Id" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">编号</label>
+                            <input type="text" class="form-control" value="@qrCode.Code" readonly />
+                            <div class="form-text">编号不可修改</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">肉类类型</label>
+                            <input type="text" class="form-control" value="@qrCode.MeatTypeName (@qrCode.MeatTypeCode)" readonly />
+                            <div class="form-text">肉类类型不可修改</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">二维码内容</label>
+                            <input type="text" class="form-control" value="@qrCode.Content" readonly />
+                            <div class="form-text">二维码内容不可修改</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">批次号</label>
+                            <input type="text" class="form-control" value="@(qrCode.BatchNumber ?? "-")" readonly />
+                            <div class="form-text">批次号不可修改</div>
+                        </div>
+
+                        <!-- 可编辑字段 -->
+                        <div class="mb-3">
+                            <label class="form-label">状态</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isActiveSwitch" @bind="request.IsActive" />
+                                <label class="form-check-label" for="isActiveSwitch">
+                                    @if (request.IsActive)
+                                    {
+                                        <span class="badge bg-success">激活</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">未激活</span>
+                                    }
+                                </label>
+                            </div>
+                            <div class="form-text">未激活的二维码将不能使用</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">备注</label>
+                            <textarea class="form-control" @bind="request.Remarks" rows="3"
+                                      placeholder="输入备注信息..." maxlength="500"></textarea>
+                            <div class="form-text">可选，最多500字符</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" @onclick="SaveChanges" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                    <span>保存中...</span>
+                                }
+                                else
+                                {
+                                    <span class="oi oi-check me-1"></span>
+                                    <span>保存</span>
+                                }
+                            </button>
+                            <button class="btn btn-secondary" @onclick="Cancel">
+                                <span class="oi oi-x me-1"></span>取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧信息 -->
+            <div class="col-md-4">
+                <!-- 二维码图片 -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">二维码图片</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(qrCode.ImageBase64))
+                        {
+                            <img src="data:image/png;base64,@qrCode.ImageBase64"
+                                 alt="QR Code"
+                                 class="img-fluid mb-2"
+                                 style="max-width: 200px;" />
+                            <p class="text-muted small mb-0">@qrCode.Content</p>
+                        }
+                        else
+                        {
+                            <div class="text-muted py-3">
+                                <span class="oi oi-qrcode" style="font-size: 48px;"></span>
+                                <p class="mt-2">无图片</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- 使用统计 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">使用统计</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">打印次数</label>
+                            <h4 class="mb-0">@qrCode.PrintCount 次</h4>
+                        </div>
+
+                        @if (qrCode.LastPrintedAt.HasValue)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label text-muted">最后打印时间</label>
+                                <p class="mb-0">@qrCode.LastPrintedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                            </div>
+                        }
+
+                        <div class="mb-0">
+                            <label class="form-label text-muted">创建时间</label>
+                            <p class="mb-0">@qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private QRCodeResponse? qrCode;
+    private UpdateQRCodeRequest request = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isSaving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            qrCode = await QRCodeService.GetByIdAsync(Id);
+            if (qrCode != null)
+            {
+                // 初始化编辑请求
+                request.Code = qrCode.Code;
+                request.IsActive = qrCode.IsActive;
+                request.Remarks = qrCode.Remarks;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"加载数据失败: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        errorMessage = string.Empty;
+        isSaving = true;
+
+        try
+        {
+            await QRCodeService.UpdateAsync(Id, request);
+            Navigation.NavigateTo("/qrcodes");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/qrcodes");
+    }
+}

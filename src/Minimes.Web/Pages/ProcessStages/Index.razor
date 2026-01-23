@@ -1,0 +1,279 @@
+@page "/processstages"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.ProcessStage
+@using Minimes.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@inject IProcessStageService ProcessStageService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@L["ProcessStage_Title"] - MiniMES</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <span class="oi oi-list-rich me-2"></span>工序管理
+            </h2>
+            <p class="text-muted">管理生产流程中的各个工序环节</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="NavigateToCreate">
+                <span class="oi oi-plus me-1"></span>新增工序
+            </button>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    @if (stages.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">总工序数</h6>
+                        <h3>@stages.Count</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">激活工序</h6>
+                        <h3 class="text-success">@stages.Count(s => s.IsActive)</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">停用工序</h6>
+                        <h3 class="text-secondary">@stages.Count(s => !s.IsActive)</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">总记录数</h6>
+                        <h3 class="text-info">@stages.Sum(s => s.RecordCount)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 工序列表 -->
+    <div class="card">
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <p class="text-center text-muted">加载中...</p>
+            }
+            else if (!stages.Any())
+            {
+                <p class="text-center text-muted">暂无工序数据</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>排序</th>
+                                <th>工序代码</th>
+                                <th>工序名称</th>
+                                <th>工序类型</th>
+                                <th>状态</th>
+                                <th>计入损耗率</th>
+                                <th>记录数</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var stage in stages.OrderBy(s => s.DisplayOrder))
+                            {
+                                <tr>
+                                    <td>@stage.DisplayOrder</td>
+                                    <td><code>@stage.Code</code></td>
+                                    <td><strong>@stage.Name</strong></td>
+                                    <td>
+                                        <span class="badge @GetStageTypeBadgeClass(stage.StageType)">
+                                            @GetStageTypeDisplayName(stage.StageType)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (stage.IsActive)
+                                        {
+                                            <span class="badge bg-success">激活</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">停用</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (stage.IncludeInLossRate)
+                                        {
+                                            <span class="text-success">✓</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>@stage.RecordCount</td>
+                                    <td>@stage.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" @onclick="() => NavigateToEdit(stage.Id)">
+                                                <span class="oi oi-pencil"></span>
+                                            </button>
+                                            <button class="btn @(stage.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                    @onclick="() => ToggleActive(stage.Id)">
+                                                <span class="oi @(stage.IsActive ? "oi-ban" : "oi-check")"></span>
+                                            </button>
+                                            <button class="btn btn-outline-danger"
+                                                    @onclick="() => DeleteStage(stage.Id)"
+                                                    disabled="@(stage.RecordCount > 0)">
+                                                <span class="oi oi-trash"></span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>错误：</strong>@errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success mt-3">
+            <strong>成功：</strong>@successMessage
+        </div>
+    }
+</div>
+
+@code {
+    private List<ProcessStageResponse> stages = new();
+    private bool isLoading = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStages();
+    }
+
+    private async Task LoadStages()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            stages = await ProcessStageService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"加载工序列表失败：{ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateToCreate()
+    {
+        Navigation.NavigateTo("/processstages/create");
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        Navigation.NavigateTo($"/processstages/edit/{id}");
+    }
+
+    private async Task ToggleActive(int id)
+    {
+        try
+        {
+            var success = await ProcessStageService.ToggleActiveAsync(id);
+            if (success)
+            {
+                successMessage = "工序状态已更新";
+                await LoadStages();
+            }
+            else
+            {
+                errorMessage = "更新工序状态失败";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"操作失败：{ex.Message}";
+        }
+    }
+
+    private async Task DeleteStage(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个工序吗？此操作不可恢复！"))
+        {
+            return;
+        }
+
+        try
+        {
+            var success = await ProcessStageService.DeleteAsync(id);
+            if (success)
+            {
+                successMessage = "工序已删除";
+                await LoadStages();
+            }
+            else
+            {
+                errorMessage = "删除工序失败";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"删除失败：{ex.Message}";
+        }
+    }
+
+    private string GetStageTypeBadgeClass(string stageType)
+    {
+        return stageType.ToLower() switch
+        {
+            "start" => "bg-primary",
+            "middle" => "bg-warning text-dark",
+            "end" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetStageTypeDisplayName(string stageType)
+    {
+        return stageType.ToLower() switch
+        {
+            "start" => "起始环节",
+            "middle" => "中间环节",
+            "end" => "结束环节",
+            _ => stageType
+        };
+    }
+}

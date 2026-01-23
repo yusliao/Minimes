@@ -1,11 +1,16 @@
 @page "/settings"
 @using Microsoft.Extensions.Configuration
 @using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
 @using Microsoft.EntityFrameworkCore
+@using Minimes.Application.Configuration
 @using Minimes.Infrastructure.Persistence
 @using Minimes.Web.Resources
+@using System.Text.Json
 @inject IStringLocalizer<SharedResource> L
 @inject IConfiguration Configuration
+@inject IOptions<WeightValidationConfig> WeightConfig
+@inject IWebHostEnvironment Environment
 @inject NavigationManager Navigation
 @inject ApplicationDbContext DbContext
 @inject IJSRuntime JSRuntime
@@ -170,6 +175,66 @@
         </div>
     </div>
 
+    <!-- 称重配置 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <span class="oi oi-balance-scale me-2"></span>称重配置
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label fw-bold">最小重量（磅）</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" @bind="minWeightLb" step="0.001" min="0" />
+                                <span class="input-group-text">lb</span>
+                            </div>
+                            <small class="text-muted">当前配置：@currentMinWeightLb.ToString("F3") lb</small>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label fw-bold">最大重量（磅）</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" @bind="maxWeightLb" step="0.1" min="0" />
+                                <span class="input-group-text">lb</span>
+                            </div>
+                            <small class="text-muted">当前配置：@currentMaxWeightLb.ToString("F1") lb</small>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button class="btn btn-primary" @onclick="SaveWeightConfig" disabled="@isSavingConfig">
+                            @if (isSavingConfig)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            else
+                            {
+                                <span class="oi oi-check me-1"></span>
+                            }
+                            保存配置
+                        </button>
+                        <button class="btn btn-outline-secondary" @onclick="ResetWeightConfig">
+                            <span class="oi oi-reload me-1"></span>重置
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(configMessage))
+                    {
+                        <div class="alert @(configSuccess ? "alert-success" : "alert-danger") mt-3 mb-0">
+                            @configMessage
+                        </div>
+                    }
+                    <div class="alert alert-info mt-3 mb-0 small">
+                        <span class="oi oi-info me-1"></span>
+                        <strong>注意：</strong>修改配置后需要重启应用才能生效。配置文件位置：appsettings.json
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 快捷入口 -->
     <div class="row mb-4">
         <div class="col-12">
@@ -261,11 +326,21 @@
     private string? backupMessage;
     private bool backupSuccess = false;
 
+    // 称重配置相关变量
+    private decimal minWeightLb = 0;
+    private decimal maxWeightLb = 0;
+    private decimal currentMinWeightLb = 0;
+    private decimal currentMaxWeightLb = 0;
+    private bool isSavingConfig = false;
+    private string? configMessage;
+    private bool configSuccess = false;
+
     private CancellationTokenSource? cancellationTokenSource;
 
     protected override async Task OnInitializedAsync()
     {
         LoadSettings();
+        LoadWeightConfig();
         await LoadStatistics();
 
         // 启动定时刷新运行时长
@@ -337,6 +412,112 @@
         if (uptime.TotalDays < 1)
             return $"{(int)uptime.TotalHours} 小时 {uptime.Minutes} 分";
         return $"{(int)uptime.TotalDays} 天 {uptime.Hours} 小时";
+    }
+
+    private void LoadWeightConfig()
+    {
+        // 从配置中读取千克值，转换为磅显示
+        var config = WeightConfig.Value;
+        currentMinWeightLb = config.MinWeightKg / 0.45359237m;
+        currentMaxWeightLb = config.MaxWeightKg / 0.45359237m;
+
+        // 初始化输入框值
+        minWeightLb = currentMinWeightLb;
+        maxWeightLb = currentMaxWeightLb;
+    }
+
+    private void ResetWeightConfig()
+    {
+        minWeightLb = currentMinWeightLb;
+        maxWeightLb = currentMaxWeightLb;
+        configMessage = null;
+    }
+
+    private async Task SaveWeightConfig()
+    {
+        isSavingConfig = true;
+        configMessage = null;
+
+        try
+        {
+            // 验证输入
+            if (minWeightLb <= 0 || maxWeightLb <= 0)
+            {
+                configMessage = "重量必须大于0";
+                configSuccess = false;
+                return;
+            }
+
+            if (minWeightLb >= maxWeightLb)
+            {
+                configMessage = "最小重量必须小于最大重量";
+                configSuccess = false;
+                return;
+            }
+
+            // 转换为千克
+            var minWeightKg = minWeightLb * 0.45359237m;
+            var maxWeightKg = maxWeightLb * 0.45359237m;
+
+            // 读取appsettings.json文件（使用项目根目录）
+            var appSettingsPath = Path.Combine(Environment.ContentRootPath, "appsettings.json");
+            if (!File.Exists(appSettingsPath))
+            {
+                configMessage = $"配置文件不存在：{appSettingsPath}";
+                configSuccess = false;
+                return;
+            }
+
+            var jsonText = await File.ReadAllTextAsync(appSettingsPath);
+            var jsonDoc = JsonDocument.Parse(jsonText);
+            var root = jsonDoc.RootElement;
+
+            // 构建新的JSON对象
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+            {
+                writer.WriteStartObject();
+
+                foreach (var property in root.EnumerateObject())
+                {
+                    if (property.Name == "WeightValidation")
+                    {
+                        // 写入新的WeightValidation配置
+                        writer.WriteStartObject("WeightValidation");
+                        writer.WriteNumber("MinWeightKg", minWeightKg);
+                        writer.WriteNumber("MaxWeightKg", maxWeightKg);
+                        writer.WriteEndObject();
+                    }
+                    else
+                    {
+                        // 保持其他配置不变
+                        property.WriteTo(writer);
+                    }
+                }
+
+                writer.WriteEndObject();
+            }
+
+            // 写回文件
+            var newJsonText = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            await File.WriteAllTextAsync(appSettingsPath, newJsonText);
+
+            // 更新当前配置显示
+            currentMinWeightLb = minWeightLb;
+            currentMaxWeightLb = maxWeightLb;
+
+            configMessage = $"配置已保存！最小重量：{minWeightLb:F3} lb，最大重量：{maxWeightLb:F1} lb。请重启应用使配置生效。";
+            configSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            configMessage = $"保存失败：{ex.Message}";
+            configSuccess = false;
+        }
+        finally
+        {
+            isSavingConfig = false;
+        }
     }
 
     private async Task BackupDatabase()

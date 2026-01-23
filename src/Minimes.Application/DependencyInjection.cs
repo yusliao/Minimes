@@ -2,13 +2,17 @@ using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Minimes.Application.DTOs.Customer;
+using Minimes.Application.DTOs.MeatType;
 using Minimes.Application.DTOs.Product;
+using Minimes.Application.DTOs.QRCode;
 using Minimes.Application.DTOs.User;
 using Minimes.Application.Interfaces;
 using Minimes.Application.Mappings;
 using Minimes.Application.Services;
 using Minimes.Application.Validators.Customer;
+using Minimes.Application.Validators.MeatType;
 using Minimes.Application.Validators.Product;
+using Minimes.Application.Validators.QRCode;
 using Minimes.Application.Validators.User;
 
 namespace Minimes.Application;
@@ -39,6 +43,15 @@ public static class DependencyInjection
         services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
         services.AddScoped<IValidator<ChangePasswordRequest>, ChangePasswordRequestValidator>();
 
+        // 注册验证器 - 肉类类型
+        services.AddScoped<IValidator<CreateMeatTypeRequest>, CreateMeatTypeRequestValidator>();
+        services.AddScoped<IValidator<UpdateMeatTypeRequest>, UpdateMeatTypeRequestValidator>();
+
+        // 注册验证器 - 二维码
+        services.AddScoped<IValidator<CreateQRCodeRequest>, CreateQRCodeRequestValidator>();
+        services.AddScoped<IValidator<UpdateQRCodeRequest>, UpdateQRCodeRequestValidator>();
+        services.AddScoped<IValidator<BatchCreateQRCodeRequest>, BatchCreateQRCodeRequestValidator>();
+
         // 注册服务 - 业务逻辑
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IProductService, ProductService>();
@@ -46,6 +59,9 @@ public static class DependencyInjection
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IWeighingRecordService, WeighingRecordService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IProcessStageService, ProcessStageService>();
+        services.AddScoped<IMeatTypeService, MeatTypeService>();
+        services.AddScoped<IQRCodeService, QRCodeService>();
 
         return services;
     }

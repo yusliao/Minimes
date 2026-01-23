@@ -42,6 +42,7 @@ public class Weight
             WeightUnit.Gram => Value / 1000m,
             WeightUnit.Kilogram => Value,
             WeightUnit.Ton => Value * 1000m,
+            WeightUnit.Pound => Value * 0.45359237m,  // 1磅 = 0.45359237千克
             _ => throw new NotSupportedException($"不支持的单位: {Unit}")
         };
     }
@@ -75,9 +76,26 @@ public class Weight
             WeightUnit.Gram => "g",
             WeightUnit.Kilogram => "kg",
             WeightUnit.Ton => "t",
+            WeightUnit.Pound => "lb",
             _ => Unit.ToString()
         };
 
         return $"{Value:F2} {unitText}";
+    }
+
+    /// <summary>
+    /// 从磅创建Weight对象
+    /// </summary>
+    public static Weight FromPounds(decimal pounds)
+    {
+        return new Weight(pounds, WeightUnit.Pound);
+    }
+
+    /// <summary>
+    /// 转换为磅
+    /// </summary>
+    public decimal ToPounds()
+    {
+        return ToKilograms() / 0.45359237m;
     }
 }

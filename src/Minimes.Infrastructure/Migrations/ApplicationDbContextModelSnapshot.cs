@@ -68,6 +68,100 @@ namespace Minimes.Infrastructure.Migrations
                     b.ToTable("Customers", (string)null);
                 });
 
+            modelBuilder.Entity("Minimes.Domain.Entities.MeatType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.HasIndex("IsActive");
+
+                    b.ToTable("MeatTypes", (string)null);
+                });
+
+            modelBuilder.Entity("Minimes.Domain.Entities.ProcessStage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IncludeInLossRate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StageType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.HasIndex("IsActive");
+
+                    b.ToTable("ProcessStages", (string)null);
+                });
+
             modelBuilder.Entity("Minimes.Domain.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -116,6 +210,65 @@ namespace Minimes.Infrastructure.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("Minimes.Domain.Entities.QRCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BatchNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageBase64")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastPrintedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MeatTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PrintCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BatchNumber");
+
+                    b.HasIndex("Content")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("MeatTypeId");
+
+                    b.ToTable("QRCodes", (string)null);
                 });
 
             modelBuilder.Entity("Minimes.Domain.Entities.User", b =>
@@ -219,6 +372,11 @@ namespace Minimes.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -227,7 +385,10 @@ namespace Minimes.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("ProcessStage")
+                    b.Property<int>("MeatTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProcessStageId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Remarks")
@@ -245,15 +406,27 @@ namespace Minimes.Infrastructure.Migrations
 
                     b.HasIndex("Barcode");
 
+                    b.HasIndex("Code");
+
                     b.HasIndex("CreatedAt")
                         .IsDescending();
 
-                    b.HasIndex("ProcessStage");
+                    b.HasIndex("MeatTypeId");
 
-                    b.HasIndex("Barcode", "ProcessStage")
-                        .IsUnique();
+                    b.HasIndex("ProcessStageId");
 
                     b.ToTable("WeighingRecords", (string)null);
+                });
+
+            modelBuilder.Entity("Minimes.Domain.Entities.QRCode", b =>
+                {
+                    b.HasOne("Minimes.Domain.Entities.MeatType", "MeatType")
+                        .WithMany()
+                        .HasForeignKey("MeatTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MeatType");
                 });
 
             modelBuilder.Entity("Minimes.Domain.Entities.UserOAuthAccount", b =>
@@ -265,6 +438,30 @@ namespace Minimes.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Minimes.Domain.Entities.WeighingRecord", b =>
+                {
+                    b.HasOne("Minimes.Domain.Entities.MeatType", "MeatType")
+                        .WithMany()
+                        .HasForeignKey("MeatTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Minimes.Domain.Entities.ProcessStage", "ProcessStage")
+                        .WithMany("WeighingRecords")
+                        .HasForeignKey("ProcessStageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MeatType");
+
+                    b.Navigation("ProcessStage");
+                });
+
+            modelBuilder.Entity("Minimes.Domain.Entities.ProcessStage", b =>
+                {
+                    b.Navigation("WeighingRecords");
                 });
 
             modelBuilder.Entity("Minimes.Domain.Entities.User", b =>

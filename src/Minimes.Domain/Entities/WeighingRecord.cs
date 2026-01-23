@@ -1,5 +1,3 @@
-using Minimes.Domain.Enums;
-
 namespace Minimes.Domain.Entities;
 
 /// <summary>
@@ -9,9 +7,21 @@ namespace Minimes.Domain.Entities;
 public class WeighingRecord : BaseEntity
 {
     /// <summary>
-    /// 条码 - 扫码枪扫描的原始条码值
+    /// 条码 - 扫码枪扫描的原始条码值（完整二维码内容，如：PORK-001）
     /// </summary>
     public string Barcode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 用户编号 - 从二维码中拆分出的编号部分（如：001）
+    /// 用于追溯和统计
+    /// </summary>
+    public string Code { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 肉类类型ID - 外键关联MeatType表
+    /// 从二维码中拆分出的肉类类型
+    /// </summary>
+    public int MeatTypeId { get; set; }
 
     /// <summary>
     /// 重量（kg）
@@ -19,9 +29,19 @@ public class WeighingRecord : BaseEntity
     public decimal Weight { get; set; }
 
     /// <summary>
-    /// 加工环节 - 区分称重发生在哪个生产阶段（入库/加工/出库）
+    /// 工序ID - 外键关联ProcessStage表
     /// </summary>
-    public ProcessStage ProcessStage { get; set; }
+    public int ProcessStageId { get; set; }
+
+    /// <summary>
+    /// 肉类类型导航属性 - 关联的肉类类型
+    /// </summary>
+    public MeatType MeatType { get; set; } = null!;
+
+    /// <summary>
+    /// 工序导航属性 - 区分称重发生在哪个生产阶段
+    /// </summary>
+    public ProcessStage ProcessStage { get; set; } = null!;
 
     /// <summary>
     /// 备注（如：去骨、分割、真空包装等）

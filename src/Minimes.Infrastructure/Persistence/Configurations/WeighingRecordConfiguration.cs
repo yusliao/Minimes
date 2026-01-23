@@ -19,13 +19,25 @@ public class WeighingRecordConfiguration : IEntityTypeConfiguration<WeighingReco
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(w => w.Code)
+            .IsRequired()
+            .HasMaxLength(50);
+
         builder.Property(w => w.Weight)
             .IsRequired()
             .HasPrecision(18, 3);
 
-        builder.Property(w => w.ProcessStage)
-            .IsRequired()
-            .HasConversion<int>();
+        // 肉类类型外键关系
+        builder.HasOne(w => w.MeatType)
+            .WithMany()
+            .HasForeignKey(w => w.MeatTypeId)
+            .OnDelete(DeleteBehavior.Restrict);  // 防止级联删除
+
+        // 工序外键关系
+        builder.HasOne(w => w.ProcessStage)
+            .WithMany(p => p.WeighingRecords)
+            .HasForeignKey(w => w.ProcessStageId)
+            .OnDelete(DeleteBehavior.Restrict);  // 防止级联删除
 
         builder.Property(w => w.Remarks)
             .HasMaxLength(1000);
@@ -40,9 +52,8 @@ public class WeighingRecordConfiguration : IEntityTypeConfiguration<WeighingReco
         // 索引
         builder.HasIndex(w => w.CreatedAt).IsDescending();
         builder.HasIndex(w => w.Barcode);
-        builder.HasIndex(w => w.ProcessStage);
-
-        // 唯一索引：同一条码+同一加工环节不能重复
-        builder.HasIndex(w => new { w.Barcode, w.ProcessStage }).IsUnique();
+        builder.HasIndex(w => w.Code);
+        builder.HasIndex(w => w.MeatTypeId);
+        builder.HasIndex(w => w.ProcessStageId);
     }
 }

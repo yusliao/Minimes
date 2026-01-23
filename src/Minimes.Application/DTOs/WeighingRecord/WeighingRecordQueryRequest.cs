@@ -1,5 +1,3 @@
-using Minimes.Domain.Enums;
-
 namespace Minimes.Application.DTOs.WeighingRecord;
 
 /// <summary>
@@ -13,9 +11,9 @@ public class WeighingRecordQueryRequest
     public string? Barcode { get; set; }
 
     /// <summary>
-    /// 加工环节（可选）
+    /// 工序ID（可选）
     /// </summary>
-    public ProcessStage? ProcessStage { get; set; }
+    public int? ProcessStageId { get; set; }
 
     /// <summary>
     /// 开始日期（可选）

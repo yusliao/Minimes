@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Minimes.Application.DTOs.Report;
 using Minimes.Application.Interfaces;
-using Minimes.Domain.Enums;
+using Minimes.Domain.Entities;
 using Minimes.Domain.Interfaces;
 
 namespace Minimes.Application.Services;
@@ -12,13 +12,16 @@ namespace Minimes.Application.Services;
 public class ReportService : IReportService
 {
     private readonly IWeighingRecordRepository _recordRepository;
+    private readonly IProcessStageRepository _processStageRepository;
     private readonly ILogger<ReportService> _logger;
 
     public ReportService(
         IWeighingRecordRepository recordRepository,
+        IProcessStageRepository processStageRepository,
         ILogger<ReportService> logger)
     {
         _recordRepository = recordRepository;
+        _processStageRepository = processStageRepository;
         _logger = logger;
     }
 
@@ -47,20 +50,25 @@ public class ReportService : IReportService
             filtered = filtered.Where(r => r.Barcode.Contains(request.Barcode, StringComparison.OrdinalIgnoreCase));
         }
 
-        // 加工环节过滤
-        if (request.ProcessStage.HasValue)
+        // 工序过滤
+        if (request.ProcessStageId.HasValue)
         {
-            filtered = filtered.Where(r => r.ProcessStage == request.ProcessStage.Value);
+            filtered = filtered.Where(r => r.ProcessStageId == request.ProcessStageId.Value);
         }
 
         var filteredList = filtered.ToList();
 
+        // 按工序类型统计重量
+        var receivingWeight = filteredList.Where(r => r.ProcessStage.StageType == StageType.Start).Sum(r => r.Weight);
+        var processingWeight = filteredList.Where(r => r.ProcessStage.StageType == StageType.Middle).Sum(r => r.Weight);
+        var shippingWeight = filteredList.Where(r => r.ProcessStage.StageType == StageType.End).Sum(r => r.Weight);
+
         var response = new ProductionReportResponse
         {
             TotalRecords = filteredList.Count,
-            ReceivingWeight = filteredList.Where(r => r.ProcessStage == ProcessStage.Receiving).Sum(r => r.Weight),
-            ProcessingWeight = filteredList.Where(r => r.ProcessStage == ProcessStage.Processing).Sum(r => r.Weight),
-            ShippingWeight = filteredList.Where(r => r.ProcessStage == ProcessStage.Shipping).Sum(r => r.Weight),
+            ReceivingWeight = receivingWeight,
+            ProcessingWeight = processingWeight,
+            ShippingWeight = shippingWeight,
             UniqueBarcodes = filteredList.Select(r => r.Barcode).Distinct().Count()
         };
 
@@ -140,9 +148,10 @@ public class ReportService : IReportService
 
     private static ProductLossRateResponse BuildLossRateResponse(string barcode, List<Domain.Entities.WeighingRecord> records)
     {
-        var receivingRecords = records.Where(r => r.ProcessStage == ProcessStage.Receiving).ToList();
-        var processingRecords = records.Where(r => r.ProcessStage == ProcessStage.Processing).ToList();
-        var shippingRecords = records.Where(r => r.ProcessStage == ProcessStage.Shipping).ToList();
+        // 按工序类型分组统计
+        var receivingRecords = records.Where(r => r.ProcessStage.StageType == StageType.Start).ToList();
+        var processingRecords = records.Where(r => r.ProcessStage.StageType == StageType.Middle).ToList();
+        var shippingRecords = records.Where(r => r.ProcessStage.StageType == StageType.End).ToList();
 
         var receivingWeight = receivingRecords.Sum(r => r.Weight);
         var processingWeight = processingRecords.Sum(r => r.Weight);

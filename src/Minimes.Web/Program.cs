@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Minimes.Application;
+using Minimes.Application.Configuration;
 using Minimes.Application.Interfaces;
 using Minimes.Infrastructure;
 using Minimes.Infrastructure.Hardware;
@@ -38,6 +39,9 @@ else
     builder.Services.Configure<ScaleConfiguration>(builder.Configuration.GetSection("Hardware:Scale"));
     builder.Services.AddSingleton<IScaleService, ScaleService>();
 }
+
+// 重量验证配置
+builder.Services.Configure<WeightValidationConfig>(builder.Configuration.GetSection("WeightValidation"));
 
 // 注册应用层和基础设施层服务
 builder.Services.AddApplicationServices();

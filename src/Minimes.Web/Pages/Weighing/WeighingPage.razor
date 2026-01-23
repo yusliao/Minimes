@@ -8,6 +8,7 @@
 @using Minimes.Web.Resources
 @inject IStringLocalizer<SharedResource> L
 @inject IWeighingRecordService WeighingRecordService
+@inject IMeatTypeService MeatTypeService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
@@ -30,7 +31,7 @@
                     @if (todaySummary != null)
                     {
                         <span class="me-3">📊 @L["Time_Today"] <strong>@todaySummary.TotalRecords</strong> @L["Weighing_Records"]</span>
-                        <span>⚖️ <strong>@todaySummary.TotalWeight.ToString("F1")</strong> kg</span>
+                        <span>⚖️ <strong>@((todaySummary.TotalWeight / 0.45359237m).ToString("F1"))</strong> lb</span>
                     }
                 </div>
                 <button class="btn btn-sm btn-outline-secondary" type="button"
@@ -63,7 +64,16 @@
                     </div>
                     @if (!string.IsNullOrWhiteSpace(currentBarcode))
                     {
-                        <small class="text-success">✓ @L["Weighing_BarcodeEntered"]：@currentBarcode</small>
+                        @if (parsedMeatTypeId > 0 && !string.IsNullOrWhiteSpace(parsedMeatTypeName))
+                        {
+                            <small class="text-success">
+                                ✓ 二维码：@currentBarcode | 肉类：<strong>@parsedMeatTypeName</strong> | 编号：<strong>@parsedCode</strong>
+                            </small>
+                        }
+                        else
+                        {
+                            <small class="text-warning">⚠️ 已输入条码：@currentBarcode（请按回车解析）</small>
+                        }
                     }
                     else
                     {
@@ -80,11 +90,11 @@
                                @bind="manualWeightInput"
                                @onkeydown="OnWeightKeyDown"
                                placeholder="@L["Weighing_WeightPlaceholder"]" step="0.001" min="0" />
-                        <span class="input-group-text">kg</span>
+                        <span class="input-group-text">lb</span>
                     </div>
                     @if (manualWeightInput > 0)
                     {
-                        <small class="text-success">✓ @L["Weighing_Weight"]：@manualWeightInput.ToString("F3") kg</small>
+                        <small class="text-success">✓ @L["Weighing_Weight"]：@manualWeightInput.ToString("F3") lb</small>
                     }
                     else
                     {
@@ -95,10 +105,10 @@
                 <!-- 加工环节选择 -->
                 <div class="mb-4">
                     <h6>@L["Weighing_Stage"] <span class="text-danger">*</span></h6>
-                    <select class="form-select form-select-lg" @bind="selectedProcessStage">
-                        <option value="@ProcessStage.Receiving">@L["Stage_Receiving"]</option>
-                        <option value="@ProcessStage.Processing">@L["Stage_Processing"]</option>
-                        <option value="@ProcessStage.Shipping">@L["Stage_Shipping"]</option>
+                    <select class="form-select form-select-lg" @bind="selectedProcessStageId">
+                        <option value="1">@L["Stage_Receiving"]</option>
+                        <option value="2">@L["Stage_Processing"]</option>
+                        <option value="3">@L["Stage_Shipping"]</option>
                     </select>
                 </div>
 
@@ -144,7 +154,7 @@
                                 <small class="text-muted">@L["Weighing_RecordCount"]</small>
                             </div>
                             <div class="col-4">
-                                <div class="fs-4 fw-bold text-success">@todaySummary.TotalWeight.ToString("F1")</div>
+                                <div class="fs-4 fw-bold text-success">@((todaySummary.TotalWeight / 0.45359237m).ToString("F1"))</div>
                                 <small class="text-muted">@L["Weighing_TotalWeight"]</small>
                             </div>
                             <div class="col-4">
@@ -178,7 +188,7 @@
                                             <span class="badge bg-info ms-1">@GetLocalizedStageName(record.ProcessStageName)</span>
                                         </div>
                                         <div class="text-end">
-                                            <div class="fw-bold">@record.Weight.ToString("F2") kg</div>
+                                            <div class="fw-bold">@record.WeightInPounds.ToString("F2") lb</div>
                                             <small class="text-muted">@record.CreatedAt.ToString("HH:mm")</small>
                                         </div>
                                     </div>
@@ -206,12 +216,15 @@
 
     // 条码
     private string currentBarcode = string.Empty;
+    private string parsedCode = string.Empty;  // 从二维码解析出的用户编号
+    private int parsedMeatTypeId = 0;  // 从二维码解析出的肉类类型ID
+    private string parsedMeatTypeName = string.Empty;  // 肉类类型名称（用于显示）
 
     // 重量状态
     private decimal manualWeightInput = 0;  // 手动输入的重量
 
     // 其他字段
-    private ProcessStage selectedProcessStage = ProcessStage.Receiving;
+    private int selectedProcessStageId = 1; // 默认：原料入库
     private string? remarks;
     private string? errorMessage;  // 错误提示
 
@@ -219,8 +232,11 @@
     private TodaySummary? todaySummary;
     private List<WeighingRecordResponse> recentRecords = new();
 
-    // 保存条件：有条码 + 重量大于0
-    private bool CanSave => !string.IsNullOrWhiteSpace(currentBarcode) && manualWeightInput > 0;
+    // 保存条件：有条码 + 解析成功 + 重量大于0
+    private bool CanSave => !string.IsNullOrWhiteSpace(currentBarcode)
+        && parsedMeatTypeId > 0
+        && !string.IsNullOrWhiteSpace(parsedCode)
+        && manualWeightInput > 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -300,12 +316,71 @@
         recentRecords = records;
     }
 
-    // 条码输入框回车：跳转到重量输入框
+    // 条码输入框回车：解析条码并跳转到重量输入框
     private async Task OnBarcodeKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(currentBarcode))
         {
+            await ParseBarcode();
             await FocusWeightInput();
+        }
+    }
+
+    // 解析二维码内容（格式：PORK-001）
+    private async Task ParseBarcode()
+    {
+        try
+        {
+            var barcode = currentBarcode.Trim();
+
+            // 检查格式：必须包含"-"分隔符
+            if (!barcode.Contains("-"))
+            {
+                errorMessage = "二维码格式错误！正确格式：PORK-001";
+                parsedCode = string.Empty;
+                parsedMeatTypeId = 0;
+                parsedMeatTypeName = string.Empty;
+                return;
+            }
+
+            // 拆分二维码：PORK-001 → ["PORK", "001"]
+            var parts = barcode.Split('-', 2);
+            var meatTypeCode = parts[0].Trim().ToUpper();
+            var code = parts[1].Trim();
+
+            // 根据肉类类型代码查询肉类类型
+            var meatType = await MeatTypeService.GetByCodeAsync(meatTypeCode);
+            if (meatType == null)
+            {
+                errorMessage = $"肉类类型代码 '{meatTypeCode}' 不存在！";
+                parsedCode = string.Empty;
+                parsedMeatTypeId = 0;
+                parsedMeatTypeName = string.Empty;
+                return;
+            }
+
+            // 检查肉类类型是否激活
+            if (!meatType.IsActive)
+            {
+                errorMessage = $"肉类类型 '{meatType.Name}' 已停用！";
+                parsedCode = string.Empty;
+                parsedMeatTypeId = 0;
+                parsedMeatTypeName = string.Empty;
+                return;
+            }
+
+            // 解析成功
+            parsedCode = code;
+            parsedMeatTypeId = meatType.Id;
+            parsedMeatTypeName = meatType.Name;
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"解析二维码失败：{ex.Message}";
+            parsedCode = string.Empty;
+            parsedMeatTypeId = 0;
+            parsedMeatTypeName = string.Empty;
         }
     }
 
@@ -336,6 +411,13 @@
             return;
         }
 
+        // 验证二维码解析结果
+        if (parsedMeatTypeId == 0 || string.IsNullOrWhiteSpace(parsedCode))
+        {
+            errorMessage = "请先输入有效的二维码并按回车解析！";
+            return;
+        }
+
         try
         {
             // 获取当前登录用户
@@ -345,8 +427,10 @@
             var request = new CreateWeighingRecordRequest
             {
                 Barcode = currentBarcode.Trim(),
+                Code = parsedCode,
+                MeatTypeId = parsedMeatTypeId,
                 Weight = manualWeightInput,
-                ProcessStage = selectedProcessStage,
+                ProcessStageId = selectedProcessStageId,
                 Remarks = remarks
             };
 
@@ -357,6 +441,9 @@
 
             // 清空，准备下一次
             currentBarcode = string.Empty;
+            parsedCode = string.Empty;
+            parsedMeatTypeId = 0;
+            parsedMeatTypeName = string.Empty;
             manualWeightInput = 0;
             remarks = null;
 
@@ -375,8 +462,11 @@
     private void ClearForm()
     {
         currentBarcode = string.Empty;
+        parsedCode = string.Empty;
+        parsedMeatTypeId = 0;
+        parsedMeatTypeName = string.Empty;
         manualWeightInput = 0;
-        selectedProcessStage = ProcessStage.Receiving;
+        selectedProcessStageId = 1; // 重置为原料入库
         remarks = null;
         errorMessage = null;
         StateHasChanged();

@@ -98,21 +98,21 @@
                                 <div class="border rounded p-3 h-100">
                                     <div class="text-muted small">@L["Profile_TodayRecords"]</div>
                                     <div class="fs-3 fw-bold text-primary">@userSummary.TodayRecords</div>
-                                    <div class="text-muted small">@userSummary.TodayWeight.ToString("F1") kg</div>
+                                    <div class="text-muted small">@((userSummary.TodayWeight / 0.45359237m).ToString("F1")) lb</div>
                                 </div>
                             </div>
                             <div class="col-4 mb-3">
                                 <div class="border rounded p-3 h-100">
                                     <div class="text-muted small">@L["Profile_MonthRecords"]</div>
                                     <div class="fs-3 fw-bold text-success">@userSummary.MonthRecords</div>
-                                    <div class="text-muted small">@userSummary.MonthWeight.ToString("F1") kg</div>
+                                    <div class="text-muted small">@((userSummary.MonthWeight / 0.45359237m).ToString("F1")) lb</div>
                                 </div>
                             </div>
                             <div class="col-4 mb-3">
                                 <div class="border rounded p-3 h-100">
                                     <div class="text-muted small">@L["Profile_TotalRecordsCount"]</div>
                                     <div class="fs-3 fw-bold text-info">@userSummary.TotalRecords</div>
-                                    <div class="text-muted small">@userSummary.TotalWeight.ToString("F1") kg</div>
+                                    <div class="text-muted small">@((userSummary.TotalWeight / 0.45359237m).ToString("F1")) lb</div>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +158,7 @@
                                         <tr>
                                             <td>@record.CreatedAt.ToString("MM-dd HH:mm")</td>
                                             <td><code>@record.Barcode</code></td>
-                                            <td><strong>@record.Weight.ToString("F2")</strong> kg</td>
+                                            <td><strong>@record.WeightInPounds.ToString("F2")</strong> lb</td>
                                             <td>
                                                 <span class="badge @GetStageBadgeClass(record.ProcessStageName)">
                                                     @GetLocalizedStageName(record.ProcessStageName)

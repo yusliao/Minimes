@@ -32,11 +32,11 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">@L["Weighing_Stage"]</label>
-                <select class="form-select" @bind="selectedProcessStage">
+                <select class="form-select" @bind="selectedProcessStageId">
                     <option value="">@L["Records_AllStages"]</option>
-                    <option value="@ProcessStage.Receiving">@L["Stage_Receiving"]</option>
-                    <option value="@ProcessStage.Processing">@L["Stage_Processing"]</option>
-                    <option value="@ProcessStage.Shipping">@L["Stage_Shipping"]</option>
+                    <option value="1">@L["Stage_Receiving"]</option>
+                    <option value="2">@L["Stage_Processing"]</option>
+                    <option value="3">@L["Stage_Shipping"]</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -72,7 +72,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     <h6 class="text-muted">@L["Weighing_TotalWeight"]</h6>
-                    <h3>@records.Sum(r => r.Weight).ToString("F3") kg</h3>
+                    <h3>@records.Sum(r => r.WeightInPounds).ToString("F3") lb</h3>
                 </div>
             </div>
         </div>
@@ -98,8 +98,10 @@
                         <tr>
                             <th>@L["Records_Time"]</th>
                             <th>@L["Weighing_Barcode"]</th>
+                            <th>肉类类型</th>
+                            <th>编号</th>
                             <th>@L["Weighing_Stage"]</th>
-                            <th>@L["Weighing_Weight"] (kg)</th>
+                            <th>@L["Weighing_Weight"] (lb)</th>
                             <th>@L["Records_Operator"]</th>
                             <th>@L["Weighing_Remark"]</th>
                             <th>@L["Records_Action"]</th>
@@ -111,8 +113,10 @@
                             <tr>
                                 <td>@record.CreatedAt.ToString("MM-dd HH:mm")</td>
                                 <td><code>@record.Barcode</code></td>
+                                <td><span class="badge bg-success">@record.MeatTypeName</span></td>
+                                <td><strong>@record.Code</strong></td>
                                 <td><span class="badge bg-info">@GetLocalizedStageName(record.ProcessStageName)</span></td>
-                                <td>@record.Weight.ToString("F3")</td>
+                                <td>@record.WeightInPounds.ToString("F3")</td>
                                 <td>@record.CreatedBy</td>
                                 <td>@record.Remarks</td>
                                 <td>
@@ -161,7 +165,7 @@
 
     private DateTime? startDateInput;
     private DateTime? endDateInput;
-    private string? selectedProcessStage;
+    private int? selectedProcessStageId; // 工序ID过滤
     private bool isLoading = false;
 
     // 角色和用户信息
@@ -203,9 +207,7 @@
 
         queryRequest.StartDate = startDateInput;
         queryRequest.EndDate = endDateInput;
-        queryRequest.ProcessStage = string.IsNullOrEmpty(selectedProcessStage)
-            ? null
-            : Enum.Parse<ProcessStage>(selectedProcessStage);
+        queryRequest.ProcessStageId = selectedProcessStageId;
         queryRequest.PageNumber = 1; // 重置到第一页
 
         var (foundRecords, count) = await WeighingRecordService.QueryAsync(queryRequest);

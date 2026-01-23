@@ -34,6 +34,21 @@ public class ApplicationDbContext : DbContext
     public DbSet<WeighingRecord> WeighingRecords => Set<WeighingRecord>();
 
     /// <summary>
+    /// 工序表
+    /// </summary>
+    public DbSet<ProcessStage> ProcessStages => Set<ProcessStage>();
+
+    /// <summary>
+    /// 肉类类型表
+    /// </summary>
+    public DbSet<MeatType> MeatTypes => Set<MeatType>();
+
+    /// <summary>
+    /// 二维码表
+    /// </summary>
+    public DbSet<QRCode> QRCodes => Set<QRCode>();
+
+    /// <summary>
     /// 用户OAuth账号表
     /// </summary>
     public DbSet<UserOAuthAccount> UserOAuthAccounts => Set<UserOAuthAccount>();

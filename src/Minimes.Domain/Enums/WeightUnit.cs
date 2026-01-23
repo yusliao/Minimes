@@ -18,5 +18,10 @@ public enum WeightUnit
     /// <summary>
     /// 吨
     /// </summary>
-    Ton = 3
+    Ton = 3,
+
+    /// <summary>
+    /// 磅（英制单位）
+    /// </summary>
+    Pound = 4
 }

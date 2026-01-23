@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Minimes.Application.DTOs.QRCode;
 using Minimes.Application.DTOs.Report;
 using Minimes.Application.DTOs.WeighingRecord;
 using Minimes.Application.Interfaces;
@@ -27,7 +28,7 @@ public class ExcelExportService : IExcelExportService
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("称重记录");
 
-            var headers = new[] { "记录ID", "条码", "重量(kg)", "加工环节", "备注", "创建时间", "创建人" };
+            var headers = new[] { "记录ID", "条码", "肉类类型", "编号", "加工环节", "重量(lb)", "备注", "创建时间", "创建人" };
 
             for (int i = 0; i < headers.Length; i++)
             {
@@ -47,11 +48,13 @@ public class ExcelExportService : IExcelExportService
             {
                 worksheet.Cells[row, 1].Value = record.Id;
                 worksheet.Cells[row, 2].Value = record.Barcode;
-                worksheet.Cells[row, 3].Value = record.Weight;
-                worksheet.Cells[row, 4].Value = record.ProcessStageName;
-                worksheet.Cells[row, 5].Value = record.Remarks ?? "";
-                worksheet.Cells[row, 6].Value = record.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
-                worksheet.Cells[row, 7].Value = record.CreatedBy;
+                worksheet.Cells[row, 3].Value = record.MeatTypeName;
+                worksheet.Cells[row, 4].Value = record.Code;
+                worksheet.Cells[row, 5].Value = record.ProcessStageName;
+                worksheet.Cells[row, 6].Value = record.WeightInPounds;
+                worksheet.Cells[row, 7].Value = record.Remarks ?? "";
+                worksheet.Cells[row, 8].Value = record.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                worksheet.Cells[row, 9].Value = record.CreatedBy;
                 row++;
             }
 
@@ -76,12 +79,12 @@ public class ExcelExportService : IExcelExportService
             int row = 3;
             summarySheet.Cells[row, 1].Value = "总记录数";
             summarySheet.Cells[row++, 2].Value = report.TotalRecords;
-            summarySheet.Cells[row, 1].Value = "入库总重量(kg)";
-            summarySheet.Cells[row++, 2].Value = report.ReceivingWeight;
-            summarySheet.Cells[row, 1].Value = "加工总重量(kg)";
-            summarySheet.Cells[row++, 2].Value = report.ProcessingWeight;
-            summarySheet.Cells[row, 1].Value = "出库总重量(kg)";
-            summarySheet.Cells[row++, 2].Value = report.ShippingWeight;
+            summarySheet.Cells[row, 1].Value = "入库总重量(lb)";
+            summarySheet.Cells[row++, 2].Value = (report.ReceivingWeight / 0.45359237m).ToString("F3");
+            summarySheet.Cells[row, 1].Value = "加工总重量(lb)";
+            summarySheet.Cells[row++, 2].Value = (report.ProcessingWeight / 0.45359237m).ToString("F3");
+            summarySheet.Cells[row, 1].Value = "出库总重量(lb)";
+            summarySheet.Cells[row++, 2].Value = (report.ShippingWeight / 0.45359237m).ToString("F3");
             summarySheet.Cells[row, 1].Value = "涉及条码数";
             summarySheet.Cells[row, 2].Value = report.UniqueBarcodes;
 
@@ -119,8 +122,8 @@ public class ExcelExportService : IExcelExportService
     {
         var worksheet = package.Workbook.Worksheets.Add("条码损耗率统计");
 
-        var headers = new[] { "条码", "入库重量(kg)", "加工重量(kg)", "出库重量(kg)",
-            "损耗重量(kg)", "损耗率(%)", "入库记录数", "加工记录数", "出库记录数" };
+        var headers = new[] { "条码", "入库重量(lb)", "加工重量(lb)", "出库重量(lb)",
+            "损耗重量(lb)", "损耗率(%)", "入库记录数", "加工记录数", "出库记录数" };
 
         for (int i = 0; i < headers.Length; i++)
         {
@@ -139,10 +142,10 @@ public class ExcelExportService : IExcelExportService
         foreach (var item in lossRates.OrderByDescending(l => l.LossRate))
         {
             worksheet.Cells[row, 1].Value = item.Barcode;
-            worksheet.Cells[row, 2].Value = item.ReceivingWeight;
-            worksheet.Cells[row, 3].Value = item.ProcessingWeight;
-            worksheet.Cells[row, 4].Value = item.ShippingWeight;
-            worksheet.Cells[row, 5].Value = item.LossWeight;
+            worksheet.Cells[row, 2].Value = (item.ReceivingWeight / 0.45359237m).ToString("F3");
+            worksheet.Cells[row, 3].Value = (item.ProcessingWeight / 0.45359237m).ToString("F3");
+            worksheet.Cells[row, 4].Value = (item.ShippingWeight / 0.45359237m).ToString("F3");
+            worksheet.Cells[row, 5].Value = (item.LossWeight / 0.45359237m).ToString("F3");
             worksheet.Cells[row, 6].Value = item.LossRate;
             worksheet.Cells[row, 7].Value = item.ReceivingRecords;
             worksheet.Cells[row, 8].Value = item.ProcessingRecords;
@@ -164,5 +167,84 @@ public class ExcelExportService : IExcelExportService
         }
 
         worksheet.Cells.AutoFitColumns();
+    }
+
+    public async Task<byte[]> ExportQRCodesAsync(List<QRCodeResponse> qrCodes)
+    {
+        return await Task.Run(() =>
+        {
+            using var package = new ExcelPackage();
+            var worksheet = package.Workbook.Worksheets.Add("二维码列表");
+
+            var headers = new[] { "ID", "编号", "肉类类型", "二维码内容", "二维码图片", "批次号", "打印次数", "状态", "创建时间" };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                worksheet.Cells[1, i + 1].Value = headers[i];
+            }
+
+            using (var range = worksheet.Cells[1, 1, 1, headers.Length])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(Color.LightGreen);
+                range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            }
+
+            int row = 2;
+            foreach (var qrCode in qrCodes)
+            {
+                worksheet.Cells[row, 1].Value = qrCode.Id;
+                worksheet.Cells[row, 2].Value = qrCode.Code;
+                worksheet.Cells[row, 3].Value = qrCode.MeatTypeName;
+                worksheet.Cells[row, 4].Value = qrCode.Content;
+                // 第5列留给二维码图片
+                worksheet.Cells[row, 6].Value = qrCode.BatchNumber ?? "";
+                worksheet.Cells[row, 7].Value = qrCode.PrintCount;
+                worksheet.Cells[row, 8].Value = qrCode.IsActive ? "激活" : "未激活";
+                worksheet.Cells[row, 9].Value = qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+
+                // 嵌入二维码图片
+                if (!string.IsNullOrEmpty(qrCode.ImageBase64))
+                {
+                    try
+                    {
+                        var imageBytes = Convert.FromBase64String(qrCode.ImageBase64);
+                        using var ms = new MemoryStream(imageBytes);
+                        var picture = worksheet.Drawings.AddPicture($"QRCode_{qrCode.Id}", ms);
+
+                        // 设置图片位置（行索引从0开始，所以row-1）
+                        picture.SetPosition(row - 1, 5, 4, 5);
+
+                        // 设置图片大小（80x80像素）
+                        picture.SetSize(80, 80);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("嵌入二维码图片失败: ID={Id}, Error={Error}", qrCode.Id, ex.Message);
+                        worksheet.Cells[row, 5].Value = "图片加载失败";
+                    }
+                }
+
+                // 设置行高以容纳图片（单位：磅，1磅≈1.33像素）
+                worksheet.Row(row).Height = 60;
+
+                row++;
+            }
+
+            // 设置列宽
+            worksheet.Column(1).Width = 8;   // ID
+            worksheet.Column(2).Width = 15;  // 编号
+            worksheet.Column(3).Width = 12;  // 肉类类型
+            worksheet.Column(4).Width = 20;  // 二维码内容
+            worksheet.Column(5).Width = 12;  // 二维码图片
+            worksheet.Column(6).Width = 15;  // 批次号
+            worksheet.Column(7).Width = 10;  // 打印次数
+            worksheet.Column(8).Width = 10;  // 状态
+            worksheet.Column(9).Width = 20;  // 创建时间
+
+            _logger.LogInformation("导出二维码列表: 记录数={Count}", qrCodes.Count);
+            return package.GetAsByteArray();
+        });
     }
 }

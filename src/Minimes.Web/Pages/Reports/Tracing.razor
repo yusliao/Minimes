@@ -123,15 +123,15 @@
                                 <div class="col-4">
                                     <div class="border rounded p-3 @stage.BorderClass">
                                         <div class="text-muted small">@stage.Name</div>
-                                        <div class="fs-3 fw-bold @stage.TextClass">@stage.Weight.ToString("F2")</div>
-                                        <div class="text-muted small">kg (@stage.Count @L["Tracing_Times"])</div>
+                                        <div class="fs-3 fw-bold @stage.TextClass">@((stage.Weight / 0.45359237m).ToString("F2"))</div>
+                                        <div class="text-muted small">lb (@stage.Count @L["Tracing_Times"])</div>
                                     </div>
                                 </div>
                             }
                         </div>
                         @{
-                            var receiving = GetStageWeight(ProcessStage.Receiving);
-                            var shipping = GetStageWeight(ProcessStage.Shipping);
+                            var receiving = GetStageWeight("原料入库");
+                            var shipping = GetStageWeight("成品出库");
                             var lossRate = receiving > 0 ? ((receiving - shipping) / receiving * 100) : 0;
                         }
                         @if (receiving > 0 && shipping > 0)
@@ -164,17 +164,17 @@
                                 <div class="timeline-item mb-3 pb-3 border-bottom">
                                     <div class="d-flex align-items-start">
                                         <div class="timeline-marker me-3">
-                                            <span class="badge rounded-pill @GetStageBadgeClass(record.ProcessStage) p-2">
-                                                <span class="oi @GetStageIcon(record.ProcessStage)"></span>
+                                            <span class="badge rounded-pill @GetStageBadgeClass(record.ProcessStageName) p-2">
+                                                <span class="oi @GetStageIcon(record.ProcessStageName)"></span>
                                             </span>
                                         </div>
                                         <div class="timeline-content flex-grow-1">
                                             <div class="d-flex justify-content-between align-items-start">
                                                 <div>
-                                                    <strong class="@GetStageTextClass(record.ProcessStage)">
+                                                    <strong class="@GetStageTextClass(record.ProcessStageName)">
                                                         @GetLocalizedStageName(record.ProcessStageName)
                                                     </strong>
-                                                    <span class="ms-2 fs-5 fw-bold">@record.Weight.ToString("F2") kg</span>
+                                                    <span class="ms-2 fs-5 fw-bold">@record.WeightInPounds.ToString("F2") lb</span>
                                                 </div>
                                                 <small class="text-muted">
                                                     @record.CreatedAt.ToString("MM-dd HH:mm:ss")
@@ -261,9 +261,9 @@
         errorMessage = null;
     }
 
-    private decimal GetStageWeight(ProcessStage stage)
+    private decimal GetStageWeight(string stageName)
     {
-        return tracingRecords?.Where(r => r.ProcessStage == stage).Sum(r => r.Weight) ?? 0;
+        return tracingRecords?.Where(r => r.ProcessStageName == stageName).Sum(r => r.Weight) ?? 0;
     }
 
     private List<StageStatItem> GetStageStats()
@@ -272,49 +272,49 @@
         {
             new() {
                 Name = L["Stage_Receiving"].Value,
-                Weight = GetStageWeight(ProcessStage.Receiving),
-                Count = tracingRecords?.Count(r => r.ProcessStage == ProcessStage.Receiving) ?? 0,
+                Weight = GetStageWeight("原料入库"),
+                Count = tracingRecords?.Count(r => r.ProcessStageName == "原料入库") ?? 0,
                 BorderClass = "border-primary",
                 TextClass = "text-primary"
             },
             new() {
                 Name = L["Stage_Processing"].Value,
-                Weight = GetStageWeight(ProcessStage.Processing),
-                Count = tracingRecords?.Count(r => r.ProcessStage == ProcessStage.Processing) ?? 0,
+                Weight = GetStageWeight("加工过程"),
+                Count = tracingRecords?.Count(r => r.ProcessStageName == "加工过程") ?? 0,
                 BorderClass = "border-warning",
                 TextClass = "text-warning"
             },
             new() {
                 Name = L["Stage_Shipping"].Value,
-                Weight = GetStageWeight(ProcessStage.Shipping),
-                Count = tracingRecords?.Count(r => r.ProcessStage == ProcessStage.Shipping) ?? 0,
+                Weight = GetStageWeight("成品出库"),
+                Count = tracingRecords?.Count(r => r.ProcessStageName == "成品出库") ?? 0,
                 BorderClass = "border-success",
                 TextClass = "text-success"
             }
         };
     }
 
-    private string GetStageBadgeClass(ProcessStage stage) => stage switch
+    private string GetStageBadgeClass(string stageName) => stageName switch
     {
-        ProcessStage.Receiving => "bg-primary",
-        ProcessStage.Processing => "bg-warning",
-        ProcessStage.Shipping => "bg-success",
+        "原料入库" => "bg-primary",
+        "加工过程" => "bg-warning",
+        "成品出库" => "bg-success",
         _ => "bg-secondary"
     };
 
-    private string GetStageTextClass(ProcessStage stage) => stage switch
+    private string GetStageTextClass(string stageName) => stageName switch
     {
-        ProcessStage.Receiving => "text-primary",
-        ProcessStage.Processing => "text-warning",
-        ProcessStage.Shipping => "text-success",
+        "原料入库" => "text-primary",
+        "加工过程" => "text-warning",
+        "成品出库" => "text-success",
         _ => "text-secondary"
     };
 
-    private string GetStageIcon(ProcessStage stage) => stage switch
+    private string GetStageIcon(string stageName) => stageName switch
     {
-        ProcessStage.Receiving => "oi-arrow-circle-bottom",
-        ProcessStage.Processing => "oi-cog",
-        ProcessStage.Shipping => "oi-arrow-circle-top",
+        "原料入库" => "oi-arrow-circle-bottom",
+        "加工过程" => "oi-cog",
+        "成品出库" => "oi-arrow-circle-top",
         _ => "oi-question-mark"
     };
 

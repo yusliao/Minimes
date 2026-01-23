@@ -1,3 +1,4 @@
+using Minimes.Application.DTOs.QRCode;
 using Minimes.Application.DTOs.Report;
 using Minimes.Application.DTOs.WeighingRecord;
 
@@ -29,4 +30,11 @@ public interface IExcelExportService
     /// <param name="lossRates">商品损耗率统计列表</param>
     /// <returns>Excel文件的字节数组</returns>
     Task<byte[]> ExportProductLossRateAsync(List<ProductLossRateResponse> lossRates);
+
+    /// <summary>
+    /// 导出二维码列表到Excel（包含二维码图片）
+    /// </summary>
+    /// <param name="qrCodes">二维码列表</param>
+    /// <returns>Excel文件的字节数组</returns>
+    Task<byte[]> ExportQRCodesAsync(List<QRCodeResponse> qrCodes);
 }

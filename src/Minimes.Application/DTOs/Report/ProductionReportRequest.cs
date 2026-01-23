@@ -1,5 +1,3 @@
-using Minimes.Domain.Enums;
-
 namespace Minimes.Application.DTOs.Report;
 
 /// <summary>
@@ -23,7 +21,7 @@ public class ProductionReportRequest
     public string? Barcode { get; set; }
 
     /// <summary>
-    /// 加工环节（可选）
+    /// 工序ID（可选）
     /// </summary>
-    public ProcessStage? ProcessStage { get; set; }
+    public int? ProcessStageId { get; set; }
 }

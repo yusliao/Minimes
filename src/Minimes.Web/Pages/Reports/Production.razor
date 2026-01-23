@@ -121,7 +121,7 @@
                         <div class="d-flex align-items-center">
                             <div>
                                 <h6 class="card-subtitle mb-2 text-muted">@L["Report_TotalWeight"]</h6>
-                                <h2 class="card-title mb-0">@($"{GetTotalWeight():F2}") <small>kg</small></h2>
+                                <h2 class="card-title mb-0">@($"{(GetTotalWeight() / 0.45359237m):F2}") <small>lb</small></h2>
                             </div>
                             <div class="ms-auto">
                                 <span class="oi oi-scale" style="font-size: 2.5rem; color: #198754;"></span>
@@ -137,7 +137,7 @@
                         <div class="d-flex align-items-center">
                             <div>
                                 <h6 class="card-subtitle mb-2 text-muted">@L["Report_AverageWeight"]</h6>
-                                <h2 class="card-title mb-0">@($"{GetAverageWeight():F2}") <small>kg</small></h2>
+                                <h2 class="card-title mb-0">@($"{(GetAverageWeight() / 0.45359237m):F2}") <small>lb</small></h2>
                             </div>
                             <div class="ms-auto">
                                 <span class="oi oi-bar-chart" style="font-size: 2.5rem; color: #ffc107;"></span>
@@ -183,10 +183,10 @@
                                         @* <th>@L["Weighing_ProcessStage"]</th> *@
                                         <th>@L["Weighing_Stage"]</th>
                                         <th>@L["Report_RecordCount"]</th>
-                                        <th>@L["Report_TotalWeight"] (kg)</th>
-                                        <th>@L["Report_AverageWeight"] (kg)</th>
-                                        <th>@L["Report_MaxWeight"] (kg)</th>
-                                        <th>@L["Report_MinWeight"] (kg)</th>
+                                        <th>@L["Report_TotalWeight"] (lb)</th>
+                                        <th>@L["Report_AverageWeight"] (lb)</th>
+                                        <th>@L["Report_MaxWeight"] (lb)</th>
+                                        <th>@L["Report_MinWeight"] (lb)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -227,8 +227,8 @@
                                     <tr>
                                         <th>批次ID</th>
                                         <th>记录数</th>
-                                        <th>总重量 (kg)</th>
-                                        <th>平均单次 (kg)</th>
+                                        <th>总重量 (lb)</th>
+                                        <th>平均单次 (lb)</th>
                                         <th>原料入库</th>
                                         <th>加工过程</th>
                                         <th>成品出库</th>
@@ -293,10 +293,10 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>@L["Tracing_Barcode"]</th>
-                                            <th>@L["Report_ReceivingWeight"] (kg)</th>
-                                            <th>@L["Report_ProcessingWeight"] (kg)</th>
-                                            <th>@L["Report_ShippingWeight"] (kg)</th>
-                                            <th>@L["Report_LossWeight"] (kg)</th>
+                                            <th>@L["Report_ReceivingWeight"] (lb)</th>
+                                            <th>@L["Report_ProcessingWeight"] (lb)</th>
+                                            <th>@L["Report_ShippingWeight"] (lb)</th>
+                                            <th>@L["Report_LossWeight"] (lb)</th>
                                             <th>@L["Report_LossRate"]</th>
                                             <th>@L["Report_RecordCount"]</th>
                                         </tr>
@@ -344,7 +344,7 @@
     private ProductionReportResponse? reportSummary;
     private List<ProductLossRateResponse>? lossRates;
     private string selectedPeriod = "month";
-    private ProcessStage? selectedStage = null;
+    private int? selectedStageId = null;
     private DateTime startDate = DateTime.Today.AddDays(-30);
     private DateTime endDate = DateTime.Today;
     private bool isLoading = false;
@@ -367,7 +367,7 @@
             {
                 StartDate = start,
                 EndDate = end,
-                ProcessStage = selectedStage,
+                ProcessStageId = selectedStageId,
                 PageNumber = 1,
                 PageSize = 10000
             };
@@ -380,7 +380,7 @@
             {
                 StartDate = start,
                 EndDate = end,
-                ProcessStage = selectedStage
+                ProcessStageId = selectedStageId
             };
             reportSummary = await ReportService.GetProductionReportAsync(reportRequest);
 
@@ -415,7 +415,7 @@
     private async Task HandleStageChange(ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
-        selectedStage = string.IsNullOrEmpty(value) ? null : (ProcessStage)int.Parse(value);
+        selectedStageId = string.IsNullOrEmpty(value) ? null : int.Parse(value);
         await LoadReport();
     }
 
@@ -453,16 +453,10 @@
         var stats = new Dictionary<string, StageStats>();
         if (records == null) return stats;
 
-        var grouped = records.GroupBy(r => r.ProcessStage);
+        var grouped = records.GroupBy(r => r.ProcessStageName);
         foreach (var group in grouped)
         {
-            var stageName = group.Key switch
-            {
-                ProcessStage.Receiving => L["Stage_Receiving"].Value,
-                ProcessStage.Processing => L["Stage_Processing"].Value,
-                ProcessStage.Shipping => L["Stage_Shipping"].Value,
-                _ => L["Report_Unknown"].Value
-            };
+            var stageName = GetLocalizedStageName(group.Key);
 
             var weights = group.Select(r => r.Weight).ToList();
             stats[stageName] = new StageStats
@@ -493,7 +487,7 @@
                 RecordCount = batch.Count(),
                 TotalWeight = weights.Sum(),
                 AverageWeight = weights.Average(),
-                Stages = batch.GroupBy(r => r.ProcessStage)
+                Stages = batch.GroupBy(r => r.ProcessStageName)
                     .Select(s => new StageWeight
                     {
                         Stage = s.Key,
@@ -526,7 +520,19 @@
 
     private class StageWeight
     {
-        public ProcessStage Stage { get; set; }
+        public string Stage { get; set; } = string.Empty;
         public decimal TotalWeight { get; set; }
+    }
+
+    private string GetLocalizedStageName(string stageName)
+    {
+        var normalized = stageName.ToLower().Trim();
+        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
+            return L["Stage_Receiving"];
+        if (normalized.Contains("processing") || normalized.Contains("加工"))
+            return L["Stage_Processing"];
+        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
+            return L["Stage_Shipping"];
+        return stageName;
     }
 }
