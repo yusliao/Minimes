@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /nul
+/src/Minimes.Web/minimes.db-shm
+/src/Minimes.Web/minimes.db-wal
