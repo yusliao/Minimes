@@ -226,9 +226,9 @@
                             @configMessage
                         </div>
                     }
-                    <div class="alert alert-info mt-3 mb-0 small">
-                        <span class="oi oi-info me-1"></span>
-                        <strong>注意：</strong>修改配置后需要重启应用才能生效。配置文件位置：appsettings.json
+                    <div class="alert alert-success mt-3 mb-0 small">
+                        <span class="oi oi-check me-1"></span>
+                        <strong>提示：</strong>配置修改后立即生效，无需重启应用。配置文件位置：appsettings.json
                     </div>
                 </div>
             </div>
@@ -506,7 +506,7 @@
             currentMinWeightLb = minWeightLb;
             currentMaxWeightLb = maxWeightLb;
 
-            configMessage = $"配置已保存！最小重量：{minWeightLb:F3} lb，最大重量：{maxWeightLb:F1} lb。请重启应用使配置生效。";
+            configMessage = $"配置已保存并立即生效！最小重量：{minWeightLb:F3} lb，最大重量：{maxWeightLb:F1} lb";
             configSuccess = true;
         }
         catch (Exception ex)

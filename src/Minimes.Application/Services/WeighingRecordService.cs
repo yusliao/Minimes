@@ -16,18 +16,18 @@ public class WeighingRecordService : IWeighingRecordService
     private readonly IWeighingRecordRepository _recordRepository;
     private readonly IProcessStageRepository _processStageRepository;
     private readonly ILogger<WeighingRecordService> _logger;
-    private readonly WeightValidationConfig _weightConfig;
+    private readonly IOptionsMonitor<WeightValidationConfig> _weightConfig;
 
     public WeighingRecordService(
         IWeighingRecordRepository recordRepository,
         IProcessStageRepository processStageRepository,
         ILogger<WeighingRecordService> logger,
-        IOptions<WeightValidationConfig> weightConfig)
+        IOptionsMonitor<WeightValidationConfig> weightConfig)
     {
         _recordRepository = recordRepository;
         _processStageRepository = processStageRepository;
         _logger = logger;
-        _weightConfig = weightConfig.Value;
+        _weightConfig = weightConfig;
     }
 
     public async Task<WeighingRecordResponse> CreateAsync(CreateWeighingRecordRequest request, string createdBy)
@@ -57,16 +57,16 @@ public class WeighingRecordService : IWeighingRecordService
         // 将磅转换为千克
         decimal weightInKg = request.Weight * 0.45359237m;
 
-        // 验证重量上下限
-        if (weightInKg < _weightConfig.MinWeightKg)
+        // 验证重量上下限（使用CurrentValue获取最新配置）
+        if (weightInKg < _weightConfig.CurrentValue.MinWeightKg)
         {
-            var minPounds = _weightConfig.MinWeightKg / 0.45359237m;
+            var minPounds = _weightConfig.CurrentValue.MinWeightKg / 0.45359237m;
             throw new InvalidOperationException($"重量过轻，最小重量为 {minPounds:F3} 磅");
         }
 
-        if (weightInKg > _weightConfig.MaxWeightKg)
+        if (weightInKg > _weightConfig.CurrentValue.MaxWeightKg)
         {
-            var maxPounds = _weightConfig.MaxWeightKg / 0.45359237m;
+            var maxPounds = _weightConfig.CurrentValue.MaxWeightKg / 0.45359237m;
             throw new InvalidOperationException($"重量过重，最大重量为 {maxPounds:F1} 磅");
         }
 
