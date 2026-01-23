@@ -8,6 +8,7 @@
 @using System.Security.Claims
 @inject IStringLocalizer<SharedResource> L
 @inject IWeighingRecordService WeighingRecordService
+@inject IExcelExportService ExcelExportService
 @inject IJSRuntime JSRuntime
 
 <PageTitle>@L["Records_Title"]</PageTitle>
@@ -47,9 +48,12 @@
                 <label class="form-label">@L["Records_EndDate"]</label>
                 <input type="date" class="form-control" @bind="endDateInput" />
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button class="btn btn-primary w-100" @onclick="Search">
+            <div class="col-md-6 d-flex align-items-end gap-2">
+                <button class="btn btn-primary flex-fill" @onclick="Search">
                     <span class="oi oi-magnifying-glass"></span> @L["Btn_Search"]
+                </button>
+                <button class="btn btn-success flex-fill" @onclick="ExportToExcel" disabled="@isLoading">
+                    <span class="oi oi-data-transfer-download"></span> 导出Excel
                 </button>
             </div>
         </div>
@@ -260,5 +264,57 @@
         if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
             return L["Stage_Shipping"];
         return stageName;
+    }
+
+    private async Task ExportToExcel()
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            // 创建导出查询请求（获取所有记录，不分页）
+            var exportRequest = new WeighingRecordQueryRequest
+            {
+                Barcode = queryRequest.Barcode,
+                ProcessStageId = queryRequest.ProcessStageId,
+                StartDate = queryRequest.StartDate,
+                EndDate = queryRequest.EndDate,
+                CreatedBy = queryRequest.CreatedBy,
+                PageNumber = 1,
+                PageSize = 100000 // 设置一个很大的值来获取所有记录
+            };
+
+            var (allRecords, _) = await WeighingRecordService.QueryAsync(exportRequest);
+
+            if (!allRecords.Any())
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "没有数据可以导出！");
+                return;
+            }
+
+            // 生成Excel文件
+            var excelBytes = await ExcelExportService.ExportWeighingRecordsAsync(allRecords);
+            var base64 = Convert.ToBase64String(excelBytes);
+
+            // 生成文件名
+            var fileName = $"称重记录_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            if (!string.IsNullOrWhiteSpace(queryRequest.Barcode))
+            {
+                fileName = $"称重记录_{queryRequest.Barcode}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            }
+
+            // 下载文件
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"导出失败：{ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 }
