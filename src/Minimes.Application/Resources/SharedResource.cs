@@ -1,4 +1,4 @@
-namespace Minimes.Web.Resources;
+namespace Minimes.Application.Resources;
 
 /// <summary>
 /// Shared resource locator class for IStringLocalizer

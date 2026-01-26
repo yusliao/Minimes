@@ -1,24 +1,27 @@
 @page "/meattypes"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.MeatType
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IMeatTypeService MeatTypeService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>肉类类型管理 - MiniMES</PageTitle>
+<PageTitle>@L["MeatTypes_Title"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-list-rich me-2"></span>肉类类型管理
+                <span class="oi oi-list-rich me-2"></span>@L["MeatTypes_Title"]
             </h2>
-            <p class="text-muted">管理不同种类的生肉分类</p>
+            <p class="text-muted">@L["MeatTypes_Description"]</p>
         </div>
         <div class="col-auto">
             <button class="btn btn-primary" @onclick="NavigateToCreate">
-                <span class="oi oi-plus me-1"></span>新增类型
+                <span class="oi oi-plus me-1"></span>@L["MeatTypes_AddNew"]
             </button>
         </div>
     </div>
@@ -30,7 +33,7 @@
             <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">总类型数</h6>
+                        <h6 class="text-muted">@L["MeatTypes_TotalCount"]</h6>
                         <h3>@meatTypes.Count</h3>
                     </div>
                 </div>
@@ -38,7 +41,7 @@
             <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">激活类型</h6>
+                        <h6 class="text-muted">@L["MeatTypes_ActiveCount"]</h6>
                         <h3 class="text-success">@meatTypes.Count(m => m.IsActive)</h3>
                     </div>
                 </div>
@@ -46,7 +49,7 @@
             <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">停用类型</h6>
+                        <h6 class="text-muted">@L["MeatTypes_InactiveCount"]</h6>
                         <h3 class="text-secondary">@meatTypes.Count(m => !m.IsActive)</h3>
                     </div>
                 </div>
@@ -59,11 +62,11 @@
         <div class="card-body">
             @if (isLoading)
             {
-                <p class="text-center text-muted">加载中...</p>
+                <p class="text-center text-muted">@L["Status_Loading"]</p>
             }
             else if (!meatTypes.Any())
             {
-                <p class="text-center text-muted">暂无肉类类型数据</p>
+                <p class="text-center text-muted">@L["MeatTypes_NoData"]</p>
             }
             else
             {
@@ -71,13 +74,13 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>排序</th>
-                                <th>类型代码</th>
-                                <th>类型名称</th>
-                                <th>描述</th>
-                                <th>状态</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
+                                <th>@L["MeatTypes_SortOrder"]</th>
+                                <th>@L["MeatTypes_Code"]</th>
+                                <th>@L["MeatTypes_Name"]</th>
+                                <th>@L["MeatTypes_Description"]</th>
+                                <th>@L["MeatTypes_Status"]</th>
+                                <th>@L["MeatTypes_CreatedAt"]</th>
+                                <th>@L["MeatTypes_Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,11 +94,11 @@
                                     <td>
                                         @if (meatType.IsActive)
                                         {
-                                            <span class="badge bg-success">激活</span>
+                                            <span class="badge bg-success">@L["Status_Active"]</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">停用</span>
+                                            <span class="badge bg-secondary">@L["Status_Inactive"]</span>
                                         }
                                     </td>
                                     <td>@meatType.CreatedAt.ToString("yyyy-MM-dd")</td>
@@ -126,14 +129,14 @@
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger mt-3">
-            <strong>错误：</strong>@errorMessage
+            <strong>@L["Message_Error"]</strong>@errorMessage
         </div>
     }
 
     @if (!string.IsNullOrEmpty(successMessage))
     {
         <div class="alert alert-success mt-3">
-            <strong>成功：</strong>@successMessage
+            <strong>@L["Message_Success"]</strong>@successMessage
         </div>
     }
 </div>
@@ -161,7 +164,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载肉类类型列表失败：{ex.Message}";
+            errorMessage = $"{L["MeatTypes_LoadFailed"].Value}{ex.Message}";
         }
         finally
         {
@@ -186,23 +189,23 @@
             var success = await MeatTypeService.ToggleActiveAsync(id);
             if (success)
             {
-                successMessage = "类型状态已更新";
+                successMessage = L["MeatTypes_StatusUpdated"].Value;
                 await LoadMeatTypes();
             }
             else
             {
-                errorMessage = "更新类型状态失败";
+                errorMessage = L["MeatTypes_UpdateStatusFailed"].Value;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"操作失败：{ex.Message}";
+            errorMessage = $"{L["MeatTypes_OperationFailed"].Value}{ex.Message}";
         }
     }
 
     private async Task DeleteMeatType(int id)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个肉类类型吗？此操作不可恢复！"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["MeatTypes_ConfirmDelete"].Value))
         {
             return;
         }
@@ -212,17 +215,17 @@
             var success = await MeatTypeService.DeleteAsync(id);
             if (success)
             {
-                successMessage = "肉类类型已删除";
+                successMessage = L["MeatTypes_Deleted"].Value;
                 await LoadMeatTypes();
             }
             else
             {
-                errorMessage = "删除肉类类型失败";
+                errorMessage = L["MeatTypes_DeleteFailed"].Value;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"删除失败：{ex.Message}";
+            errorMessage = $"{L["MeatTypes_DeleteFailed"].Value}: {ex.Message}";
         }
     }
 }

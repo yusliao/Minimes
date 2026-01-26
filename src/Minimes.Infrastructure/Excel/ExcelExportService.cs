@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Minimes.Application.DTOs.QRCode;
 using Minimes.Application.DTOs.Report;
 using Minimes.Application.DTOs.WeighingRecord;
 using Minimes.Application.Interfaces;
+using Minimes.Application.Resources;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Drawing;
@@ -15,10 +17,14 @@ namespace Minimes.Infrastructure.Excel;
 public class ExcelExportService : IExcelExportService
 {
     private readonly ILogger<ExcelExportService> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
-    public ExcelExportService(ILogger<ExcelExportService> logger)
+    public ExcelExportService(
+        ILogger<ExcelExportService> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task<byte[]> ExportWeighingRecordsAsync(List<WeighingRecordResponse> records)
@@ -28,7 +34,17 @@ public class ExcelExportService : IExcelExportService
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("称重记录");
 
-            var headers = new[] { "记录ID", "条码", "肉类类型", "编号", "加工环节", "重量(lb)", "备注", "创建时间", "创建人" };
+            var headers = new[] {
+                _localizer["Excel_RecordId"].Value,
+                _localizer["Excel_Barcode"].Value,
+                _localizer["Excel_MeatType"].Value,
+                _localizer["Excel_Code"].Value,
+                _localizer["Excel_ProcessStage"].Value,
+                _localizer["Excel_WeightLb"].Value,
+                _localizer["Excel_Remarks"].Value,
+                _localizer["Excel_CreatedAt"].Value,
+                _localizer["Excel_CreatedBy"].Value
+            };
 
             for (int i = 0; i < headers.Length; i++)
             {
@@ -69,23 +85,23 @@ public class ExcelExportService : IExcelExportService
         return await Task.Run(() =>
         {
             using var package = new ExcelPackage();
-            var summarySheet = package.Workbook.Worksheets.Add("生产报表汇总");
+            var summarySheet = package.Workbook.Worksheets.Add(_localizer["Excel_ProductionReportSummary"].Value);
 
-            summarySheet.Cells["A1"].Value = "生产报表汇总";
+            summarySheet.Cells["A1"].Value = _localizer["Excel_ProductionReportSummary"].Value;
             summarySheet.Cells["A1:B1"].Merge = true;
             summarySheet.Cells["A1"].Style.Font.Size = 16;
             summarySheet.Cells["A1"].Style.Font.Bold = true;
 
             int row = 3;
-            summarySheet.Cells[row, 1].Value = "总记录数";
+            summarySheet.Cells[row, 1].Value = _localizer["Excel_TotalRecords"].Value;
             summarySheet.Cells[row++, 2].Value = report.TotalRecords;
-            summarySheet.Cells[row, 1].Value = "入库总重量(lb)";
+            summarySheet.Cells[row, 1].Value = _localizer["Excel_ReceivingWeightLb"].Value;
             summarySheet.Cells[row++, 2].Value = (report.ReceivingWeight / 0.45359237m).ToString("F3");
-            summarySheet.Cells[row, 1].Value = "加工总重量(lb)";
+            summarySheet.Cells[row, 1].Value = _localizer["Excel_ProcessingWeightLb"].Value;
             summarySheet.Cells[row++, 2].Value = (report.ProcessingWeight / 0.45359237m).ToString("F3");
-            summarySheet.Cells[row, 1].Value = "出库总重量(lb)";
+            summarySheet.Cells[row, 1].Value = _localizer["Excel_ShippingWeightLb"].Value;
             summarySheet.Cells[row++, 2].Value = (report.ShippingWeight / 0.45359237m).ToString("F3");
-            summarySheet.Cells[row, 1].Value = "涉及条码数";
+            summarySheet.Cells[row, 1].Value = _localizer["Excel_UniqueBarcodes"].Value;
             summarySheet.Cells[row, 2].Value = report.UniqueBarcodes;
 
             using (var range = summarySheet.Cells[$"A3:A{row}"])
@@ -120,10 +136,19 @@ public class ExcelExportService : IExcelExportService
 
     private void AddLossRateSheet(ExcelPackage package, List<ProductLossRateResponse> lossRates)
     {
-        var worksheet = package.Workbook.Worksheets.Add("条码损耗率统计");
+        var worksheet = package.Workbook.Worksheets.Add(_localizer["Excel_LossRateStatistics"].Value);
 
-        var headers = new[] { "条码", "入库重量(lb)", "加工重量(lb)", "出库重量(lb)",
-            "损耗重量(lb)", "损耗率(%)", "入库记录数", "加工记录数", "出库记录数" };
+        var headers = new[] {
+            _localizer["Excel_Barcode"].Value,
+            _localizer["Excel_ReceivingWeightLb"].Value,
+            _localizer["Excel_ProcessingWeightLb"].Value,
+            _localizer["Excel_ShippingWeightLb"].Value,
+            _localizer["Excel_LossWeightLb"].Value,
+            _localizer["Excel_LossRatePercent"].Value,
+            _localizer["Excel_ReceivingRecords"].Value,
+            _localizer["Excel_ProcessingRecords"].Value,
+            _localizer["Excel_ShippingRecords"].Value
+        };
 
         for (int i = 0; i < headers.Length; i++)
         {
@@ -174,9 +199,19 @@ public class ExcelExportService : IExcelExportService
         return await Task.Run(() =>
         {
             using var package = new ExcelPackage();
-            var worksheet = package.Workbook.Worksheets.Add("二维码列表");
+            var worksheet = package.Workbook.Worksheets.Add(_localizer["Excel_QRCodeList"].Value);
 
-            var headers = new[] { "ID", "编号", "肉类类型", "二维码内容", "二维码图片", "批次号", "打印次数", "状态", "创建时间" };
+            var headers = new[] {
+                _localizer["Excel_Id"].Value,
+                _localizer["Excel_Code"].Value,
+                _localizer["Excel_MeatType"].Value,
+                _localizer["Excel_QRCodeContent"].Value,
+                _localizer["Excel_QRCodeImage"].Value,
+                _localizer["Excel_BatchNumber"].Value,
+                _localizer["Excel_PrintCount"].Value,
+                _localizer["Excel_Status"].Value,
+                _localizer["Excel_CreatedAt"].Value
+            };
 
             for (int i = 0; i < headers.Length; i++)
             {
@@ -201,7 +236,7 @@ public class ExcelExportService : IExcelExportService
                 // 第5列留给二维码图片
                 worksheet.Cells[row, 6].Value = qrCode.BatchNumber ?? "";
                 worksheet.Cells[row, 7].Value = qrCode.PrintCount;
-                worksheet.Cells[row, 8].Value = qrCode.IsActive ? "激活" : "未激活";
+                worksheet.Cells[row, 8].Value = qrCode.IsActive ? _localizer["Status_Active"].Value : _localizer["Status_Inactive"].Value;
                 worksheet.Cells[row, 9].Value = qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
 
                 // 嵌入二维码图片

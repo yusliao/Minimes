@@ -3,7 +3,7 @@
 @using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.ProcessStage
-@using Minimes.Web.Resources
+@using Minimes.Application.Resources
 @inject IStringLocalizer<SharedResource> L
 @inject IProcessStageService ProcessStageService
 @inject NavigationManager Navigation
@@ -15,13 +15,13 @@
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-list-rich me-2"></span>工序管理
+                <span class="oi oi-list-rich me-2"></span>@L["ProcessStages_Title"]
             </h2>
-            <p class="text-muted">管理生产流程中的各个工序环节</p>
+            <p class="text-muted">@L["ProcessStages_Description"]</p>
         </div>
         <div class="col-auto">
             <button class="btn btn-primary" @onclick="NavigateToCreate">
-                <span class="oi oi-plus me-1"></span>新增工序
+                <span class="oi oi-plus me-1"></span>@L["ProcessStages_AddNew"]
             </button>
         </div>
     </div>
@@ -33,7 +33,7 @@
             <div class="col-md-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">总工序数</h6>
+                        <h6 class="text-muted">@L["ProcessStages_TotalCount"]</h6>
                         <h3>@stages.Count</h3>
                     </div>
                 </div>
@@ -41,7 +41,7 @@
             <div class="col-md-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">激活工序</h6>
+                        <h6 class="text-muted">@L["ProcessStages_ActiveCount"]</h6>
                         <h3 class="text-success">@stages.Count(s => s.IsActive)</h3>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
             <div class="col-md-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">停用工序</h6>
+                        <h6 class="text-muted">@L["ProcessStages_InactiveCount"]</h6>
                         <h3 class="text-secondary">@stages.Count(s => !s.IsActive)</h3>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
             <div class="col-md-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">总记录数</h6>
+                        <h6 class="text-muted">@L["ProcessStages_RecordCount"]</h6>
                         <h3 class="text-info">@stages.Sum(s => s.RecordCount)</h3>
                     </div>
                 </div>
@@ -70,11 +70,11 @@
         <div class="card-body">
             @if (isLoading)
             {
-                <p class="text-center text-muted">加载中...</p>
+                <p class="text-center text-muted">@L["Status_Loading"]</p>
             }
             else if (!stages.Any())
             {
-                <p class="text-center text-muted">暂无工序数据</p>
+                <p class="text-center text-muted">@L["ProcessStages_NoData"]</p>
             }
             else
             {
@@ -82,15 +82,15 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>排序</th>
-                                <th>工序代码</th>
-                                <th>工序名称</th>
-                                <th>工序类型</th>
-                                <th>状态</th>
-                                <th>计入损耗率</th>
-                                <th>记录数</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
+                                <th>@L["ProcessStages_SortOrder"]</th>
+                                <th>@L["ProcessStages_Code"]</th>
+                                <th>@L["ProcessStages_Name"]</th>
+                                <th>@L["ProcessStages_Type"]</th>
+                                <th>@L["ProcessStages_Status"]</th>
+                                <th>@L["ProcessStages_IncludeInLossRate"]</th>
+                                <th>@L["ProcessStages_RecordCountColumn"]</th>
+                                <th>@L["ProcessStages_CreatedAt"]</th>
+                                <th>@L["ProcessStages_Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,11 +108,11 @@
                                     <td>
                                         @if (stage.IsActive)
                                         {
-                                            <span class="badge bg-success">激活</span>
+                                            <span class="badge bg-success">@L["Status_Active"]</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">停用</span>
+                                            <span class="badge bg-secondary">@L["Status_Inactive"]</span>
                                         }
                                     </td>
                                     <td>
@@ -155,14 +155,14 @@
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger mt-3">
-            <strong>错误：</strong>@errorMessage
+            <strong>@L["Message_Error"]</strong>@errorMessage
         </div>
     }
 
     @if (!string.IsNullOrEmpty(successMessage))
     {
         <div class="alert alert-success mt-3">
-            <strong>成功：</strong>@successMessage
+            <strong>@L["Message_Success"]</strong>@successMessage
         </div>
     }
 </div>
@@ -190,7 +190,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载工序列表失败：{ex.Message}";
+            errorMessage = $"{L["ProcessStages_LoadFailed"].Value}{ex.Message}";
         }
         finally
         {
@@ -215,23 +215,23 @@
             var success = await ProcessStageService.ToggleActiveAsync(id);
             if (success)
             {
-                successMessage = "工序状态已更新";
+                successMessage = L["ProcessStages_StatusUpdated"].Value;
                 await LoadStages();
             }
             else
             {
-                errorMessage = "更新工序状态失败";
+                errorMessage = L["ProcessStages_UpdateStatusFailed"].Value;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"操作失败：{ex.Message}";
+            errorMessage = $"{L["ProcessStages_OperationFailed"].Value}{ex.Message}";
         }
     }
 
     private async Task DeleteStage(int id)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个工序吗？此操作不可恢复！"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["ProcessStages_ConfirmDelete"].Value))
         {
             return;
         }
@@ -241,17 +241,17 @@
             var success = await ProcessStageService.DeleteAsync(id);
             if (success)
             {
-                successMessage = "工序已删除";
+                successMessage = L["ProcessStages_Deleted"].Value;
                 await LoadStages();
             }
             else
             {
-                errorMessage = "删除工序失败";
+                errorMessage = L["ProcessStages_DeleteFailed"].Value;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"删除失败：{ex.Message}";
+            errorMessage = $"{L["ProcessStages_DeleteFailed"].Value}: {ex.Message}";
         }
     }
 
@@ -270,9 +270,9 @@
     {
         return stageType.ToLower() switch
         {
-            "start" => "起始环节",
-            "middle" => "中间环节",
-            "end" => "结束环节",
+            "start" => L["ProcessStageType_Start"].Value,
+            "middle" => L["ProcessStageType_Middle"].Value,
+            "end" => L["ProcessStageType_End"].Value,
             _ => stageType
         };
     }

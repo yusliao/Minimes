@@ -1,30 +1,33 @@
 @page "/qrcodes"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.QRCode
 @using Minimes.Application.DTOs.MeatType
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IQRCodeService QRCodeService
 @inject IMeatTypeService MeatTypeService
 @inject IExcelExportService ExcelExportService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>二维码管理 - MiniMES</PageTitle>
+<PageTitle>@L["QRCodes_Title"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-qrcode me-2"></span>二维码管理
+                <span class="oi oi-qrcode me-2"></span>@L["QRCodes_Title"]
             </h2>
-            <p class="text-muted">管理肉类产品二维码标签</p>
+            <p class="text-muted">@L["QRCodes_Description"]</p>
         </div>
         <div class="col-auto">
             <button class="btn btn-success me-2" @onclick="NavigateToBatchCreate">
-                <span class="oi oi-layers me-1"></span>批量创建
+                <span class="oi oi-layers me-1"></span>@L["QRCodes_BatchCreate"]
             </button>
             <button class="btn btn-primary" @onclick="NavigateToCreate">
-                <span class="oi oi-plus me-1"></span>新增二维码
+                <span class="oi oi-plus me-1"></span>@L["QRCodes_AddNew"]
             </button>
         </div>
     </div>
@@ -36,7 +39,7 @@
             <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">二维码总数</h6>
+                        <h6 class="text-muted">@L["QRCodes_TotalCount"]</h6>
                         <h3>@statistics.TotalCount</h3>
                     </div>
                 </div>
@@ -44,7 +47,7 @@
             <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">激活数量</h6>
+                        <h6 class="text-muted">@L["QRCodes_ActiveCount"]</h6>
                         <h3 class="text-success">@statistics.ActiveCount</h3>
                     </div>
                 </div>
@@ -52,7 +55,7 @@
             <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h6 class="text-muted">总打印次数</h6>
+                        <h6 class="text-muted">@L["QRCodes_TotalPrintCount"]</h6>
                         <h3 class="text-info">@statistics.TotalPrintCount</h3>
                     </div>
                 </div>
@@ -65,9 +68,9 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">肉类类型</label>
+                    <label class="form-label">@L["QRCodes_MeatTypeLabel"]</label>
                     <select class="form-select" @bind="filterMeatTypeId">
-                        <option value="0">全部</option>
+                        <option value="0">@L["Filter_All"]</option>
                         @foreach (var meatType in meatTypes)
                         {
                             <option value="@meatType.Id">@meatType.Name</option>
@@ -75,28 +78,28 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">批次号</label>
-                    <input type="text" class="form-control" @bind="filterBatchNumber" placeholder="输入批次号" />
+                    <label class="form-label">@L["QRCodes_BatchNumberLabel"]</label>
+                    <input type="text" class="form-control" @bind="filterBatchNumber" placeholder="@L["QRCodes_BatchNumberPlaceholder"]" />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">状态</label>
+                    <label class="form-label">@L["QRCodes_StatusLabel"]</label>
                     <select class="form-select" @bind="filterIsActive">
-                        <option value="">全部</option>
-                        <option value="true">激活</option>
-                        <option value="false">未激活</option>
+                        <option value="">@L["Filter_All"]</option>
+                        <option value="true">@L["Status_Active"]</option>
+                        <option value="false">@L["Status_Inactive"]</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">&nbsp;</label>
                     <div>
                         <button class="btn btn-primary me-2" @onclick="ApplyFilter">
-                            <span class="oi oi-magnifying-glass me-1"></span>查询
+                            <span class="oi oi-magnifying-glass me-1"></span>@L["Btn_Search"]
                         </button>
                         <button class="btn btn-secondary me-2" @onclick="ResetFilter">
-                            <span class="oi oi-reload me-1"></span>重置
+                            <span class="oi oi-reload me-1"></span>@L["Btn_Reset"]
                         </button>
                         <button class="btn btn-success" @onclick="ExportToExcel" disabled="@(!filteredQRCodes.Any())">
-                            <span class="oi oi-data-transfer-download me-1"></span>导出Excel
+                            <span class="oi oi-data-transfer-download me-1"></span>@L["Btn_ExportExcel"]
                         </button>
                     </div>
                 </div>
@@ -109,11 +112,11 @@
         <div class="card-body">
             @if (isLoading)
             {
-                <p class="text-center text-muted">加载中...</p>
+                <p class="text-center text-muted">@L["Status_Loading"]</p>
             }
             else if (!filteredQRCodes.Any())
             {
-                <p class="text-center text-muted">暂无二维码数据</p>
+                <p class="text-center text-muted">@L["QRCodes_NoData"]</p>
             }
             else
             {
@@ -121,16 +124,16 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>编号</th>
-                                <th>肉类类型</th>
-                                <th>二维码内容</th>
-                                <th>二维码图片</th>
-                                <th>批次号</th>
-                                <th>打印次数</th>
-                                <th>状态</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
+                                <th>@L["QRCodes_IdColumn"]</th>
+                                <th>@L["QRCodes_CodeColumn"]</th>
+                                <th>@L["QRCodes_MeatTypeColumn"]</th>
+                                <th>@L["QRCodes_ContentColumn"]</th>
+                                <th>@L["QRCodes_ImageColumn"]</th>
+                                <th>@L["QRCodes_BatchNumberColumn"]</th>
+                                <th>@L["QRCodes_PrintCountColumn"]</th>
+                                <th>@L["QRCodes_StatusColumn"]</th>
+                                <th>@L["QRCodes_CreatedAtColumn"]</th>
+                                <th>@L["QRCodes_ActionsColumn"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,11 +157,11 @@
                                     <td>
                                         @if (qrCode.IsActive)
                                         {
-                                            <span class="badge bg-success">激活</span>
+                                            <span class="badge bg-success">@L["Status_Active"]</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">未激活</span>
+                                            <span class="badge bg-secondary">@L["Status_Inactive"]</span>
                                         }
                                     </td>
                                     <td>@qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
@@ -215,7 +218,7 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"加载数据失败: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_LoadFailed"].Value} {ex.Message}");
         }
         finally
         {
@@ -282,13 +285,13 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"切换状态失败: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_ToggleStatusFailed"].Value} {ex.Message}");
         }
     }
 
     private async Task DeleteQRCode(int id)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个二维码吗？");
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["QRCodes_ConfirmDelete"].Value);
         if (!confirmed) return;
 
         try
@@ -298,7 +301,7 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"删除失败: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_DeleteFailed"].Value} {ex.Message}");
         }
     }
 
@@ -307,12 +310,12 @@
         try
         {
             var excelBytes = await ExcelExportService.ExportQRCodesAsync(filteredQRCodes);
-            var fileName = $"二维码列表_{DateTime.Now:yyyyMMdd}.xlsx";
+            var fileName = $"{L["QRCodes_ExportFileName"].Value}_{DateTime.Now:yyyyMMdd}.xlsx";
             await JSRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(excelBytes));
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"导出失败: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["Export_Failed"].Value} {ex.Message}");
         }
     }
 }

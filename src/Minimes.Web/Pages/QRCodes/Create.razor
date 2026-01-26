@@ -1,26 +1,29 @@
 @page "/qrcodes/create"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.QRCode
 @using Minimes.Application.DTOs.MeatType
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IQRCodeService QRCodeService
 @inject IMeatTypeService MeatTypeService
 @inject IQRCodeGeneratorService QRCodeGeneratorService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>新增二维码 - MiniMES</PageTitle>
+<PageTitle>@L["QRCodes_CreateTitle"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-plus me-2"></span>新增二维码
+                <span class="oi oi-plus me-2"></span>@L["QRCodes_CreateTitle"]
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/qrcodes">二维码管理</a></li>
-                    <li class="breadcrumb-item active">新增</li>
+                    <li class="breadcrumb-item"><a href="/qrcodes">@L["QRCodes_Title"]</a></li>
+                    <li class="breadcrumb-item active">@L["Breadcrumb_Create"]</li>
                 </ol>
             </nav>
         </div>
@@ -31,59 +34,59 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">基本信息</h5>
+                    <h5 class="mb-0">@L["QRCodes_BasicInfo"]</h5>
                 </div>
                 <div class="card-body">
                     @if (!string.IsNullOrEmpty(errorMessage))
                     {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>错误：</strong> @errorMessage
+                            <strong>@L["Message_Error"]</strong> @errorMessage
                             <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
                         </div>
                     }
 
                     <div class="mb-3">
-                        <label class="form-label">肉类类型 <span class="text-danger">*</span></label>
+                        <label class="form-label">@L["QRCodes_MeatTypeLabel"] <span class="text-danger">*</span></label>
                         <select class="form-select" @bind="request.MeatTypeId" @bind:after="OnMeatTypeChanged">
-                            <option value="0">-- 请选择肉类类型 --</option>
+                            <option value="0">@L["QRCodes_SelectMeatType"]</option>
                             @foreach (var meatType in meatTypes)
                             {
                                 <option value="@meatType.Id">@meatType.Name (@meatType.Code)</option>
                             }
                         </select>
-                        <div class="form-text">选择二维码关联的肉类类型</div>
+                        <div class="form-text">@L["QRCodes_MeatTypeHint"]</div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">编号 <span class="text-danger">*</span></label>
+                        <label class="form-label">@L["QRCodes_CodeLabel"] <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" @bind="request.Code" @bind:after="OnCodeChanged"
-                               placeholder="例如：001, A01, 20260123-001" maxlength="50" />
-                        <div class="form-text">输入唯一编号，将与肉类类型代码组合生成二维码内容</div>
+                               placeholder="@L["QRCodes_CodePlaceholder"]" maxlength="50" />
+                        <div class="form-text">@L["QRCodes_CodeHint"]</div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(previewContent))
                     {
                         <div class="mb-3">
-                            <label class="form-label">二维码内容（自动生成）</label>
+                            <label class="form-label">@L["QRCodes_ContentPreview"]</label>
                             <input type="text" class="form-control" value="@previewContent" readonly />
                             <div class="form-text text-success">
-                                <span class="oi oi-check me-1"></span>格式：@selectedMeatTypeCode-@request.Code
+                                <span class="oi oi-check me-1"></span>@L["QRCodes_ContentFormat"]@selectedMeatTypeCode-@request.Code
                             </div>
                         </div>
                     }
 
                     <div class="mb-3">
-                        <label class="form-label">批次号</label>
+                        <label class="form-label">@L["QRCodes_BatchNumberLabel"]</label>
                         <input type="text" class="form-control" @bind="request.BatchNumber"
-                               placeholder="例如：20260123-A" maxlength="50" />
-                        <div class="form-text">可选，用于批量管理和追溯</div>
+                               placeholder="@L["QRCodes_BatchNumberPlaceholder"]" maxlength="50" />
+                        <div class="form-text">@L["QRCodes_BatchNumberHint"]</div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">备注</label>
+                        <label class="form-label">@L["QRCodes_RemarksLabel"]</label>
                         <textarea class="form-control" @bind="request.Remarks" rows="3"
-                                  placeholder="输入备注信息..." maxlength="500"></textarea>
-                        <div class="form-text">可选，最多500字符</div>
+                                  placeholder="@L["QRCodes_RemarksPlaceholder"]" maxlength="500"></textarea>
+                        <div class="form-text">@L["QRCodes_RemarksHint"]</div>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -91,16 +94,16 @@
                             @if (isSaving)
                             {
                                 <span class="spinner-border spinner-border-sm me-1"></span>
-                                <span>保存中...</span>
+                                <span>@L["Btn_Saving"]</span>
                             }
                             else
                             {
                                 <span class="oi oi-check me-1"></span>
-                                <span>保存</span>
+                                <span>@L["Btn_Save"]</span>
                             }
                         </button>
                         <button class="btn btn-secondary" @onclick="Cancel">
-                            <span class="oi oi-x me-1"></span>取消
+                            <span class="oi oi-x me-1"></span>@L["Btn_Cancel"]
                         </button>
                     </div>
                 </div>
@@ -112,7 +115,7 @@
             <!-- 二维码预览 -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h5 class="mb-0">二维码预览</h5>
+                    <h5 class="mb-0">@L["QRCodes_PreviewTitle"]</h5>
                 </div>
                 <div class="card-body text-center">
                     @if (!string.IsNullOrEmpty(previewImageBase64))
@@ -127,7 +130,7 @@
                     {
                         <div class="text-muted py-5">
                             <span class="oi oi-qrcode" style="font-size: 48px;"></span>
-                            <p class="mt-2">选择肉类类型并输入编号后<br/>将显示二维码预览</p>
+                            <p class="mt-2">@L["QRCodes_PreviewHint"]</p>
                         </div>
                     }
                 </div>
@@ -136,37 +139,36 @@
             <!-- 填写说明 -->
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">填写说明</h5>
+                    <h5 class="mb-0">@L["QRCodes_FormGuideTitle"]</h5>
                 </div>
                 <div class="card-body">
                     <h6 class="text-primary">
-                        <span class="oi oi-info me-1"></span>二维码内容规则
+                        <span class="oi oi-info me-1"></span>@L["QRCodes_ContentRulesTitle"]
                     </h6>
                     <p class="small mb-3">
-                        二维码内容由<strong>肉类类型代码</strong>和<strong>编号</strong>组合生成：
-                        <br/><code>肉类代码-编号</code>
+                        @L["QRCodes_ContentRulesText"]
                     </p>
 
                     <h6 class="text-primary">
-                        <span class="oi oi-lightbulb me-1"></span>编号建议
+                        <span class="oi oi-lightbulb me-1"></span>@L["QRCodes_CodeSuggestionsTitle"]
                     </h6>
                     <ul class="small mb-3">
-                        <li>使用数字编号：001, 002, 003...</li>
-                        <li>使用字母+数字：A01, B01, C01...</li>
-                        <li>使用日期+序号：20260123-001</li>
-                        <li>确保编号在同一肉类类型下唯一</li>
+                        <li>@L["QRCodes_CodeSuggestion1"]</li>
+                        <li>@L["QRCodes_CodeSuggestion2"]</li>
+                        <li>@L["QRCodes_CodeSuggestion3"]</li>
+                        <li>@L["QRCodes_CodeSuggestion4"]</li>
                     </ul>
 
                     <h6 class="text-primary">
-                        <span class="oi oi-layers me-1"></span>批次号用途
+                        <span class="oi oi-layers me-1"></span>@L["QRCodes_BatchUsageTitle"]
                     </h6>
                     <p class="small mb-0">
-                        批次号用于将多个二维码归为一组，便于：
+                        @L["QRCodes_BatchUsageText"]
                     </p>
                     <ul class="small mb-0">
-                        <li>批量查询和筛选</li>
-                        <li>质量追溯管理</li>
-                        <li>生产批次统计</li>
+                        <li>@L["QRCodes_BatchUsage1"]</li>
+                        <li>@L["QRCodes_BatchUsage2"]</li>
+                        <li>@L["QRCodes_BatchUsage3"]</li>
                     </ul>
                 </div>
             </div>
@@ -198,7 +200,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载肉类类型失败: {ex.Message}";
+            errorMessage = $"{L["MeatTypes_LoadFailed"].Value} {ex.Message}";
         }
     }
 
@@ -243,7 +245,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"生成预览失败: {ex.Message}";
+            errorMessage = $"{L["QRCodes_PreviewFailed"].Value} {ex.Message}";
         }
     }
 
@@ -257,13 +259,13 @@
             // 基本验证
             if (request.MeatTypeId <= 0)
             {
-                errorMessage = "请选择肉类类型";
+                errorMessage = L["QRCodes_SelectMeatTypeRequired"].Value;
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(request.Code))
             {
-                errorMessage = "请输入编号";
+                errorMessage = L["QRCodes_CodeRequired"].Value;
                 return;
             }
 

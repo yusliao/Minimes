@@ -1137,4 +1137,759 @@
     <value>登录失败: </value>
   </data>
 
+  <!-- Excel导出表头 -->
+  <data name="Excel_RecordId" xml:space="preserve">
+    <value>记录ID</value>
+  </data>
+  <data name="Excel_Barcode" xml:space="preserve">
+    <value>条码</value>
+  </data>
+  <data name="Excel_MeatType" xml:space="preserve">
+    <value>肉类类型</value>
+  </data>
+  <data name="Excel_Code" xml:space="preserve">
+    <value>编号</value>
+  </data>
+  <data name="Excel_ProcessStage" xml:space="preserve">
+    <value>加工环节</value>
+  </data>
+  <data name="Excel_WeightLb" xml:space="preserve">
+    <value>重量(lb)</value>
+  </data>
+  <data name="Excel_Remarks" xml:space="preserve">
+    <value>备注</value>
+  </data>
+  <data name="Excel_CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="Excel_CreatedBy" xml:space="preserve">
+    <value>创建人</value>
+  </data>
+  <data name="Excel_ProductionReportSummary" xml:space="preserve">
+    <value>生产报表汇总</value>
+  </data>
+  <data name="Excel_TotalRecords" xml:space="preserve">
+    <value>总记录数</value>
+  </data>
+  <data name="Excel_ReceivingWeightLb" xml:space="preserve">
+    <value>入库总重量(lb)</value>
+  </data>
+  <data name="Excel_ProcessingWeightLb" xml:space="preserve">
+    <value>加工总重量(lb)</value>
+  </data>
+  <data name="Excel_ShippingWeightLb" xml:space="preserve">
+    <value>出库总重量(lb)</value>
+  </data>
+  <data name="Excel_UniqueBarcodes" xml:space="preserve">
+    <value>涉及条码数</value>
+  </data>
+  <data name="Excel_LossRateStatistics" xml:space="preserve">
+    <value>条码损耗率统计</value>
+  </data>
+  <data name="Excel_LossWeightLb" xml:space="preserve">
+    <value>损耗重量(lb)</value>
+  </data>
+  <data name="Excel_LossRatePercent" xml:space="preserve">
+    <value>损耗率(%)</value>
+  </data>
+  <data name="Excel_ReceivingRecords" xml:space="preserve">
+    <value>入库记录数</value>
+  </data>
+  <data name="Excel_ProcessingRecords" xml:space="preserve">
+    <value>加工记录数</value>
+  </data>
+  <data name="Excel_ShippingRecords" xml:space="preserve">
+    <value>出库记录数</value>
+  </data>
+  <data name="Excel_QRCodeList" xml:space="preserve">
+    <value>二维码列表</value>
+  </data>
+  <data name="Excel_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Excel_QRCodeContent" xml:space="preserve">
+    <value>二维码内容</value>
+  </data>
+  <data name="Excel_QRCodeImage" xml:space="preserve">
+    <value>二维码图片</value>
+  </data>
+  <data name="Excel_BatchNumber" xml:space="preserve">
+    <value>批次号</value>
+  </data>
+  <data name="Excel_PrintCount" xml:space="preserve">
+    <value>打印次数</value>
+  </data>
+  <data name="Excel_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+
+  <!-- 新增功能菜单 -->
+  <data name="Nav_ProcessStages" xml:space="preserve">
+    <value>工序管理</value>
+  </data>
+  <data name="Nav_MeatTypes" xml:space="preserve">
+    <value>肉类类型</value>
+  </data>
+  <data name="Nav_QRCodes" xml:space="preserve">
+    <value>二维码管理</value>
+  </data>
+
+  <!-- 记录列表表头 -->
+  <data name="Records_MeatType" xml:space="preserve">
+    <value>肉类类型</value>
+  </data>
+  <data name="Records_Code" xml:space="preserve">
+    <value>编号</value>
+  </data>
+
+  <!-- 导出相关 -->
+  <data name="Btn_ExportExcel" xml:space="preserve">
+    <value>导出Excel</value>
+  </data>
+  <data name="Export_NoData" xml:space="preserve">
+    <value>没有数据可以导出！</value>
+  </data>
+  <data name="Export_Failed" xml:space="preserve">
+    <value>导出失败</value>
+  </data>
+  <data name="Export_FileNamePrefix" xml:space="preserve">
+    <value>称重记录</value>
+  </data>
+
+  <!-- 工序管理页面 -->
+  <data name="ProcessStages_Title" xml:space="preserve">
+    <value>工序管理</value>
+  </data>
+  <data name="ProcessStages_Description" xml:space="preserve">
+    <value>管理生产流程中的各个工序环节</value>
+  </data>
+  <data name="ProcessStages_AddNew" xml:space="preserve">
+    <value>新增工序</value>
+  </data>
+  <data name="ProcessStages_TotalCount" xml:space="preserve">
+    <value>总工序数</value>
+  </data>
+  <data name="ProcessStages_ActiveCount" xml:space="preserve">
+    <value>激活工序</value>
+  </data>
+  <data name="ProcessStages_InactiveCount" xml:space="preserve">
+    <value>停用工序</value>
+  </data>
+  <data name="ProcessStages_RecordCount" xml:space="preserve">
+    <value>总记录数</value>
+  </data>
+  <data name="ProcessStages_NoData" xml:space="preserve">
+    <value>暂无工序数据</value>
+  </data>
+  <data name="ProcessStages_SortOrder" xml:space="preserve">
+    <value>排序</value>
+  </data>
+  <data name="ProcessStages_Code" xml:space="preserve">
+    <value>工序代码</value>
+  </data>
+  <data name="ProcessStages_Name" xml:space="preserve">
+    <value>工序名称</value>
+  </data>
+  <data name="ProcessStages_Type" xml:space="preserve">
+    <value>工序类型</value>
+  </data>
+  <data name="ProcessStages_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="ProcessStages_IncludeInLossRate" xml:space="preserve">
+    <value>计入损耗率</value>
+  </data>
+  <data name="ProcessStages_RecordCountColumn" xml:space="preserve">
+    <value>记录数</value>
+  </data>
+  <data name="ProcessStages_CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="ProcessStages_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Status_Active" xml:space="preserve">
+    <value>激活</value>
+  </data>
+  <data name="Status_Inactive" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="Message_Error" xml:space="preserve">
+    <value>错误：</value>
+  </data>
+  <data name="Message_Success" xml:space="preserve">
+    <value>成功：</value>
+  </data>
+  <data name="ProcessStages_LoadFailed" xml:space="preserve">
+    <value>加载工序列表失败：</value>
+  </data>
+  <data name="ProcessStages_StatusUpdated" xml:space="preserve">
+    <value>工序状态已更新</value>
+  </data>
+  <data name="ProcessStages_UpdateStatusFailed" xml:space="preserve">
+    <value>更新工序状态失败</value>
+  </data>
+  <data name="ProcessStages_OperationFailed" xml:space="preserve">
+    <value>操作失败：</value>
+  </data>
+  <data name="ProcessStages_ConfirmDelete" xml:space="preserve">
+    <value>确定要删除这个工序吗？此操作不可恢复！</value>
+  </data>
+  <data name="ProcessStages_Deleted" xml:space="preserve">
+    <value>工序已删除</value>
+  </data>
+  <data name="ProcessStages_DeleteFailed" xml:space="preserve">
+    <value>删除工序失败</value>
+  </data>
+  <data name="ProcessStageType_Start" xml:space="preserve">
+    <value>起始环节</value>
+  </data>
+  <data name="ProcessStageType_Middle" xml:space="preserve">
+    <value>中间环节</value>
+  </data>
+  <data name="ProcessStageType_End" xml:space="preserve">
+    <value>结束环节</value>
+  </data>
+
+  <!-- 工序管理表单页面 -->
+  <data name="ProcessStages_CreateTitle" xml:space="preserve">
+    <value>新增工序</value>
+  </data>
+  <data name="ProcessStages_LoadingInfo" xml:space="preserve">
+    <value>加载工序信息...</value>
+  </data>
+  <data name="ProcessStages_NotFoundWarning" xml:space="preserve">
+    <value>提示：</value>
+  </data>
+  <data name="ProcessStages_NotFoundMessage" xml:space="preserve">
+    <value>未找到指定的工序</value>
+  </data>
+  <data name="ProcessStages_CodeReadonly" xml:space="preserve">
+    <value>工序代码创建后不可修改</value>
+  </data>
+  <data name="ProcessStages_ActiveLabel" xml:space="preserve">
+    <value>激活工序</value>
+  </data>
+  <data name="ProcessStages_ActiveHint" xml:space="preserve">
+    <value>停用后，该工序将不能用于新的称重记录</value>
+  </data>
+  <data name="ProcessStages_InfoTitle" xml:space="preserve">
+    <value>工序信息</value>
+  </data>
+  <data name="ProcessStages_CodeInfo" xml:space="preserve">
+    <value>工序代码：</value>
+  </data>
+  <data name="ProcessStages_CreatedAtInfo" xml:space="preserve">
+    <value>创建时间：</value>
+  </data>
+  <data name="ProcessStages_RecordCountInfo" xml:space="preserve">
+    <value>关联记录数：</value>
+  </data>
+  <data name="ProcessStages_UsageWarningTitle" xml:space="preserve">
+    <value>使用提示</value>
+  </data>
+  <data name="ProcessStages_UsageWarningMessage" xml:space="preserve">
+    <value>该工序已被 {0} 条称重记录使用，不能删除。如需停用，请取消勾选"激活工序"选项。</value>
+  </data>
+  <data name="ProcessStages_LoadFailed2" xml:space="preserve">
+    <value>加载工序信息失败：</value>
+  </data>
+  <data name="ProcessStages_CreateDescription" xml:space="preserve">
+    <value>创建新的生产工序环节</value>
+  </data>
+  <data name="ProcessStages_EditTitle" xml:space="preserve">
+    <value>编辑工序</value>
+  </data>
+  <data name="ProcessStages_EditDescription" xml:space="preserve">
+    <value>修改工序信息</value>
+  </data>
+  <data name="ProcessStages_CodeLabel" xml:space="preserve">
+    <value>工序代码</value>
+  </data>
+  <data name="ProcessStages_NameLabel" xml:space="preserve">
+    <value>工序名称</value>
+  </data>
+  <data name="ProcessStages_SortOrderLabel" xml:space="preserve">
+    <value>显示顺序</value>
+  </data>
+  <data name="ProcessStages_TypeLabel" xml:space="preserve">
+    <value>工序类型</value>
+  </data>
+  <data name="ProcessStages_IncludeInLossRateLabel" xml:space="preserve">
+    <value>计入损耗率计算</value>
+  </data>
+  <data name="ProcessStages_DescriptionLabel" xml:space="preserve">
+    <value>描述说明</value>
+  </data>
+  <data name="Btn_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Btn_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ProcessStages_CodePlaceholder" xml:space="preserve">
+    <value>如：RECEIVING</value>
+  </data>
+  <data name="ProcessStages_CodeHint" xml:space="preserve">
+    <value>工序的唯一标识，建议使用大写英文字母</value>
+  </data>
+  <data name="ProcessStages_NamePlaceholder" xml:space="preserve">
+    <value>如：原料入库</value>
+  </data>
+  <data name="ProcessStages_SortOrderHint" xml:space="preserve">
+    <value>数字越小越靠前</value>
+  </data>
+  <data name="ProcessStages_TypeStartOption" xml:space="preserve">
+    <value>起始环节（如：原料入库）</value>
+  </data>
+  <data name="ProcessStages_TypeMiddleOption" xml:space="preserve">
+    <value>中间环节（如：加工过程）</value>
+  </data>
+  <data name="ProcessStages_TypeEndOption" xml:space="preserve">
+    <value>结束环节（如：成品出库）</value>
+  </data>
+  <data name="ProcessStages_TypeHint" xml:space="preserve">
+    <value>用于损耗率计算：起始环节作为基准，结束环节作为对比</value>
+  </data>
+  <data name="ProcessStages_IncludeInLossRateHint" xml:space="preserve">
+    <value>勾选后，该工序的数据会参与损耗率统计</value>
+  </data>
+  <data name="ProcessStages_DescriptionPlaceholder" xml:space="preserve">
+    <value>工序的详细说明...</value>
+  </data>
+  <data name="ProcessStages_FormGuideTitle" xml:space="preserve">
+    <value>填写说明</value>
+  </data>
+  <data name="ProcessStages_FormGuideCode" xml:space="preserve">
+    <value>工序代码：必须唯一，建议使用大写英文字母，如：RECEIVING、PROCESSING、SHIPPING</value>
+  </data>
+  <data name="ProcessStages_FormGuideName" xml:space="preserve">
+    <value>工序名称：显示给用户的名称，如：原料入库、加工过程、成品出库</value>
+  </data>
+  <data name="ProcessStages_FormGuideSortOrder" xml:space="preserve">
+    <value>显示顺序：控制工序在列表中的排列顺序</value>
+  </data>
+  <data name="ProcessStages_FormGuideType" xml:space="preserve">
+    <value>工序类型：</value>
+  </data>
+  <data name="ProcessStages_FormGuideTypeStart" xml:space="preserve">
+    <value>起始环节：生产流程的开始（如原料入库）</value>
+  </data>
+  <data name="ProcessStages_FormGuideTypeMiddle" xml:space="preserve">
+    <value>中间环节：生产过程中的加工环节</value>
+  </data>
+  <data name="ProcessStages_FormGuideTypeEnd" xml:space="preserve">
+    <value>结束环节：生产流程的结束（如成品出库）</value>
+  </data>
+  <data name="ProcessStages_FormGuideIncludeInLossRate" xml:space="preserve">
+    <value>计入损耗率：勾选后，该工序的数据会参与损耗率统计计算</value>
+  </data>
+
+  <!-- 肉类类型管理页面 -->
+  <data name="MeatTypes_Title" xml:space="preserve">
+    <value>肉类类型管理</value>
+  </data>
+  <data name="MeatTypes_Description" xml:space="preserve">
+    <value>管理不同种类的生肉分类</value>
+  </data>
+  <data name="MeatTypes_AddNew" xml:space="preserve">
+    <value>新增类型</value>
+  </data>
+  <data name="MeatTypes_TotalCount" xml:space="preserve">
+    <value>总类型数</value>
+  </data>
+  <data name="MeatTypes_ActiveCount" xml:space="preserve">
+    <value>激活类型</value>
+  </data>
+  <data name="MeatTypes_InactiveCount" xml:space="preserve">
+    <value>停用类型</value>
+  </data>
+  <data name="MeatTypes_NoData" xml:space="preserve">
+    <value>暂无肉类类型数据</value>
+  </data>
+  <data name="MeatTypes_SortOrder" xml:space="preserve">
+    <value>排序</value>
+  </data>
+  <data name="MeatTypes_Code" xml:space="preserve">
+    <value>类型代码</value>
+  </data>
+  <data name="MeatTypes_Name" xml:space="preserve">
+    <value>类型名称</value>
+  </data>
+  <data name="MeatTypes_Description" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="MeatTypes_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="MeatTypes_CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="MeatTypes_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="MeatTypes_LoadFailed" xml:space="preserve">
+    <value>加载肉类类型列表失败：</value>
+  </data>
+  <data name="MeatTypes_StatusUpdated" xml:space="preserve">
+    <value>类型状态已更新</value>
+  </data>
+  <data name="MeatTypes_UpdateStatusFailed" xml:space="preserve">
+    <value>更新类型状态失败</value>
+  </data>
+  <data name="MeatTypes_OperationFailed" xml:space="preserve">
+    <value>操作失败：</value>
+  </data>
+  <data name="MeatTypes_ConfirmDelete" xml:space="preserve">
+    <value>确定要删除这个肉类类型吗？此操作不可恢复！</value>
+  </data>
+  <data name="MeatTypes_Deleted" xml:space="preserve">
+    <value>肉类类型已删除</value>
+  </data>
+  <data name="MeatTypes_DeleteFailed" xml:space="preserve">
+    <value>删除肉类类型失败</value>
+  </data>
+
+  <!-- 肉类类型表单页面 -->
+  <data name="MeatTypes_CreateTitle" xml:space="preserve">
+    <value>新增肉类类型</value>
+  </data>
+  <data name="MeatTypes_CreateDescription" xml:space="preserve">
+    <value>创建新的生肉分类</value>
+  </data>
+  <data name="MeatTypes_EditTitle" xml:space="preserve">
+    <value>编辑肉类类型</value>
+  </data>
+  <data name="MeatTypes_EditDescription" xml:space="preserve">
+    <value>修改肉类类型信息</value>
+  </data>
+  <data name="MeatTypes_CodeLabel" xml:space="preserve">
+    <value>类型代码</value>
+  </data>
+  <data name="MeatTypes_CodePlaceholder" xml:space="preserve">
+    <value>如：PORK</value>
+  </data>
+  <data name="MeatTypes_CodeHint" xml:space="preserve">
+    <value>类型的唯一标识，建议使用大写英文字母</value>
+  </data>
+  <data name="MeatTypes_CodeReadonly" xml:space="preserve">
+    <value>类型代码创建后不可修改</value>
+  </data>
+  <data name="MeatTypes_NameLabel" xml:space="preserve">
+    <value>类型名称</value>
+  </data>
+  <data name="MeatTypes_NamePlaceholder" xml:space="preserve">
+    <value>如：猪肉</value>
+  </data>
+  <data name="MeatTypes_SortOrderLabel" xml:space="preserve">
+    <value>显示顺序</value>
+  </data>
+  <data name="MeatTypes_SortOrderHint" xml:space="preserve">
+    <value>数字越小越靠前</value>
+  </data>
+  <data name="MeatTypes_ActiveLabel" xml:space="preserve">
+    <value>激活此类型</value>
+  </data>
+  <data name="MeatTypes_ActiveHint" xml:space="preserve">
+    <value>停用后，该类型将不能在系统中使用</value>
+  </data>
+  <data name="MeatTypes_ActiveHintCreate" xml:space="preserve">
+    <value>勾选后，该类型可以在系统中使用</value>
+  </data>
+  <data name="MeatTypes_DescriptionLabel" xml:space="preserve">
+    <value>描述说明</value>
+  </data>
+  <data name="MeatTypes_DescriptionPlaceholder" xml:space="preserve">
+    <value>类型的详细说明...</value>
+  </data>
+  <data name="MeatTypes_LoadingInfo" xml:space="preserve">
+    <value>加载类型信息...</value>
+  </data>
+  <data name="MeatTypes_NotFoundWarning" xml:space="preserve">
+    <value>提示：</value>
+  </data>
+  <data name="MeatTypes_NotFoundMessage" xml:space="preserve">
+    <value>未找到指定的肉类类型</value>
+  </data>
+  <data name="MeatTypes_InfoTitle" xml:space="preserve">
+    <value>类型信息</value>
+  </data>
+  <data name="MeatTypes_CodeInfo" xml:space="preserve">
+    <value>类型代码：</value>
+  </data>
+  <data name="MeatTypes_CreatedAtInfo" xml:space="preserve">
+    <value>创建时间：</value>
+  </data>
+  <data name="MeatTypes_UpdatedAtInfo" xml:space="preserve">
+    <value>更新时间：</value>
+  </data>
+  <data name="MeatTypes_EditGuideTitle" xml:space="preserve">
+    <value>编辑说明</value>
+  </data>
+  <data name="MeatTypes_EditGuide1" xml:space="preserve">
+    <value>类型代码不可修改，确保数据一致性</value>
+  </data>
+  <data name="MeatTypes_EditGuide2" xml:space="preserve">
+    <value>修改类型名称会影响所有使用该类型的地方</value>
+  </data>
+  <data name="MeatTypes_EditGuide3" xml:space="preserve">
+    <value>调整显示顺序可以改变列表中的排列位置</value>
+  </data>
+  <data name="MeatTypes_EditGuide4" xml:space="preserve">
+    <value>停用类型不会删除数据，只是暂时不可用</value>
+  </data>
+  <data name="MeatTypes_LoadFailed2" xml:space="preserve">
+    <value>加载肉类类型信息失败：</value>
+  </data>
+  <data name="MeatTypes_FormGuideTitle" xml:space="preserve">
+    <value>填写说明</value>
+  </data>
+  <data name="MeatTypes_FormGuideCode" xml:space="preserve">
+    <value>类型代码：必须唯一，建议使用大写英文字母，如：PORK（猪肉）、BEEF（牛肉）、MUTTON（羊肉）</value>
+  </data>
+  <data name="MeatTypes_FormGuideName" xml:space="preserve">
+    <value>类型名称：显示给用户的名称，如：猪肉、牛肉、羊肉、鸡肉、鸭肉、鱼肉</value>
+  </data>
+  <data name="MeatTypes_FormGuideSortOrder" xml:space="preserve">
+    <value>显示顺序：控制类型在列表中的排列顺序，数字越小越靠前</value>
+  </data>
+  <data name="MeatTypes_FormGuideActive" xml:space="preserve">
+    <value>激活状态：只有激活的类型才能在系统中使用</value>
+  </data>
+  <data name="MeatTypes_FormGuideDescription" xml:space="preserve">
+    <value>描述说明：可选，用于补充说明该类型的详细信息</value>
+  </data>
+  <data name="MeatTypes_CommonTypesTitle" xml:space="preserve">
+    <value>常见肉类类型</value>
+  </data>
+  <data name="MeatTypes_CommonType1" xml:space="preserve">
+    <value>PORK - 猪肉</value>
+  </data>
+  <data name="MeatTypes_CommonType2" xml:space="preserve">
+    <value>BEEF - 牛肉</value>
+  </data>
+  <data name="MeatTypes_CommonType3" xml:space="preserve">
+    <value>MUTTON - 羊肉</value>
+  </data>
+  <data name="MeatTypes_CommonType4" xml:space="preserve">
+    <value>CHICKEN - 鸡肉</value>
+  </data>
+  <data name="MeatTypes_CommonType5" xml:space="preserve">
+    <value>DUCK - 鸭肉</value>
+  </data>
+  <data name="MeatTypes_CommonType6" xml:space="preserve">
+    <value>FISH - 鱼肉</value>
+  </data>
+  <data name="MeatTypes_CommonType7" xml:space="preserve">
+    <value>SEAFOOD - 海鲜</value>
+  </data>
+
+  <!-- 二维码管理页面 -->
+  <data name="QRCodes_Title" xml:space="preserve">
+    <value>二维码管理</value>
+  </data>
+  <data name="QRCodes_Description" xml:space="preserve">
+    <value>管理肉类产品二维码标签</value>
+  </data>
+  <data name="QRCodes_BatchCreate" xml:space="preserve">
+    <value>批量创建</value>
+  </data>
+  <data name="QRCodes_AddNew" xml:space="preserve">
+    <value>新增二维码</value>
+  </data>
+  <data name="QRCodes_TotalCount" xml:space="preserve">
+    <value>二维码总数</value>
+  </data>
+  <data name="QRCodes_ActiveCount" xml:space="preserve">
+    <value>激活数量</value>
+  </data>
+  <data name="QRCodes_TotalPrintCount" xml:space="preserve">
+    <value>总打印次数</value>
+  </data>
+  <data name="QRCodes_MeatType" xml:space="preserve">
+    <value>肉类类型</value>
+  </data>
+  <data name="QRCodes_All" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="QRCodes_BatchNumber" xml:space="preserve">
+    <value>批次号</value>
+  </data>
+  <data name="QRCodes_BatchNumberPlaceholder" xml:space="preserve">
+    <value>输入批次号</value>
+  </data>
+  <data name="QRCodes_StatusFilter" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="QRCodes_StatusActive" xml:space="preserve">
+    <value>激活</value>
+  </data>
+  <data name="QRCodes_StatusInactive" xml:space="preserve">
+    <value>未激活</value>
+  </data>
+  <data name="QRCodes_Query" xml:space="preserve">
+    <value>查询</value>
+  </data>
+  <data name="QRCodes_Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="QRCodes_NoData" xml:space="preserve">
+    <value>暂无二维码数据</value>
+  </data>
+  <data name="QRCodes_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="QRCodes_Code" xml:space="preserve">
+    <value>编号</value>
+  </data>
+  <data name="QRCodes_Content" xml:space="preserve">
+    <value>二维码内容</value>
+  </data>
+  <data name="QRCodes_Image" xml:space="preserve">
+    <value>二维码图片</value>
+  </data>
+  <data name="QRCodes_PrintCount" xml:space="preserve">
+    <value>打印次数</value>
+  </data>
+  <data name="QRCodes_LoadDataFailed" xml:space="preserve">
+    <value>加载数据失败: </value>
+  </data>
+  <data name="QRCodes_ToggleStatusFailed" xml:space="preserve">
+    <value>切换状态失败: </value>
+  </data>
+  <data name="QRCodes_ConfirmDelete" xml:space="preserve">
+    <value>确定要删除这个二维码吗？</value>
+  </data>
+  <data name="QRCodes_DeleteFailed" xml:space="preserve">
+    <value>删除失败: </value>
+  </data>
+  <data name="QRCodes_ExportFailed" xml:space="preserve">
+    <value>导出失败: </value>
+  </data>
+  <data name="QRCodes_ExportFileName" xml:space="preserve">
+    <value>二维码列表</value>
+  </data>
+
+  <!-- 二维码创建页面 -->
+  <data name="QRCodes_CreateTitle" xml:space="preserve">
+    <value>新增二维码</value>
+  </data>
+  <data name="QRCodes_Breadcrumb" xml:space="preserve">
+    <value>二维码管理</value>
+  </data>
+  <data name="QRCodes_BreadcrumbCreate" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="QRCodes_BasicInfo" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="QRCodes_MeatTypeLabel" xml:space="preserve">
+    <value>肉类类型</value>
+  </data>
+  <data name="QRCodes_MeatTypeSelect" xml:space="preserve">
+    <value>-- 请选择肉类类型 --</value>
+  </data>
+  <data name="QRCodes_MeatTypeHint" xml:space="preserve">
+    <value>选择二维码关联的肉类类型</value>
+  </data>
+  <data name="QRCodes_CodeLabel" xml:space="preserve">
+    <value>编号</value>
+  </data>
+  <data name="QRCodes_CodePlaceholder" xml:space="preserve">
+    <value>例如：001, A01, 20260123-001</value>
+  </data>
+  <data name="QRCodes_CodeHint" xml:space="preserve">
+    <value>输入唯一编号，将与肉类类型代码组合生成二维码内容</value>
+  </data>
+  <data name="QRCodes_ContentLabel" xml:space="preserve">
+    <value>二维码内容（自动生成）</value>
+  </data>
+  <data name="QRCodes_ContentFormat" xml:space="preserve">
+    <value>格式：{0}-{1}</value>
+  </data>
+  <data name="QRCodes_BatchNumberLabel" xml:space="preserve">
+    <value>批次号</value>
+  </data>
+  <data name="QRCodes_BatchNumberPlaceholder2" xml:space="preserve">
+    <value>例如：20260123-A</value>
+  </data>
+  <data name="QRCodes_BatchNumberHint" xml:space="preserve">
+    <value>可选，用于批量管理和追溯</value>
+  </data>
+  <data name="QRCodes_RemarksLabel" xml:space="preserve">
+    <value>备注</value>
+  </data>
+  <data name="QRCodes_RemarksPlaceholder" xml:space="preserve">
+    <value>输入备注信息...</value>
+  </data>
+  <data name="QRCodes_RemarksHint" xml:space="preserve">
+    <value>可选，最多500字符</value>
+  </data>
+  <data name="QRCodes_Saving" xml:space="preserve">
+    <value>保存中...</value>
+  </data>
+  <data name="QRCodes_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="QRCodes_PreviewTitle" xml:space="preserve">
+    <value>二维码预览</value>
+  </data>
+  <data name="QRCodes_PreviewHint" xml:space="preserve">
+    <value>选择肉类类型并输入编号后将显示二维码预览</value>
+  </data>
+  <data name="QRCodes_GuideTitle" xml:space="preserve">
+    <value>填写说明</value>
+  </data>
+  <data name="QRCodes_ContentRuleTitle" xml:space="preserve">
+    <value>二维码内容规则</value>
+  </data>
+  <data name="QRCodes_ContentRuleDesc" xml:space="preserve">
+    <value>二维码内容由肉类类型代码和编号组合生成：</value>
+  </data>
+  <data name="QRCodes_ContentRuleFormat" xml:space="preserve">
+    <value>肉类代码-编号</value>
+  </data>
+  <data name="QRCodes_CodeSuggestionTitle" xml:space="preserve">
+    <value>编号建议</value>
+  </data>
+  <data name="QRCodes_CodeSuggestion1" xml:space="preserve">
+    <value>使用数字编号：001, 002, 003...</value>
+  </data>
+  <data name="QRCodes_CodeSuggestion2" xml:space="preserve">
+    <value>使用字母+数字：A01, B01, C01...</value>
+  </data>
+  <data name="QRCodes_CodeSuggestion3" xml:space="preserve">
+    <value>使用日期+序号：20260123-001</value>
+  </data>
+  <data name="QRCodes_CodeSuggestion4" xml:space="preserve">
+    <value>确保编号在同一肉类类型下唯一</value>
+  </data>
+  <data name="QRCodes_BatchUsageTitle" xml:space="preserve">
+    <value>批次号用途</value>
+  </data>
+  <data name="QRCodes_BatchUsageDesc" xml:space="preserve">
+    <value>批次号用于将多个二维码归为一组，便于：</value>
+  </data>
+  <data name="QRCodes_BatchUsage1" xml:space="preserve">
+    <value>批量查询和筛选</value>
+  </data>
+  <data name="QRCodes_BatchUsage2" xml:space="preserve">
+    <value>质量追溯管理</value>
+  </data>
+  <data name="QRCodes_BatchUsage3" xml:space="preserve">
+    <value>生产批次统计</value>
+  </data>
+  <data name="QRCodes_LoadMeatTypesFailed" xml:space="preserve">
+    <value>加载肉类类型失败: </value>
+  </data>
+  <data name="QRCodes_GeneratePreviewFailed" xml:space="preserve">
+    <value>生成预览失败: </value>
+  </data>
+  <data name="QRCodes_SelectMeatType" xml:space="preserve">
+    <value>请选择肉类类型</value>
+  </data>
+  <data name="QRCodes_EnterCode" xml:space="preserve">
+    <value>请输入编号</value>
+  </data>
+
 </root>

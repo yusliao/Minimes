@@ -1,19 +1,22 @@
 @page "/meattypes/edit/{id:int}"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.MeatType
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IMeatTypeService MeatTypeService
 @inject NavigationManager Navigation
 
-<PageTitle>编辑肉类类型 - MiniMES</PageTitle>
+<PageTitle>@L["MeatTypes_EditTitle"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-pencil me-2"></span>编辑肉类类型
+                <span class="oi oi-pencil me-2"></span>@L["MeatTypes_EditTitle"]
             </h2>
-            <p class="text-muted">修改肉类类型信息</p>
+            <p class="text-muted">@L["MeatTypes_EditDescription"]</p>
         </div>
     </div>
 
@@ -21,15 +24,15 @@
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">加载中...</span>
+                <span class="visually-hidden">@L["Status_Loading"]</span>
             </div>
-            <p class="text-muted mt-2">加载类型信息...</p>
+            <p class="text-muted mt-2">@L["MeatTypes_LoadingInfo"]</p>
         </div>
     }
     else if (meatType == null)
     {
         <div class="alert alert-warning">
-            <strong>提示：</strong>未找到指定的肉类类型
+            <strong>@L["Message_Warning"]</strong>@L["MeatTypes_NotFoundMessage"]
         </div>
     }
     else
@@ -44,16 +47,16 @@
                             <!-- 类型代码（只读） -->
                             <div class="mb-3">
                                 <label class="form-label">
-                                    <strong>类型代码</strong>
+                                    <strong>@L["MeatTypes_CodeLabel"]</strong>
                                 </label>
                                 <input type="text" class="form-control" value="@meatType.Code" readonly disabled />
-                                <small class="text-muted">类型代码创建后不可修改</small>
+                                <small class="text-muted">@L["MeatTypes_CodeReadonly"]</small>
                             </div>
 
                             <!-- 类型名称 -->
                             <div class="mb-3">
                                 <label class="form-label">
-                                    <strong>类型名称</strong> <span class="text-danger">*</span>
+                                    <strong>@L["MeatTypes_NameLabel"]</strong> <span class="text-danger">*</span>
                                 </label>
                                 <InputText class="form-control" @bind-Value="request.Name" />
                                 <ValidationMessage For="@(() => request.Name)" />
@@ -62,26 +65,26 @@
                             <!-- 显示顺序 -->
                             <div class="mb-3">
                                 <label class="form-label">
-                                    <strong>显示顺序</strong> <span class="text-danger">*</span>
+                                    <strong>@L["MeatTypes_SortOrderLabel"]</strong> <span class="text-danger">*</span>
                                 </label>
                                 <InputNumber class="form-control" @bind-Value="request.DisplayOrder" />
                                 <ValidationMessage For="@(() => request.DisplayOrder)" />
-                                <small class="text-muted">数字越小越靠前</small>
+                                <small class="text-muted">@L["MeatTypes_SortOrderHint"]</small>
                             </div>
 
                             <!-- 激活状态 -->
                             <div class="mb-3 form-check">
                                 <InputCheckbox class="form-check-input" @bind-Value="request.IsActive" id="isActive" />
                                 <label class="form-check-label" for="isActive">
-                                    激活此类型
+                                    @L["MeatTypes_ActiveLabel"]
                                 </label>
-                                <div><small class="text-muted">停用后，该类型将不能在系统中使用</small></div>
+                                <div><small class="text-muted">@L["MeatTypes_EditActiveHint"]</small></div>
                             </div>
 
                             <!-- 描述说明 -->
                             <div class="mb-3">
                                 <label class="form-label">
-                                    <strong>描述说明</strong>
+                                    <strong>@L["MeatTypes_DescriptionLabel"]</strong>
                                 </label>
                                 <InputTextArea class="form-control" @bind-Value="request.Description" rows="3" />
                                 <ValidationMessage For="@(() => request.Description)" />
@@ -91,7 +94,7 @@
                             @if (!string.IsNullOrEmpty(errorMessage))
                             {
                                 <div class="alert alert-danger">
-                                    <strong>错误：</strong>@errorMessage
+                                    <strong>@L["Message_Error"]</strong>@errorMessage
                                 </div>
                             }
 
@@ -103,11 +106,11 @@
                                         <span class="spinner-border spinner-border-sm me-1"></span>
                                     }
                                     <span class="oi oi-check me-1"></span>
-                                    保存
+                                    @L["Btn_Save"]
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">
                                     <span class="oi oi-x me-1"></span>
-                                    取消
+                                    @L["Btn_Cancel"]
                                 </button>
                             </div>
                         </EditForm>
@@ -120,14 +123,14 @@
                 <div class="card bg-light mb-3">
                     <div class="card-body">
                         <h6 class="card-title">
-                            <span class="oi oi-info me-1"></span>类型信息
+                            <span class="oi oi-info me-1"></span>@L["MeatTypes_InfoTitle"]
                         </h6>
                         <ul class="list-unstyled small mb-0">
-                            <li><strong>类型代码：</strong><code>@meatType.Code</code></li>
-                            <li><strong>创建时间：</strong>@meatType.CreatedAt.ToString("yyyy-MM-dd HH:mm")</li>
+                            <li><strong>@L["MeatTypes_CodeLabel"]：</strong><code>@meatType.Code</code></li>
+                            <li><strong>@L["MeatTypes_CreatedAtLabel"]：</strong>@meatType.CreatedAt.ToString("yyyy-MM-dd HH:mm")</li>
                             @if (meatType.UpdatedAt.HasValue)
                             {
-                                <li><strong>更新时间：</strong>@meatType.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</li>
+                                <li><strong>@L["MeatTypes_UpdatedAtLabel"]：</strong>@meatType.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</li>
                             }
                         </ul>
                     </div>
@@ -136,13 +139,13 @@
                 <div class="card bg-light">
                     <div class="card-body">
                         <h6 class="card-title">
-                            <span class="oi oi-lightbulb me-1"></span>编辑说明
+                            <span class="oi oi-lightbulb me-1"></span>@L["MeatTypes_EditGuideTitle"]
                         </h6>
                         <ul class="small mb-0">
-                            <li><strong>类型代码</strong>不可修改，确保数据一致性</li>
-                            <li>修改<strong>类型名称</strong>会影响所有使用该类型的地方</li>
-                            <li>调整<strong>显示顺序</strong>可以改变列表中的排列位置</li>
-                            <li>停用类型不会删除数据，只是暂时不可用</li>
+                            <li>@L["MeatTypes_EditGuide1"]</li>
+                            <li>@L["MeatTypes_EditGuide2"]</li>
+                            <li>@L["MeatTypes_EditGuide3"]</li>
+                            <li>@L["MeatTypes_EditGuide4"]</li>
                         </ul>
                     </div>
                 </div>
@@ -185,7 +188,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载肉类类型信息失败：{ex.Message}";
+            errorMessage = $"{L["MeatTypes_LoadFailed"].Value}{ex.Message}";
         }
         finally
         {

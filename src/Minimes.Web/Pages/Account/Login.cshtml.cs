@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using Minimes.Application.DTOs.User;
 using Minimes.Application.Interfaces;
-using Minimes.Web.Resources;
+using Minimes.Application.Resources;
 using IAppAuthService = Minimes.Application.Interfaces.IAuthenticationService;
 
 namespace Minimes.Web.Pages.Account;

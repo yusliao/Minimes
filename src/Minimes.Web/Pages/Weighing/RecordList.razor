@@ -4,7 +4,7 @@
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.WeighingRecord
 @using Minimes.Domain.Enums
-@using Minimes.Web.Resources
+@using Minimes.Application.Resources
 @using System.Security.Claims
 @inject IStringLocalizer<SharedResource> L
 @inject IWeighingRecordService WeighingRecordService
@@ -53,7 +53,7 @@
                     <span class="oi oi-magnifying-glass"></span> @L["Btn_Search"]
                 </button>
                 <button class="btn btn-success flex-fill" @onclick="ExportToExcel" disabled="@isLoading">
-                    <span class="oi oi-data-transfer-download"></span> 导出Excel
+                    <span class="oi oi-data-transfer-download"></span> @L["Btn_ExportExcel"]
                 </button>
             </div>
         </div>
@@ -102,8 +102,8 @@
                         <tr>
                             <th>@L["Records_Time"]</th>
                             <th>@L["Weighing_Barcode"]</th>
-                            <th>肉类类型</th>
-                            <th>编号</th>
+                            <th>@L["Records_MeatType"]</th>
+                            <th>@L["Records_Code"]</th>
                             <th>@L["Weighing_Stage"]</th>
                             <th>@L["Weighing_Weight"] (lb)</th>
                             <th>@L["Records_Operator"]</th>
@@ -289,7 +289,7 @@
 
             if (!allRecords.Any())
             {
-                await JSRuntime.InvokeVoidAsync("alert", "没有数据可以导出！");
+                await JSRuntime.InvokeVoidAsync("alert", L["Export_NoData"].Value);
                 return;
             }
 
@@ -298,10 +298,10 @@
             var base64 = Convert.ToBase64String(excelBytes);
 
             // 生成文件名
-            var fileName = $"称重记录_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            var fileName = $"{L["Export_FileNamePrefix"].Value}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
             if (!string.IsNullOrWhiteSpace(queryRequest.Barcode))
             {
-                fileName = $"称重记录_{queryRequest.Barcode}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                fileName = $"{L["Export_FileNamePrefix"].Value}_{queryRequest.Barcode}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
             }
 
             // 下载文件
@@ -309,7 +309,7 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"导出失败：{ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["Export_Failed"].Value}: {ex.Message}");
         }
         finally
         {
