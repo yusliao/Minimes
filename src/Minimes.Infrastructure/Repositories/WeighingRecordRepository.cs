@@ -135,15 +135,13 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         var today = DateTime.Today;
         var tomorrow = today.AddDays(1);
 
-        var records = await _dbSet
-            .Where(r => r.CreatedAt >= today && r.CreatedAt < tomorrow)
-            .ToListAsync();
+        var query = _dbSet.Where(r => r.CreatedAt >= today && r.CreatedAt < tomorrow);
 
         return new TodayStatistic
         {
-            TotalRecords = records.Count,
-            TotalWeight = records.Sum(r => r.Weight),
-            UniqueBarcodes = records.Select(r => r.Barcode).Distinct().Count()
+            TotalRecords = await query.CountAsync(),
+            TotalWeight = await query.SumAsync(r => r.Weight),
+            UniqueBarcodes = await query.Select(r => r.Barcode).Distinct().CountAsync()
         };
     }
 
@@ -153,24 +151,21 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         var tomorrow = today.AddDays(1);
         var monthStart = new DateTime(today.Year, today.Month, 1);
 
-        var query = _dbSet.Where(r => r.CreatedBy == username);
-
-        var todayRecords = await query
-            .Where(r => r.CreatedAt >= today && r.CreatedAt < tomorrow)
+        // 只查询1次，获取所有用户操作记录
+        var allRecords = await _dbSet
+            .Where(r => r.CreatedBy == username)
             .ToListAsync();
 
-        var monthRecords = await query
-            .Where(r => r.CreatedAt >= monthStart)
-            .ToListAsync();
-
-        var allRecords = await query.ToListAsync();
+        // 在内存中按日期范围分类计算
+        var todayData = allRecords.Where(r => r.CreatedAt >= today && r.CreatedAt < tomorrow).ToList();
+        var monthData = allRecords.Where(r => r.CreatedAt >= monthStart).ToList();
 
         return new UserOperationStatistic
         {
-            TodayRecords = todayRecords.Count,
-            TodayWeight = todayRecords.Sum(r => r.Weight),
-            MonthRecords = monthRecords.Count,
-            MonthWeight = monthRecords.Sum(r => r.Weight),
+            TodayRecords = todayData.Count,
+            TodayWeight = todayData.Sum(r => r.Weight),
+            MonthRecords = monthData.Count,
+            MonthWeight = monthData.Sum(r => r.Weight),
             TotalRecords = allRecords.Count,
             TotalWeight = allRecords.Sum(r => r.Weight)
         };

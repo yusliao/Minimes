@@ -2,20 +2,23 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Operator")]
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.Product
+@using Minimes.Application.Resources
 @using Microsoft.JSInterop
+@using Microsoft.Extensions.Localization
 @inject IProductService ProductService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>批次管理 - MiniMES</PageTitle>
+<PageTitle>@Localizer["Product_Title"] - @Localizer["AppName"]</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-box me-2"></span>批次管理
+                <span class="oi oi-box me-2"></span>@Localizer["Product_Title"]
             </h2>
-            <p class="text-muted">管理生产批次信息和供应商二维码</p>
+            <p class="text-muted">@Localizer["Product_Subtitle"]</p>
         </div>
     </div>
 
@@ -26,19 +29,19 @@
                 <span class="input-group-text">
                     <span class="oi oi-magnifying-glass"></span>
                 </span>
-                <input type="text" class="form-control" placeholder="输入批次名称或二维码搜索..."
+                <input type="text" class="form-control" placeholder="@Localizer["Product_SearchPlaceholder"]"
                        @bind="searchKeyword" @bind:event="oninput" />
                 <button class="btn btn-outline-secondary" @onclick="HandleSearch">
-                    搜索
+                    @Localizer["Btn_Search"]
                 </button>
                 <button class="btn btn-outline-secondary" @onclick="ClearSearch">
-                    清空
+                    @Localizer["Btn_Clear"]
                 </button>
             </div>
         </div>
         <div class="col-md-4 text-end">
             <button class="btn btn-primary" @onclick="NavigateToCreate">
-                <span class="oi oi-plus me-1"></span>新增批次
+                <span class="oi oi-plus me-1"></span>@Localizer["Product_AddNew"]
             </button>
         </div>
     </div>
@@ -49,15 +52,15 @@
             <div class="btn-group" role="group">
                 <button type="button" class="btn @(filterStatus == null ? "btn-primary" : "btn-outline-primary")"
                         @onclick="() => SetFilterStatus(null)">
-                    全部 (@totalCount)
+                    @Localizer["Product_All"] (@totalCount)
                 </button>
                 <button type="button" class="btn @(filterStatus == true ? "btn-success" : "btn-outline-success")"
                         @onclick="() => SetFilterStatus(true)">
-                    激活中 (@activeCount)
+                    @Localizer["Product_Active"] (@activeCount)
                 </button>
                 <button type="button" class="btn @(filterStatus == false ? "btn-secondary" : "btn-outline-secondary")"
                         @onclick="() => SetFilterStatus(false)">
-                    已停用 (@inactiveCount)
+                    @Localizer["Product_Inactive"] (@inactiveCount)
                 </button>
             </div>
         </div>
@@ -67,16 +70,16 @@
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">加载中...</span>
+                <span class="visually-hidden">@Localizer["Status_Loading"]</span>
             </div>
-            <p class="mt-2 text-muted">加载批次数据中...</p>
+            <p class="mt-2 text-muted">@Localizer["Product_LoadingData"]</p>
         </div>
     }
     else if (products == null || !products.Any())
     {
         <div class="alert alert-info text-center py-5">
             <span class="oi oi-info me-2"></span>
-            暂无批次数据，点击"新增批次"按钮创建第一个批次
+            @Localizer["Product_NoData"]
         </div>
     }
     else
@@ -86,14 +89,14 @@
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th width="5%">ID</th>
-                        <th width="15%">二维码</th>
-                        <th width="20%">批次名称</th>
-                        <th width="20%">供应商/规格</th>
-                        <th width="10%">单位</th>
-                        <th width="10%">参考价格</th>
-                        <th width="10%">状态</th>
-                        <th width="10%">操作</th>
+                        <th width="5%">@Localizer["Product_ID"]</th>
+                        <th width="15%">@Localizer["Product_Barcode"]</th>
+                        <th width="20%">@Localizer["Product_Name"]</th>
+                        <th width="20%">@Localizer["Product_Specification"]</th>
+                        <th width="10%">@Localizer["Product_Unit"]</th>
+                        <th width="10%">@Localizer["Product_ReferencePrice"]</th>
+                        <th width="10%">@Localizer["Product_Status"]</th>
+                        <th width="10%">@Localizer["Product_Operation"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,11 +125,11 @@
                             <td>
                                 @if (product.IsActive)
                                 {
-                                    <span class="badge bg-success">激活</span>
+                                    <span class="badge bg-success">@Localizer["Product_Activated"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">停用</span>
+                                    <span class="badge bg-secondary">@Localizer["Product_Disabled"]</span>
                                 }
                             </td>
                             <td>
@@ -159,7 +162,7 @@
         <div class="row mt-3">
             <div class="col">
                 <small class="text-muted">
-                    共 @filteredProducts.Count() 条记录
+                    @string.Format(Localizer["Product_TotalRecords"], filteredProducts.Count())
                 </small>
             </div>
         </div>
@@ -264,7 +267,7 @@
     private async Task DeleteProduct(int id)
     {
         // TODO: 添加确认对话框
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个批次吗？"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", Localizer["Product_ConfirmDelete"]))
         {
             return;
         }

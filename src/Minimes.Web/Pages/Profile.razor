@@ -359,9 +359,15 @@
         {
             if (currentUser != null)
             {
-                var query = new WeighingRecordQueryRequest { PageNumber = 1, PageSize = 100 };
+                // 在查询时就指定 CreatedBy，避免加载所有记录到内存
+                var query = new WeighingRecordQueryRequest
+                {
+                    PageNumber = 1,
+                    PageSize = 10,
+                    CreatedBy = currentUser.Username
+                };
                 var (records, _) = await WeighingRecordService.QueryAsync(query);
-                recentRecords = records.Where(r => r.CreatedBy == currentUser.Username).Take(10).ToList();
+                recentRecords = records.ToList();
             }
         }
         catch (Exception ex)

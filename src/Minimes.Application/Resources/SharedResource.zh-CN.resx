@@ -752,6 +752,45 @@
     <value>未知</value>
   </data>
 
+  <!-- 生产报表-图表标题 -->
+  <data name="Report_StageRecordsChart" xml:space="preserve">
+    <value>环节记录分布</value>
+  </data>
+  <data name="Report_StageWeightsChart" xml:space="preserve">
+    <value>环节重量对比</value>
+  </data>
+  <data name="Report_DateTrendChart" xml:space="preserve">
+    <value>日期趋势分析</value>
+  </data>
+  <data name="Report_MeatTypeChart" xml:space="preserve">
+    <value>肉类类型分布</value>
+  </data>
+  <data name="Report_LossRateTopChart" xml:space="preserve">
+    <value>损耗率TOP10分析</value>
+  </data>
+
+  <!-- 生产报表-图表数据标签 -->
+  <data name="Chart_RecordCount" xml:space="preserve">
+    <value>记录数</value>
+  </data>
+  <data name="Chart_TotalWeight" xml:space="preserve">
+    <value>总重量 (lb)</value>
+  </data>
+  <data name="Chart_WeightAxis" xml:space="preserve">
+    <value>重量 (lb)</value>
+  </data>
+  <data name="Chart_LossRatePercent" xml:space="preserve">
+    <value>损耗率 (%)</value>
+  </data>
+  <data name="Chart_LossRateLegend" xml:space="preserve">
+    <value>损耗率越高，条码颜色越深（红>黄>蓝>绿）</value>
+  </data>
+
+  <!-- 按钮 -->
+  <data name="Btn_Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+
   <!-- 质量追溯页面 -->
   <data name="Tracing_Title" xml:space="preserve">
     <value>质量追溯</value>
@@ -2064,6 +2103,180 @@
   </data>
   <data name="QRCodes_PrintFailed" xml:space="preserve">
     <value>打印失败</value>
+  </data>
+
+  <!-- 批次管理页面 -->
+  <data name="Product_Title" xml:space="preserve">
+    <value>批次管理</value>
+  </data>
+  <data name="Product_Subtitle" xml:space="preserve">
+    <value>管理生产批次信息和供应商二维码</value>
+  </data>
+  <data name="Product_SearchPlaceholder" xml:space="preserve">
+    <value>输入批次名称或二维码搜索...</value>
+  </data>
+  <data name="Product_AddNew" xml:space="preserve">
+    <value>新增批次</value>
+  </data>
+  <data name="Product_All" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="Product_Active" xml:space="preserve">
+    <value>激活中</value>
+  </data>
+  <data name="Product_Inactive" xml:space="preserve">
+    <value>已停用</value>
+  </data>
+  <data name="Product_LoadingData" xml:space="preserve">
+    <value>加载批次数据中...</value>
+  </data>
+  <data name="Product_NoData" xml:space="preserve">
+    <value>暂无批次数据，点击"新增批次"按钮创建第一个批次</value>
+  </data>
+  <data name="Product_ID" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Product_Barcode" xml:space="preserve">
+    <value>二维码</value>
+  </data>
+  <data name="Product_Name" xml:space="preserve">
+    <value>批次名称</value>
+  </data>
+  <data name="Product_Specification" xml:space="preserve">
+    <value>供应商/规格</value>
+  </data>
+  <data name="Product_Unit" xml:space="preserve">
+    <value>单位</value>
+  </data>
+  <data name="Product_ReferencePrice" xml:space="preserve">
+    <value>参考价格</value>
+  </data>
+  <data name="Product_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Product_Operation" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Product_TotalRecords" xml:space="preserve">
+    <value>共 {0} 条记录</value>
+  </data>
+  <data name="Product_ConfirmDelete" xml:space="preserve">
+    <value>确定要删除这个批次吗？</value>
+  </data>
+  <data name="Product_Activated" xml:space="preserve">
+    <value>激活</value>
+  </data>
+  <data name="Product_Disabled" xml:space="preserve">
+    <value>停用</value>
+  </data>
+
+  <!-- 新增批次页面 -->
+  <data name="Product_CreateTitle" xml:space="preserve">
+    <value>新增批次</value>
+  </data>
+  <data name="Product_BarcodeRequired" xml:space="preserve">
+    <value>二维码 *</value>
+  </data>
+  <data name="Product_BarcodeScanHint" xml:space="preserve">
+    <value>（扫码枪扫描或手动输入）</value>
+  </data>
+  <data name="Product_BarcodePlaceholder" xml:space="preserve">
+    <value>例如：PORK2026010701</value>
+  </data>
+  <data name="Product_BarcodeUnique" xml:space="preserve">
+    <value>供应商提供的批次二维码，必须唯一</value>
+  </data>
+  <data name="Product_NameRequired" xml:space="preserve">
+    <value>批次名称 *</value>
+  </data>
+  <data name="Product_NamePlaceholder" xml:space="preserve">
+    <value>例如：猪肉批次-20260107-001</value>
+  </data>
+  <data name="Product_SpecificationLabel" xml:space="preserve">
+    <value>供应商/规格说明</value>
+  </data>
+  <data name="Product_SpecificationPlaceholder" xml:space="preserve">
+    <value>例如：供应商: 张三肉联厂</value>
+  </data>
+  <data name="Product_UnitLabel" xml:space="preserve">
+    <value>单位</value>
+  </data>
+  <data name="Product_UnitPlaceholder" xml:space="preserve">
+    <value>例如：千克、克、件</value>
+  </data>
+  <data name="Product_ReferencePriceOptional" xml:space="preserve">
+    <value>参考价格（可选）</value>
+  </data>
+  <data name="Product_ReferencePriceNote" xml:space="preserve">
+    <value>（生产管理场景可不填）</value>
+  </data>
+  <data name="Product_ActiveCheckbox" xml:space="preserve">
+    <value>激活状态（勾选后批次可用于生产）</value>
+  </data>
+  <data name="Product_Saving" xml:space="preserve">
+    <value>保存中...</value>
+  </data>
+  <data name="Product_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Product_HelpTitle" xml:space="preserve">
+    <value>填写说明</value>
+  </data>
+  <data name="Product_HelpBarcode" xml:space="preserve">
+    <value>二维码：供应商提供的批次标识，扫码枪扫描后自动填充</value>
+  </data>
+  <data name="Product_HelpName" xml:space="preserve">
+    <value>批次名称：便于识别的批次名称，建议格式：品类-日期-序号</value>
+  </data>
+  <data name="Product_HelpSpecification" xml:space="preserve">
+    <value>供应商/规格：记录供应商信息，方便质量追溯</value>
+  </data>
+  <data name="Product_HelpUnit" xml:space="preserve">
+    <value>单位：常用单位有：千克、克、件、箱等</value>
+  </data>
+  <data name="Product_HelpReferencePrice" xml:space="preserve">
+    <value>参考价格：生产管理场景可不填，仅供参考</value>
+  </data>
+
+  <!-- 编辑批次页面 -->
+  <data name="Product_EditTitle" xml:space="preserve">
+    <value>编辑批次</value>
+  </data>
+  <data name="Product_BarcodeCannotEdit" xml:space="preserve">
+    <value>不可修改</value>
+  </data>
+  <data name="Product_BarcodeCannotEditNote" xml:space="preserve">
+    <value>批次二维码不可修改，以保证数据一致性</value>
+  </data>
+  <data name="Product_SaveChanges" xml:space="preserve">
+    <value>保存修改</value>
+  </data>
+  <data name="Product_InfoTitle" xml:space="preserve">
+    <value>批次信息</value>
+  </data>
+  <data name="Product_CreatedAt" xml:space="preserve">
+    <value>创建时间:</value>
+  </data>
+  <data name="Product_UpdatedAt" xml:space="preserve">
+    <value>最后更新:</value>
+  </data>
+  <data name="Product_CurrentStatus" xml:space="preserve">
+    <value>当前状态:</value>
+  </data>
+  <data name="Product_NoticeTitle" xml:space="preserve">
+    <value>注意事项</value>
+  </data>
+  <data name="Product_Notice1" xml:space="preserve">
+    <value>修改批次信息不会影响已有的称重记录</value>
+  </data>
+  <data name="Product_Notice2" xml:space="preserve">
+    <value>停用批次后将无法在称重时选择该批次</value>
+  </data>
+  <data name="Product_Notice3" xml:space="preserve">
+    <value>批次二维码一旦创建不可修改</value>
+  </data>
+  <data name="Product_NotFound" xml:space="preserve">
+    <value>批次不存在或已被删除</value>
   </data>
 
 </root>

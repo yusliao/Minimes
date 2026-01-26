@@ -770,6 +770,45 @@
     <value>Unknown</value>
   </data>
 
+  <!-- Production Report - Chart Titles -->
+  <data name="Report_StageRecordsChart" xml:space="preserve">
+    <value>Stage Records Distribution</value>
+  </data>
+  <data name="Report_StageWeightsChart" xml:space="preserve">
+    <value>Stage Weight Comparison</value>
+  </data>
+  <data name="Report_DateTrendChart" xml:space="preserve">
+    <value>Date Trend Analysis</value>
+  </data>
+  <data name="Report_MeatTypeChart" xml:space="preserve">
+    <value>Meat Type Distribution</value>
+  </data>
+  <data name="Report_LossRateTopChart" xml:space="preserve">
+    <value>Top 10 Loss Rate Analysis</value>
+  </data>
+
+  <!-- Production Report - Chart Data Labels -->
+  <data name="Chart_RecordCount" xml:space="preserve">
+    <value>Record Count</value>
+  </data>
+  <data name="Chart_TotalWeight" xml:space="preserve">
+    <value>Total Weight (lb)</value>
+  </data>
+  <data name="Chart_WeightAxis" xml:space="preserve">
+    <value>Weight (lb)</value>
+  </data>
+  <data name="Chart_LossRatePercent" xml:space="preserve">
+    <value>Loss Rate (%)</value>
+  </data>
+  <data name="Chart_LossRateLegend" xml:space="preserve">
+    <value>Higher loss rate = Darker color (Red > Yellow > Blue > Green)</value>
+  </data>
+
+  <!-- Buttons -->
+  <data name="Btn_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+
   <!-- Quality Tracing Page -->
   <data name="Tracing_Title" xml:space="preserve">
     <value>Quality Tracing</value>
@@ -2084,6 +2123,180 @@
   </data>
   <data name="QRCodes_PrintFailed" xml:space="preserve">
     <value>Print failed</value>
+  </data>
+
+  <!-- Product Management Pages -->
+  <data name="Product_Title" xml:space="preserve">
+    <value>Batch Management</value>
+  </data>
+  <data name="Product_Subtitle" xml:space="preserve">
+    <value>Manage production batch information and supplier QR codes</value>
+  </data>
+  <data name="Product_SearchPlaceholder" xml:space="preserve">
+    <value>Search by batch name or QR code...</value>
+  </data>
+  <data name="Product_AddNew" xml:space="preserve">
+    <value>Add New Batch</value>
+  </data>
+  <data name="Product_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Product_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Product_Inactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="Product_LoadingData" xml:space="preserve">
+    <value>Loading batch data...</value>
+  </data>
+  <data name="Product_NoData" xml:space="preserve">
+    <value>No batch data found. Click "Add New Batch" to create your first batch</value>
+  </data>
+  <data name="Product_ID" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Product_Barcode" xml:space="preserve">
+    <value>QR Code</value>
+  </data>
+  <data name="Product_Name" xml:space="preserve">
+    <value>Batch Name</value>
+  </data>
+  <data name="Product_Specification" xml:space="preserve">
+    <value>Supplier/Spec</value>
+  </data>
+  <data name="Product_Unit" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="Product_ReferencePrice" xml:space="preserve">
+    <value>Reference Price</value>
+  </data>
+  <data name="Product_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Product_Operation" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="Product_TotalRecords" xml:space="preserve">
+    <value>{0} records total</value>
+  </data>
+  <data name="Product_ConfirmDelete" xml:space="preserve">
+    <value>Are you sure you want to delete this batch?</value>
+  </data>
+  <data name="Product_Activated" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Product_Disabled" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+
+  <!-- Create Batch Page -->
+  <data name="Product_CreateTitle" xml:space="preserve">
+    <value>Create New Batch</value>
+  </data>
+  <data name="Product_BarcodeRequired" xml:space="preserve">
+    <value>QR Code *</value>
+  </data>
+  <data name="Product_BarcodeScanHint" xml:space="preserve">
+    <value>(Scan with barcode scanner or enter manually)</value>
+  </data>
+  <data name="Product_BarcodePlaceholder" xml:space="preserve">
+    <value>e.g. PORK2026010701</value>
+  </data>
+  <data name="Product_BarcodeUnique" xml:space="preserve">
+    <value>Supplier-provided batch QR code, must be unique</value>
+  </data>
+  <data name="Product_NameRequired" xml:space="preserve">
+    <value>Batch Name *</value>
+  </data>
+  <data name="Product_NamePlaceholder" xml:space="preserve">
+    <value>e.g. Pork Batch-20260107-001</value>
+  </data>
+  <data name="Product_SpecificationLabel" xml:space="preserve">
+    <value>Supplier/Specification</value>
+  </data>
+  <data name="Product_SpecificationPlaceholder" xml:space="preserve">
+    <value>e.g. Supplier: Zhang San Meat Factory</value>
+  </data>
+  <data name="Product_UnitLabel" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="Product_UnitPlaceholder" xml:space="preserve">
+    <value>e.g. kg, g, pcs</value>
+  </data>
+  <data name="Product_ReferencePriceOptional" xml:space="preserve">
+    <value>Reference Price (Optional)</value>
+  </data>
+  <data name="Product_ReferencePriceNote" xml:space="preserve">
+    <value>(Can be left blank for production management)</value>
+  </data>
+  <data name="Product_ActiveCheckbox" xml:space="preserve">
+    <value>Active Status (Check to enable batch for production)</value>
+  </data>
+  <data name="Product_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="Product_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Product_HelpTitle" xml:space="preserve">
+    <value>Instructions</value>
+  </data>
+  <data name="Product_HelpBarcode" xml:space="preserve">
+    <value>QR Code: Supplier-provided batch identifier, auto-filled when scanned</value>
+  </data>
+  <data name="Product_HelpName" xml:space="preserve">
+    <value>Batch Name: Easy-to-identify name, recommended format: Category-Date-Sequence</value>
+  </data>
+  <data name="Product_HelpSpecification" xml:space="preserve">
+    <value>Supplier/Spec: Record supplier information for quality traceability</value>
+  </data>
+  <data name="Product_HelpUnit" xml:space="preserve">
+    <value>Unit: Common units include: kg, g, pcs, cases, etc.</value>
+  </data>
+  <data name="Product_HelpReferencePrice" xml:space="preserve">
+    <value>Reference Price: Can be left blank for production management, reference only</value>
+  </data>
+
+  <!-- Edit Batch Page -->
+  <data name="Product_EditTitle" xml:space="preserve">
+    <value>Edit Batch</value>
+  </data>
+  <data name="Product_BarcodeCannotEdit" xml:space="preserve">
+    <value>Not Editable</value>
+  </data>
+  <data name="Product_BarcodeCannotEditNote" xml:space="preserve">
+    <value>Batch QR code cannot be changed to ensure data consistency</value>
+  </data>
+  <data name="Product_SaveChanges" xml:space="preserve">
+    <value>Save Changes</value>
+  </data>
+  <data name="Product_InfoTitle" xml:space="preserve">
+    <value>Batch Information</value>
+  </data>
+  <data name="Product_CreatedAt" xml:space="preserve">
+    <value>Created:</value>
+  </data>
+  <data name="Product_UpdatedAt" xml:space="preserve">
+    <value>Last Updated:</value>
+  </data>
+  <data name="Product_CurrentStatus" xml:space="preserve">
+    <value>Current Status:</value>
+  </data>
+  <data name="Product_NoticeTitle" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Product_Notice1" xml:space="preserve">
+    <value>Editing batch information will not affect existing weighing records</value>
+  </data>
+  <data name="Product_Notice2" xml:space="preserve">
+    <value>Disabled batches cannot be selected during weighing</value>
+  </data>
+  <data name="Product_Notice3" xml:space="preserve">
+    <value>Batch QR code cannot be modified once created</value>
+  </data>
+  <data name="Product_NotFound" xml:space="preserve">
+    <value>Batch not found or has been deleted</value>
   </data>
 
 </root>

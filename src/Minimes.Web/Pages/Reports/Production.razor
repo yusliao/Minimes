@@ -154,7 +154,7 @@
                 <div class="card h-100">
                     <div class="card-header bg-primary text-white">
                         <h6 class="mb-0">
-                            <span class="oi oi-pie-chart me-2"></span>环节记录分布
+                            <span class="oi oi-pie-chart me-2"></span>@L["Report_StageRecordsChart"]
                         </h6>
                     </div>
                     <div class="card-body">
@@ -166,7 +166,7 @@
                 <div class="card h-100">
                     <div class="card-header bg-success text-white">
                         <h6 class="mb-0">
-                            <span class="oi oi-bar-chart me-2"></span>环节重量对比
+                            <span class="oi oi-bar-chart me-2"></span>@L["Report_StageWeightsChart"]
                         </h6>
                     </div>
                     <div class="card-body">
@@ -184,7 +184,7 @@
                     <div class="card">
                         <div class="card-header bg-info text-white">
                             <h6 class="mb-0">
-                                <span class="oi oi-graph me-2"></span>日期趋势分析
+                                <span class="oi oi-graph me-2"></span>@L["Report_DateTrendChart"]
                             </h6>
                         </div>
                         <div class="card-body">
@@ -201,7 +201,7 @@
                 <div class="card">
                     <div class="card-header bg-warning text-dark">
                         <h6 class="mb-0">
-                            <span class="oi oi-list-rich me-2"></span>肉类类型分布
+                            <span class="oi oi-list-rich me-2"></span>@L["Report_MeatTypeChart"]
                         </h6>
                     </div>
                     <div class="card-body">
@@ -325,7 +325,7 @@
                     <div class="card border-danger">
                         <div class="card-header bg-danger text-white">
                             <h6 class="mb-0">
-                                <span class="oi oi-warning me-2"></span>损耗率TOP10分析
+                                <span class="oi oi-warning me-2"></span>@L["Report_LossRateTopChart"]
                             </h6>
                         </div>
                         <div class="card-body">
@@ -520,7 +520,7 @@
         {
             new
             {
-                label = "总重量 (lb)",
+                label = L["Chart_TotalWeight"].Value,
                 data = weightData,
                 backgroundColor = new[] { "#FF6384", "#36A2EB", "#FFCE56" },
                 borderColor = "#fff",
@@ -533,7 +533,7 @@
             responsive = true,
             maintainAspectRatio = true,
             plugins = new { legend = new { display = false } },
-            scales = new { y = new { beginAtZero = true, title = new { display = true, text = "重量 (lb)" } } }
+            scales = new { y = new { beginAtZero = true, title = new { display = true, text = L["Chart_WeightAxis"].Value } } }
         };
 
         await JSRuntime.InvokeVoidAsync("initBarChart", "stageWeightsChart", labels, datasets, options);
@@ -562,7 +562,7 @@
         {
             new
             {
-                label = "记录数",
+                label = L["Chart_RecordCount"].Value,
                 data = countData,
                 backgroundColor = "#36A2EB",
                 borderColor = "#36A2EB",
@@ -571,7 +571,7 @@
             },
             new
             {
-                label = "总重量 (lb)",
+                label = L["Chart_TotalWeight"].Value,
                 data = weightData,
                 backgroundColor = "#FF6384",
                 borderColor = "#FF6384",
@@ -588,8 +588,8 @@
             plugins = new { legend = new { display = true, position = "top" } },
             scales = new
             {
-                y = new { type = "linear", display = true, position = "left", title = new { display = true, text = "记录数" } },
-                y1 = new { type = "linear", display = true, position = "right", title = new { display = true, text = "重量 (lb)" }, grid = new { drawOnChartArea = false } }
+                y = new { type = "linear", display = true, position = "left", title = new { display = true, text = L["Chart_RecordCount"].Value } },
+                y1 = new { type = "linear", display = true, position = "right", title = new { display = true, text = L["Chart_WeightAxis"].Value }, grid = new { drawOnChartArea = false } }
             }
         };
 
@@ -624,7 +624,7 @@
         {
             new
             {
-                label = "记录数",
+                label = L["Chart_RecordCount"].Value,
                 data = countData,
                 borderColor = "#36A2EB",
                 backgroundColor = "rgba(54, 162, 235, 0.1)",
@@ -634,7 +634,7 @@
             },
             new
             {
-                label = "总重量 (lb)",
+                label = L["Chart_TotalWeight"].Value,
                 data = weightData,
                 borderColor = "#FF6384",
                 backgroundColor = "rgba(255, 99, 132, 0.1)",
@@ -652,8 +652,8 @@
             plugins = new { legend = new { display = true, position = "top" } },
             scales = new
             {
-                y = new { type = "linear", display = true, position = "left", title = new { display = true, text = "记录数" }, beginAtZero = true },
-                y1 = new { type = "linear", display = true, position = "right", title = new { display = true, text = "重量 (lb)" }, grid = new { drawOnChartArea = false }, beginAtZero = true }
+                y = new { type = "linear", display = true, position = "left", title = new { display = true, text = L["Chart_RecordCount"].Value }, beginAtZero = true },
+                y1 = new { type = "linear", display = true, position = "right", title = new { display = true, text = L["Chart_WeightAxis"].Value }, grid = new { drawOnChartArea = false }, beginAtZero = true }
             }
         };
 
@@ -689,7 +689,7 @@
         {
             new
             {
-                label = "损耗率 (%)",
+                label = L["Chart_LossRatePercent"].Value,
                 data = data,
                 backgroundColor = backgroundColor,
                 borderColor = "#fff",
@@ -705,11 +705,11 @@
             plugins = new
             {
                 legend = new { display = false },
-                title = new { display = true, text = "损耗率越高，条码颜色越深（红>黄>蓝>绿）" }
+                title = new { display = true, text = L["Chart_LossRateLegend"].Value }
             },
             scales = new
             {
-                x = new { beginAtZero = true, title = new { display = true, text = "损耗率 (%)" } }
+                x = new { beginAtZero = true, title = new { display = true, text = L["Chart_LossRatePercent"].Value } }
             }
         };
 
