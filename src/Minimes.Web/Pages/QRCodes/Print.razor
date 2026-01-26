@@ -1,12 +1,15 @@
 @page "/qrcodes/print/{id:int}"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.QRCode
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IQRCodeService QRCodeService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>打印二维码 - MiniMES</PageTitle>
+<PageTitle>@L["QRCodes_PrintTitle"] - MiniMES</PageTitle>
 
 <style>
     /* 屏幕显示样式 */
@@ -114,25 +117,25 @@
             <div class="row">
                 <div class="col">
                     <h4>
-                        <span class="oi oi-print me-2"></span>打印预览
+                        <span class="oi oi-print me-2"></span>@L["QRCodes_PrintPreview"]
                     </h4>
                 </div>
                 <div class="col-auto">
                     <div class="btn-group me-2">
                         <button class="btn btn-sm @(printMode == "label" ? "btn-primary" : "btn-outline-primary")"
                                 @onclick='() => SetPrintMode("label")'>
-                            <span class="oi oi-tag me-1"></span>标签打印
+                            <span class="oi oi-tag me-1"></span>@L["QRCodes_LabelPrint"]
                         </button>
                         <button class="btn btn-sm @(printMode == "a4" ? "btn-primary" : "btn-outline-primary")"
                                 @onclick='() => SetPrintMode("a4")'>
-                            <span class="oi oi-document me-1"></span>A4打印
+                            <span class="oi oi-document me-1"></span>@L["QRCodes_A4Print"]
                         </button>
                     </div>
                     <button class="btn btn-sm btn-success me-2" @onclick="ExecutePrint">
-                        <span class="oi oi-print me-1"></span>打印
+                        <span class="oi oi-print me-1"></span>@L["Btn_Print"]
                     </button>
                     <button class="btn btn-sm btn-secondary" @onclick="Close">
-                        <span class="oi oi-x me-1"></span>关闭
+                        <span class="oi oi-x me-1"></span>@L["Btn_Close"]
                     </button>
                 </div>
             </div>
@@ -143,15 +146,15 @@
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">加载中...</span>
+                <span class="visually-hidden">@L["Status_Loading"]</span>
             </div>
-            <p class="text-muted mt-2">加载数据中...</p>
+            <p class="text-muted mt-2">@L["QRCodes_LoadingInfo"]</p>
         </div>
     }
     else if (qrCode == null)
     {
         <div class="alert alert-warning no-print">
-            <span class="oi oi-warning me-2"></span>未找到指定的二维码记录
+            <span class="oi oi-warning me-2"></span>@L["QRCodes_NotFoundMessage"]
         </div>
     }
     else
@@ -219,7 +222,7 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"加载数据失败: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_LoadFailed"].Value} {ex.Message}");
         }
         finally
         {
@@ -244,7 +247,7 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"打印失败: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_PrintFailed"].Value} {ex.Message}");
         }
     }
 

@@ -1231,7 +1231,7 @@
     <value>肉类类型</value>
   </data>
   <data name="Nav_QRCodes" xml:space="preserve">
-    <value>二维码管理</value>
+    <value>二维码</value>
   </data>
 
   <!-- 记录列表表头 -->
@@ -1751,6 +1751,15 @@
   <data name="QRCodes_PrintCount" xml:space="preserve">
     <value>打印次数</value>
   </data>
+  <data name="QRCodes_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="QRCodes_CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="QRCodes_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
   <data name="QRCodes_LoadDataFailed" xml:space="preserve">
     <value>加载数据失败: </value>
   </data>
@@ -1890,6 +1899,171 @@
   </data>
   <data name="QRCodes_EnterCode" xml:space="preserve">
     <value>请输入编号</value>
+  </data>
+  <data name="QRCodes_EditTitle" xml:space="preserve">
+    <value>编辑二维码</value>
+  </data>
+  <data name="QRCodes_LoadingInfo" xml:space="preserve">
+    <value>加载数据中...</value>
+  </data>
+  <data name="QRCodes_NotFoundMessage" xml:space="preserve">
+    <value>未找到指定的二维码记录</value>
+  </data>
+  <data name="QRCodes_CodeReadonly" xml:space="preserve">
+    <value>编号不可修改</value>
+  </data>
+  <data name="QRCodes_MeatTypeReadonly" xml:space="preserve">
+    <value>肉类类型不可修改</value>
+  </data>
+  <data name="QRCodes_ContentReadonly" xml:space="preserve">
+    <value>二维码内容不可修改</value>
+  </data>
+  <data name="QRCodes_BatchNumberReadonly" xml:space="preserve">
+    <value>批次号不可修改</value>
+  </data>
+  <data name="QRCodes_StatusLabel" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="QRCodes_StatusHint" xml:space="preserve">
+    <value>未激活的二维码将不能使用</value>
+  </data>
+  <data name="QRCodes_ImageTitle" xml:space="preserve">
+    <value>二维码图片</value>
+  </data>
+  <data name="QRCodes_NoImage" xml:space="preserve">
+    <value>无图片</value>
+  </data>
+  <data name="QRCodes_UsageStatistics" xml:space="preserve">
+    <value>使用统计</value>
+  </data>
+  <data name="QRCodes_PrintCountLabel" xml:space="preserve">
+    <value>打印次数</value>
+  </data>
+  <data name="QRCodes_Times" xml:space="preserve">
+    <value>次</value>
+  </data>
+  <data name="QRCodes_LastPrintedAt" xml:space="preserve">
+    <value>最后打印时间</value>
+  </data>
+  <data name="QRCodes_LoadFailed" xml:space="preserve">
+    <value>加载失败</value>
+  </data>
+  <data name="QRCodes_BatchCreateTitle" xml:space="preserve">
+    <value>批量创建二维码</value>
+  </data>
+  <data name="QRCodes_BatchCreateParams" xml:space="preserve">
+    <value>批量创建参数</value>
+  </data>
+  <data name="QRCodes_StartNumber" xml:space="preserve">
+    <value>起始编号</value>
+  </data>
+  <data name="QRCodes_StartNumberPlaceholder" xml:space="preserve">
+    <value>例如：1</value>
+  </data>
+  <data name="QRCodes_EndNumber" xml:space="preserve">
+    <value>结束编号</value>
+  </data>
+  <data name="QRCodes_EndNumberPlaceholder" xml:space="preserve">
+    <value>例如：100</value>
+  </data>
+  <data name="QRCodes_Prefix" xml:space="preserve">
+    <value>编号前缀</value>
+  </data>
+  <data name="QRCodes_PrefixPlaceholder" xml:space="preserve">
+    <value>例如：A, B, 空</value>
+  </data>
+  <data name="QRCodes_PrefixHint" xml:space="preserve">
+    <value>可选，留空则无前缀</value>
+  </data>
+  <data name="QRCodes_PaddingLength" xml:space="preserve">
+    <value>补零位数</value>
+  </data>
+  <data name="QRCodes_PaddingLengthPlaceholder" xml:space="preserve">
+    <value>例如：3</value>
+  </data>
+  <data name="QRCodes_PaddingLengthHint" xml:space="preserve">
+    <value>例如：3位补零 → 001, 002</value>
+  </data>
+  <data name="QRCodes_CreateProgress" xml:space="preserve">
+    <value>创建进度</value>
+  </data>
+  <data name="QRCodes_CreatedCount" xml:space="preserve">
+    <value>已创建</value>
+  </data>
+  <data name="QRCodes_Items" xml:space="preserve">
+    <value>个</value>
+  </data>
+  <data name="QRCodes_Creating" xml:space="preserve">
+    <value>创建中...</value>
+  </data>
+  <data name="QRCodes_BatchCreateButton" xml:space="preserve">
+    <value>批量创建</value>
+  </data>
+  <data name="QRCodes_CodePreview" xml:space="preserve">
+    <value>编号预览</value>
+  </data>
+  <data name="QRCodes_Total" xml:space="preserve">
+    <value>共</value>
+  </data>
+  <data name="QRCodes_GenerationRule" xml:space="preserve">
+    <value>生成规则：</value>
+  </data>
+  <data name="QRCodes_Format" xml:space="preserve">
+    <value>格式：</value>
+  </data>
+  <data name="QRCodes_Number" xml:space="preserve">
+    <value>编号</value>
+  </data>
+  <data name="QRCodes_Example" xml:space="preserve">
+    <value>示例：</value>
+  </data>
+  <data name="QRCodes_SequenceNumber" xml:space="preserve">
+    <value>序号</value>
+  </data>
+  <data name="Message_Tip" xml:space="preserve">
+    <value>提示：</value>
+  </data>
+  <data name="QRCodes_BatchCreateWarning" xml:space="preserve">
+    <value>批量创建超过100个二维码可能需要较长时间，请耐心等待。</value>
+  </data>
+  <data name="QRCodes_StartNumberGreaterThanEnd" xml:space="preserve">
+    <value>起始编号不能大于结束编号</value>
+  </data>
+  <data name="QRCodes_PaddingLengthRange" xml:space="preserve">
+    <value>补零位数必须在1-10之间</value>
+  </data>
+  <data name="QRCodes_BatchCreateLimit" xml:space="preserve">
+    <value>单次批量创建不能超过1000个二维码</value>
+  </data>
+  <data name="QRCodes_SelectMeatTypeRequired" xml:space="preserve">
+    <value>请选择肉类类型</value>
+  </data>
+  <data name="QRCodes_ValidNumberRequired" xml:space="preserve">
+    <value>请输入有效的起始和结束编号</value>
+  </data>
+  <data name="QRCodes_BatchCreateSuccess" xml:space="preserve">
+    <value>成功创建</value>
+  </data>
+  <data name="QRCodes_PrintTitle" xml:space="preserve">
+    <value>打印二维码</value>
+  </data>
+  <data name="QRCodes_PrintPreview" xml:space="preserve">
+    <value>打印预览</value>
+  </data>
+  <data name="QRCodes_LabelPrint" xml:space="preserve">
+    <value>标签打印</value>
+  </data>
+  <data name="QRCodes_A4Print" xml:space="preserve">
+    <value>A4打印</value>
+  </data>
+  <data name="Btn_Print" xml:space="preserve">
+    <value>打印</value>
+  </data>
+  <data name="Btn_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="QRCodes_PrintFailed" xml:space="preserve">
+    <value>打印失败</value>
   </data>
 
 </root>

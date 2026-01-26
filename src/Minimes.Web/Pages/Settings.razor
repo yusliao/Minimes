@@ -181,26 +181,26 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <span class="oi oi-balance-scale me-2"></span>称重配置
+                        <span class="oi oi-balance-scale me-2"></span>@L["Settings_WeightConfig"]
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12 col-md-6 mb-3">
-                            <label class="form-label fw-bold">最小重量（磅）</label>
+                            <label class="form-label fw-bold">@L["Settings_MinWeightLb"]</label>
                             <div class="input-group">
                                 <input type="number" class="form-control" @bind="minWeightLb" step="0.001" min="0" />
                                 <span class="input-group-text">lb</span>
                             </div>
-                            <small class="text-muted">当前配置：@currentMinWeightLb.ToString("F3") lb</small>
+                            <small class="text-muted">@L["Settings_CurrentConfig"] @currentMinWeightLb.ToString("F3") lb</small>
                         </div>
                         <div class="col-12 col-md-6 mb-3">
-                            <label class="form-label fw-bold">最大重量（磅）</label>
+                            <label class="form-label fw-bold">@L["Settings_MaxWeightLb"]</label>
                             <div class="input-group">
                                 <input type="number" class="form-control" @bind="maxWeightLb" step="0.1" min="0" />
                                 <span class="input-group-text">lb</span>
                             </div>
-                            <small class="text-muted">当前配置：@currentMaxWeightLb.ToString("F1") lb</small>
+                            <small class="text-muted">@L["Settings_CurrentConfig"] @currentMaxWeightLb.ToString("F1") lb</small>
                         </div>
                     </div>
                     <hr />
@@ -214,10 +214,10 @@
                             {
                                 <span class="oi oi-check me-1"></span>
                             }
-                            保存配置
+                            @L["Settings_SaveConfig"]
                         </button>
                         <button class="btn btn-outline-secondary" @onclick="ResetWeightConfig">
-                            <span class="oi oi-reload me-1"></span>重置
+                            <span class="oi oi-reload me-1"></span>@L["Btn_Reset"]
                         </button>
                     </div>
                     @if (!string.IsNullOrEmpty(configMessage))
@@ -228,7 +228,7 @@
                     }
                     <div class="alert alert-success mt-3 mb-0 small">
                         <span class="oi oi-check me-1"></span>
-                        <strong>提示：</strong>配置修改后立即生效，无需重启应用。配置文件位置：appsettings.json
+                        <strong>@L["Settings_ConfigTip"]</strong>@L["Settings_ConfigHint"]
                     </div>
                 </div>
             </div>
@@ -286,26 +286,26 @@
             <div class="card bg-light">
                 <div class="card-body">
                     <h6 class="card-title mb-3">
-                        <span class="oi oi-code me-2"></span>技术栈
+                        <span class="oi oi-code me-2"></span>@L["Settings_TechStack"]
                     </h6>
                     <div class="row small">
                         <div class="col-4 col-md-2 mb-2">
-                            <span class="text-muted">框架:</span><br /><strong>.NET 8.0</strong>
+                            <span class="text-muted">@L["Settings_Framework"]</span><br /><strong>.NET 8.0</strong>
                         </div>
                         <div class="col-4 col-md-2 mb-2">
-                            <span class="text-muted">Web:</span><br /><strong>Blazor Server</strong>
+                            <span class="text-muted">@L["Settings_Web"]</span><br /><strong>Blazor Server</strong>
                         </div>
                         <div class="col-4 col-md-2 mb-2">
-                            <span class="text-muted">ORM:</span><br /><strong>EF Core 8.0</strong>
+                            <span class="text-muted">@L["Settings_ORM"]</span><br /><strong>EF Core 8.0</strong>
                         </div>
                         <div class="col-4 col-md-2 mb-2">
-                            <span class="text-muted">验证:</span><br /><strong>FluentValidation</strong>
+                            <span class="text-muted">@L["Settings_Validation"]</span><br /><strong>FluentValidation</strong>
                         </div>
                         <div class="col-4 col-md-2 mb-2">
-                            <span class="text-muted">Excel:</span><br /><strong>EPPlus 8.4</strong>
+                            <span class="text-muted">@L["Settings_Excel"]</span><br /><strong>EPPlus 8.4</strong>
                         </div>
                         <div class="col-4 col-md-2 mb-2">
-                            <span class="text-muted">实时:</span><br /><strong>SignalR</strong>
+                            <span class="text-muted">@L["Settings_Realtime"]</span><br /><strong>SignalR</strong>
                         </div>
                     </div>
                 </div>
@@ -318,7 +318,7 @@
     private string scalePortName = string.Empty;
     private int scaleBaudRate = 0;
     private string scaleProtocol = string.Empty;
-    private string dbSize = "计算中...";
+    private string dbSize = string.Empty;
     private int recordCount = 0;
     private static DateTime startTime = DateTime.Now;
 
@@ -372,7 +372,7 @@
 
     private void LoadSettings()
     {
-        scalePortName = Configuration["Scale:PortName"] ?? "未配置";
+        scalePortName = Configuration["Scale:PortName"] ?? L["Settings_NotConfigured"].Value;
         scaleBaudRate = Configuration.GetValue<int>("Scale:BaudRate", 9600);
         scaleProtocol = Configuration["Scale:Protocol"] ?? "Generic";
     }
@@ -395,12 +395,12 @@
             }
             else
             {
-                dbSize = "未找到";
+                dbSize = L["Settings_NotFound"].Value;
             }
         }
         catch
         {
-            dbSize = "未知";
+            dbSize = L["Settings_Unknown"].Value;
         }
     }
 
@@ -408,10 +408,10 @@
     {
         var uptime = DateTime.Now - startTime;
         if (uptime.TotalHours < 1)
-            return $"{(int)uptime.TotalMinutes} 分钟";
+            return $"{(int)uptime.TotalMinutes} {L["Settings_Minutes"].Value}";
         if (uptime.TotalDays < 1)
-            return $"{(int)uptime.TotalHours} 小时 {uptime.Minutes} 分";
-        return $"{(int)uptime.TotalDays} 天 {uptime.Hours} 小时";
+            return $"{(int)uptime.TotalHours} {L["Settings_Hours"].Value} {uptime.Minutes} {L["Settings_Min"].Value}";
+        return $"{(int)uptime.TotalDays} {L["Settings_Days"].Value} {uptime.Hours} {L["Settings_Hours"].Value}";
     }
 
     private void LoadWeightConfig()
@@ -443,14 +443,14 @@
             // 验证输入
             if (minWeightLb <= 0 || maxWeightLb <= 0)
             {
-                configMessage = "重量必须大于0";
+                configMessage = L["Settings_WeightMustPositive"].Value;
                 configSuccess = false;
                 return;
             }
 
             if (minWeightLb >= maxWeightLb)
             {
-                configMessage = "最小重量必须小于最大重量";
+                configMessage = L["Settings_MinLessThanMax"].Value;
                 configSuccess = false;
                 return;
             }
@@ -463,7 +463,7 @@
             var appSettingsPath = Path.Combine(Environment.ContentRootPath, "appsettings.json");
             if (!File.Exists(appSettingsPath))
             {
-                configMessage = $"配置文件不存在：{appSettingsPath}";
+                configMessage = $"{L["Settings_ConfigFileNotExist"].Value} {appSettingsPath}";
                 configSuccess = false;
                 return;
             }
@@ -506,12 +506,12 @@
             currentMinWeightLb = minWeightLb;
             currentMaxWeightLb = maxWeightLb;
 
-            configMessage = $"配置已保存并立即生效！最小重量：{minWeightLb:F3} lb，最大重量：{maxWeightLb:F1} lb";
+            configMessage = $"{L["Settings_ConfigSaveSuccess"].Value} {L["Settings_MinWeightLb"].Value} {minWeightLb:F3} lb, {L["Settings_MaxWeightLb"].Value} {maxWeightLb:F1} lb";
             configSuccess = true;
         }
         catch (Exception ex)
         {
-            configMessage = $"保存失败：{ex.Message}";
+            configMessage = $"{L["Settings_SaveFailed"].Value} {ex.Message}";
             configSuccess = false;
         }
         finally
@@ -532,7 +532,7 @@
 
             if (!File.Exists(dbPath))
             {
-                backupMessage = "数据库文件不存在";
+                backupMessage = L["Settings_DbNotExist"].Value;
                 backupSuccess = false;
                 return;
             }
@@ -543,12 +543,12 @@
 
             await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64);
 
-            backupMessage = $"备份成功！文件: {fileName}";
+            backupMessage = $"{L["Settings_BackupSuccess"].Value}: {fileName}";
             backupSuccess = true;
         }
         catch (Exception ex)
         {
-            backupMessage = $"备份失败: {ex.Message}";
+            backupMessage = $"{L["Settings_BackupFailed"].Value}: {ex.Message}";
             backupSuccess = false;
         }
         finally

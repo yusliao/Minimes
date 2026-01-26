@@ -13,6 +13,8 @@
     <link href="css/tablet.css" rel="stylesheet" />
     <link href="Minimes.Web.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+    <!-- Chart.js 用于图表展示 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     @RenderBody()
@@ -29,6 +31,7 @@
     </div>
 
     <script src="js/utils.js"></script>
+    <script src="js/charts.js"></script>
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>

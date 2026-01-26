@@ -51,7 +51,16 @@ public static class DatabaseExtensions
             ?? throw new InvalidOperationException("MySqlConnection string is not configured.");
 
         // Pomelo.EntityFrameworkCore.MySql requires ServerVersion
-        var serverVersion = ServerVersion.AutoDetect(connectionString);
+        ServerVersion serverVersion;
+        try
+        {
+            serverVersion = ServerVersion.AutoDetect(connectionString);
+        }
+        catch
+        {
+            // Fallback to MySQL 8.0 if AutoDetect fails (e.g., during design-time migrations)
+            serverVersion = new MySqlServerVersion(new Version(8, 0));
+        }
 
         options.UseMySql(connectionString, serverVersion, mySqlOptions =>
         {

@@ -1,23 +1,26 @@
 @page "/qrcodes/edit/{id:int}"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.QRCode
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IQRCodeService QRCodeService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>编辑二维码 - MiniMES</PageTitle>
+<PageTitle>@L["QRCodes_EditTitle"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-pencil me-2"></span>编辑二维码
+                <span class="oi oi-pencil me-2"></span>@L["QRCodes_EditTitle"]
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/qrcodes">二维码管理</a></li>
-                    <li class="breadcrumb-item active">编辑</li>
+                    <li class="breadcrumb-item"><a href="/qrcodes">@L["QRCodes_Title"]</a></li>
+                    <li class="breadcrumb-item active">@L["Breadcrumb_Edit"]</li>
                 </ol>
             </nav>
         </div>
@@ -27,15 +30,15 @@
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">加载中...</span>
+                <span class="visually-hidden">@L["Status_Loading"]</span>
             </div>
-            <p class="text-muted mt-2">加载数据中...</p>
+            <p class="text-muted mt-2">@L["QRCodes_LoadingInfo"]</p>
         </div>
     }
     else if (qrCode == null)
     {
         <div class="alert alert-warning">
-            <span class="oi oi-warning me-2"></span>未找到指定的二维码记录
+            <span class="oi oi-warning me-2"></span>@L["QRCodes_NotFoundMessage"]
         </div>
     }
     else
@@ -45,71 +48,71 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">基本信息</h5>
+                        <h5 class="mb-0">@L["QRCodes_BasicInfo"]</h5>
                     </div>
                     <div class="card-body">
                         @if (!string.IsNullOrEmpty(errorMessage))
                         {
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <strong>错误：</strong> @errorMessage
+                                <strong>@L["Message_Error"]</strong> @errorMessage
                                 <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
                             </div>
                         }
 
                         <!-- 只读信息 -->
                         <div class="mb-3">
-                            <label class="form-label">ID</label>
+                            <label class="form-label">@L["QRCodes_Id"]</label>
                             <input type="text" class="form-control" value="@qrCode.Id" readonly />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">编号</label>
+                            <label class="form-label">@L["QRCodes_CodeLabel"]</label>
                             <input type="text" class="form-control" value="@qrCode.Code" readonly />
-                            <div class="form-text">编号不可修改</div>
+                            <div class="form-text">@L["QRCodes_CodeReadonly"]</div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">肉类类型</label>
+                            <label class="form-label">@L["QRCodes_MeatTypeLabel"]</label>
                             <input type="text" class="form-control" value="@qrCode.MeatTypeName (@qrCode.MeatTypeCode)" readonly />
-                            <div class="form-text">肉类类型不可修改</div>
+                            <div class="form-text">@L["QRCodes_MeatTypeReadonly"]</div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">二维码内容</label>
+                            <label class="form-label">@L["QRCodes_ContentLabel"]</label>
                             <input type="text" class="form-control" value="@qrCode.Content" readonly />
-                            <div class="form-text">二维码内容不可修改</div>
+                            <div class="form-text">@L["QRCodes_ContentReadonly"]</div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">批次号</label>
+                            <label class="form-label">@L["QRCodes_BatchNumberLabel"]</label>
                             <input type="text" class="form-control" value="@(qrCode.BatchNumber ?? "-")" readonly />
-                            <div class="form-text">批次号不可修改</div>
+                            <div class="form-text">@L["QRCodes_BatchNumberReadonly"]</div>
                         </div>
 
                         <!-- 可编辑字段 -->
                         <div class="mb-3">
-                            <label class="form-label">状态</label>
+                            <label class="form-label">@L["QRCodes_StatusLabel"]</label>
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="isActiveSwitch" @bind="request.IsActive" />
                                 <label class="form-check-label" for="isActiveSwitch">
                                     @if (request.IsActive)
                                     {
-                                        <span class="badge bg-success">激活</span>
+                                        <span class="badge bg-success">@L["Status_Active"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">未激活</span>
+                                        <span class="badge bg-secondary">@L["Status_Inactive"]</span>
                                     }
                                 </label>
                             </div>
-                            <div class="form-text">未激活的二维码将不能使用</div>
+                            <div class="form-text">@L["QRCodes_StatusHint"]</div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">备注</label>
+                            <label class="form-label">@L["QRCodes_RemarksLabel"]</label>
                             <textarea class="form-control" @bind="request.Remarks" rows="3"
-                                      placeholder="输入备注信息..." maxlength="500"></textarea>
-                            <div class="form-text">可选，最多500字符</div>
+                                      placeholder="@L["QRCodes_RemarksPlaceholder"]" maxlength="500"></textarea>
+                            <div class="form-text">@L["QRCodes_RemarksHint"]</div>
                         </div>
 
                         <div class="d-flex gap-2">
@@ -117,16 +120,16 @@
                                 @if (isSaving)
                                 {
                                     <span class="spinner-border spinner-border-sm me-1"></span>
-                                    <span>保存中...</span>
+                                    <span>@L["Btn_Saving"]</span>
                                 }
                                 else
                                 {
                                     <span class="oi oi-check me-1"></span>
-                                    <span>保存</span>
+                                    <span>@L["Btn_Save"]</span>
                                 }
                             </button>
                             <button class="btn btn-secondary" @onclick="Cancel">
-                                <span class="oi oi-x me-1"></span>取消
+                                <span class="oi oi-x me-1"></span>@L["Btn_Cancel"]
                             </button>
                         </div>
                     </div>
@@ -138,7 +141,7 @@
                 <!-- 二维码图片 -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="mb-0">二维码图片</h5>
+                        <h5 class="mb-0">@L["QRCodes_ImageTitle"]</h5>
                     </div>
                     <div class="card-body text-center">
                         @if (!string.IsNullOrEmpty(qrCode.ImageBase64))
@@ -153,7 +156,7 @@
                         {
                             <div class="text-muted py-3">
                                 <span class="oi oi-qrcode" style="font-size: 48px;"></span>
-                                <p class="mt-2">无图片</p>
+                                <p class="mt-2">@L["QRCodes_NoImage"]</p>
                             </div>
                         }
                     </div>
@@ -162,24 +165,24 @@
                 <!-- 使用统计 -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">使用统计</h5>
+                        <h5 class="mb-0">@L["QRCodes_UsageStatistics"]</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label text-muted">打印次数</label>
-                            <h4 class="mb-0">@qrCode.PrintCount 次</h4>
+                            <label class="form-label text-muted">@L["QRCodes_PrintCountLabel"]</label>
+                            <h4 class="mb-0">@qrCode.PrintCount @L["QRCodes_Times"]</h4>
                         </div>
 
                         @if (qrCode.LastPrintedAt.HasValue)
                         {
                             <div class="mb-3">
-                                <label class="form-label text-muted">最后打印时间</label>
+                                <label class="form-label text-muted">@L["QRCodes_LastPrintedAt"]</label>
                                 <p class="mb-0">@qrCode.LastPrintedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</p>
                             </div>
                         }
 
                         <div class="mb-0">
-                            <label class="form-label text-muted">创建时间</label>
+                            <label class="form-label text-muted">@L["QRCodes_CreatedAt"]</label>
                             <p class="mb-0">@qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
                         </div>
                     </div>
@@ -220,7 +223,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载数据失败: {ex.Message}";
+            errorMessage = $"{L["QRCodes_LoadFailed"].Value} {ex.Message}";
         }
         finally
         {

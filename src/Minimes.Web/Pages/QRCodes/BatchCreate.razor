@@ -1,25 +1,28 @@
 @page "/qrcodes/batch-create"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
+@using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.QRCode
 @using Minimes.Application.DTOs.MeatType
+@using Minimes.Application.Resources
+@inject IStringLocalizer<SharedResource> L
 @inject IQRCodeService QRCodeService
 @inject IMeatTypeService MeatTypeService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>批量创建二维码 - MiniMES</PageTitle>
+<PageTitle>@L["QRCodes_BatchCreateTitle"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-layers me-2"></span>批量创建二维码
+                <span class="oi oi-layers me-2"></span>@L["QRCodes_BatchCreateTitle"]
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/qrcodes">二维码管理</a></li>
-                    <li class="breadcrumb-item active">批量创建</li>
+                    <li class="breadcrumb-item"><a href="/qrcodes">@L["QRCodes_Title"]</a></li>
+                    <li class="breadcrumb-item active">@L["QRCodes_BatchCreate"]</li>
                 </ol>
             </nav>
         </div>
@@ -30,13 +33,13 @@
         <div class="col-md-7">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">批量创建参数</h5>
+                    <h5 class="mb-0">@L["QRCodes_BatchCreateParams"]</h5>
                 </div>
                 <div class="card-body">
                     @if (!string.IsNullOrEmpty(errorMessage))
                     {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>错误：</strong> @errorMessage
+                            <strong>@L["Message_Error"]</strong> @errorMessage
                             <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
                         </div>
                     }
@@ -44,15 +47,15 @@
                     @if (!string.IsNullOrEmpty(successMessage))
                     {
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <strong>成功：</strong> @successMessage
+                            <strong>@L["Message_Success"]</strong> @successMessage
                             <button type="button" class="btn-close" @onclick="() => successMessage = string.Empty"></button>
                         </div>
                     }
 
                     <div class="mb-3">
-                        <label class="form-label">肉类类型 <span class="text-danger">*</span></label>
+                        <label class="form-label">@L["QRCodes_MeatTypeLabel"] <span class="text-danger">*</span></label>
                         <select class="form-select" @bind="request.MeatTypeId" @bind:after="OnParameterChanged">
-                            <option value="0">-- 请选择肉类类型 --</option>
+                            <option value="0">@L["QRCodes_SelectMeatType"]</option>
                             @foreach (var meatType in meatTypes)
                             {
                                 <option value="@meatType.Id">@meatType.Name (@meatType.Code)</option>
@@ -62,43 +65,43 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">起始编号 <span class="text-danger">*</span></label>
+                            <label class="form-label">@L["QRCodes_StartNumber"] <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" @bind="request.StartNumber" @bind:after="OnParameterChanged"
-                                   min="1" placeholder="例如：1" />
+                                   min="1" placeholder="@L["QRCodes_StartNumberPlaceholder"]" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">结束编号 <span class="text-danger">*</span></label>
+                            <label class="form-label">@L["QRCodes_EndNumber"] <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" @bind="request.EndNumber" @bind:after="OnParameterChanged"
-                                   min="1" placeholder="例如：100" />
+                                   min="1" placeholder="@L["QRCodes_EndNumberPlaceholder"]" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">编号前缀</label>
+                            <label class="form-label">@L["QRCodes_Prefix"]</label>
                             <input type="text" class="form-control" @bind="request.Prefix" @bind:after="OnParameterChanged"
-                                   placeholder="例如：A, B, 空" maxlength="10" />
-                            <div class="form-text">可选，留空则无前缀</div>
+                                   placeholder="@L["QRCodes_PrefixPlaceholder"]" maxlength="10" />
+                            <div class="form-text">@L["QRCodes_PrefixHint"]</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">补零位数 <span class="text-danger">*</span></label>
+                            <label class="form-label">@L["QRCodes_PaddingLength"] <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" @bind="request.PaddingLength" @bind:after="OnParameterChanged"
-                                   min="1" max="10" placeholder="例如：3" />
-                            <div class="form-text">例如：3位补零 → 001, 002</div>
+                                   min="1" max="10" placeholder="@L["QRCodes_PaddingLengthPlaceholder"]" />
+                            <div class="form-text">@L["QRCodes_PaddingLengthHint"]</div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">批次号</label>
+                        <label class="form-label">@L["QRCodes_BatchNumberLabel"]</label>
                         <input type="text" class="form-control" @bind="request.BatchNumber"
-                               placeholder="例如：20260123-A" maxlength="50" />
-                        <div class="form-text">建议填写，便于批量管理</div>
+                               placeholder="@L["QRCodes_BatchNumberPlaceholder"]" maxlength="50" />
+                        <div class="form-text">@L["QRCodes_BatchNumberHint"]</div>
                     </div>
 
                     @if (isCreating)
                     {
                         <div class="mb-3">
-                            <label class="form-label">创建进度</label>
+                            <label class="form-label">@L["QRCodes_CreateProgress"]</label>
                             <div class="progress" style="height: 25px;">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated"
                                      role="progressbar"
@@ -110,7 +113,7 @@
                                 </div>
                             </div>
                             <div class="form-text mt-2">
-                                已创建 @createdCount / @totalCount 个二维码
+                                @L["QRCodes_CreatedCount"] @createdCount / @totalCount @L["QRCodes_Items"]
                             </div>
                         </div>
                     }
@@ -120,16 +123,16 @@
                             @if (isCreating)
                             {
                                 <span class="spinner-border spinner-border-sm me-1"></span>
-                                <span>创建中...</span>
+                                <span>@L["QRCodes_Creating"]</span>
                             }
                             else
                             {
                                 <span class="oi oi-check me-1"></span>
-                                <span>批量创建 (@previewCodes.Count 个)</span>
+                                <span>@L["QRCodes_BatchCreateButton"] (@previewCodes.Count @L["QRCodes_Items"])</span>
                             }
                         </button>
                         <button class="btn btn-secondary" @onclick="Cancel" disabled="@isCreating">
-                            <span class="oi oi-x me-1"></span>取消
+                            <span class="oi oi-x me-1"></span>@L["Btn_Cancel"]
                         </button>
                     </div>
                 </div>
@@ -140,10 +143,10 @@
         <div class="col-md-5">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">编号预览</h5>
+                    <h5 class="mb-0">@L["QRCodes_CodePreview"]</h5>
                     @if (previewCodes.Count > 0)
                     {
-                        <span class="badge bg-primary">共 @previewCodes.Count 个</span>
+                        <span class="badge bg-primary">@L["QRCodes_Total"] @previewCodes.Count @L["QRCodes_Items"]</span>
                     }
                 </div>
                 <div class="card-body">
@@ -151,23 +154,23 @@
                     {
                         <div class="text-center text-muted py-5">
                             <span class="oi oi-eye" style="font-size: 48px;"></span>
-                            <p class="mt-2">填写参数后将显示编号预览</p>
+                            <p class="mt-2">@L["QRCodes_PreviewHint"]</p>
                         </div>
                     }
                     else
                     {
                         <div class="alert alert-info">
-                            <strong>生成规则：</strong>
-                            <br/>格式：@selectedMeatTypeCode-@(string.IsNullOrEmpty(request.Prefix) ? "" : request.Prefix)[编号]
-                            <br/>示例：@previewCodes.FirstOrDefault()
+                            <strong>@L["QRCodes_GenerationRule"]</strong>
+                            <br/>@L["QRCodes_Format"]@selectedMeatTypeCode-@(string.IsNullOrEmpty(request.Prefix) ? "" : request.Prefix)[@L["QRCodes_Number"]]
+                            <br/>@L["QRCodes_Example"]@previewCodes.FirstOrDefault()
                         </div>
 
                         <div style="max-height: 400px; overflow-y: auto;">
                             <table class="table table-sm table-striped">
                                 <thead>
                                     <tr>
-                                        <th style="width: 60px;">序号</th>
-                                        <th>二维码内容</th>
+                                        <th style="width: 60px;">@L["QRCodes_SequenceNumber"]</th>
+                                        <th>@L["QRCodes_Content"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -186,7 +189,7 @@
                         {
                             <div class="alert alert-warning mt-2 mb-0">
                                 <span class="oi oi-warning me-1"></span>
-                                <strong>提示：</strong>批量创建超过100个二维码可能需要较长时间，请耐心等待。
+                                <strong>@L["Message_Tip"]</strong>@L["QRCodes_BatchCreateWarning"]
                             </div>
                         }
                     }
@@ -223,7 +226,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载肉类类型失败: {ex.Message}";
+            errorMessage = $"{L["MeatTypes_LoadFailed"].Value} {ex.Message}";
         }
     }
 
@@ -251,13 +254,13 @@
 
         if (request.StartNumber > request.EndNumber)
         {
-            errorMessage = "起始编号不能大于结束编号";
+            errorMessage = L["QRCodes_StartNumberGreaterThanEnd"].Value;
             return;
         }
 
         if (request.PaddingLength < 1 || request.PaddingLength > 10)
         {
-            errorMessage = "补零位数必须在1-10之间";
+            errorMessage = L["QRCodes_PaddingLengthRange"].Value;
             return;
         }
 
@@ -265,7 +268,7 @@
         int count = request.EndNumber - request.StartNumber + 1;
         if (count > 1000)
         {
-            errorMessage = "单次批量创建不能超过1000个二维码";
+            errorMessage = L["QRCodes_BatchCreateLimit"].Value;
             return;
         }
 
@@ -301,19 +304,19 @@
             // 基本验证
             if (request.MeatTypeId <= 0)
             {
-                errorMessage = "请选择肉类类型";
+                errorMessage = L["QRCodes_SelectMeatTypeRequired"].Value;
                 return;
             }
 
             if (request.StartNumber <= 0 || request.EndNumber <= 0)
             {
-                errorMessage = "请输入有效的起始和结束编号";
+                errorMessage = L["QRCodes_ValidNumberRequired"].Value;
                 return;
             }
 
             if (request.StartNumber > request.EndNumber)
             {
-                errorMessage = "起始编号不能大于结束编号";
+                errorMessage = L["QRCodes_StartNumberGreaterThanEnd"].Value;
                 return;
             }
 
@@ -321,7 +324,7 @@
             await QRCodeService.BatchCreateAsync(request);
 
             // 成功
-            successMessage = $"成功创建 {totalCount} 个二维码！";
+            successMessage = $"{L["QRCodes_BatchCreateSuccess"].Value} {totalCount} {L["QRCodes_Items"].Value}";
             progressPercentage = 100;
             createdCount = totalCount;
 

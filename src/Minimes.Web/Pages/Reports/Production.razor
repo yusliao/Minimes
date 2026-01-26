@@ -99,7 +99,7 @@
     {
         <!-- 统计汇总卡片 -->
         <div class="row mb-4 g-3">
-            <div class="col-12 col-sm-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-lg-4">
                 <div class="card border-primary h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -115,7 +115,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-lg-4">
                 <div class="card border-success h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -131,7 +131,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-lg-4">
                 <div class="card border-warning h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -146,24 +146,69 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            @* 批次统计暂时隐藏，目前还没有批次业务
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card border-info h-100">
+        <!-- 图表展示区域 -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <span class="oi oi-pie-chart me-2"></span>环节记录分布
+                        </h6>
+                    </div>
                     <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">涉及批次数</h6>
-                                <h2 class="card-title mb-0">@GetBatchCount()</h2>
-                            </div>
-                            <div class="ms-auto">
-                                <span class="oi oi-box" style="font-size: 2.5rem; color: #0dcaf0;"></span>
-                            </div>
+                        <canvas id="stageRecordsChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <span class="oi oi-bar-chart me-2"></span>环节重量对比
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stageWeightsChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日期趋势图 -->
+        @if (selectedPeriod != "today")
+        {
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <span class="oi oi-graph me-2"></span>日期趋势分析
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="dateTrendChart" style="height: 350px;"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
-            *@
+        }
+
+        <!-- 肉类类型分布 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <span class="oi oi-list-rich me-2"></span>肉类类型分布
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="meatTypeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 按加工环节统计 -->
@@ -274,6 +319,22 @@
         <!-- 商品损耗率统计 - 质量追溯核心功能 -->
         @if (lossRates != null && lossRates.Any())
         {
+            <!-- 损耗率TOP10图表 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0">
+                                <span class="oi oi-warning me-2"></span>损耗率TOP10分析
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="lossRateChart" style="height: 400px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row mb-4">
                 <div class="col-md-12">
                     <div class="card border-danger">
@@ -354,6 +415,16 @@
         await LoadReport();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // 每次数据加载后初始化图表
+        if (records != null && records.Any())
+        {
+            await Task.Delay(100); // 等待DOM更新
+            await InitializeCharts();
+        }
+    }
+
     private async Task LoadReport()
     {
         isLoading = true;
@@ -393,6 +464,258 @@
         }
     }
 
+    private async Task InitializeCharts()
+    {
+        if (records == null || !records.Any())
+            return;
+
+        try
+        {
+            // 初始化环节记录分布饼图
+            await InitializeStageRecordsChart();
+            // 初始化环节重量对比柱状图
+            await InitializeStageWeightsChart();
+            // 初始化肉类类型分布图
+            await InitializeMeatTypeChart();
+            // 如果不是今日报表，初始化日期趋势图
+            if (selectedPeriod != "today")
+            {
+                await InitializeDateTrendChart();
+            }
+            // 初始化损耗率图表
+            if (lossRates != null && lossRates.Any())
+            {
+                await InitializeLossRateChart();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"图表初始化失败: {ex.Message}");
+        }
+    }
+
+    private async Task InitializeStageRecordsChart()
+    {
+        var stageStats = GetStageStatistics();
+        if (!stageStats.Any())
+            return;
+
+        var labels = stageStats.Keys.ToList();
+        var data = stageStats.Values.Select(s => s.Count).ToList();
+        var backgroundColor = new[] { "#FF6384", "#36A2EB", "#FFCE56" };
+
+        await JSRuntime.InvokeVoidAsync("initPieChart", "stageRecordsChart", labels, data, backgroundColor);
+    }
+
+    private async Task InitializeStageWeightsChart()
+    {
+        var stageStats = GetStageStatistics();
+        if (!stageStats.Any())
+            return;
+
+        var labels = stageStats.Keys.ToList();
+        var weightData = stageStats.Values.Select(s => s.TotalWeight).ToList();
+
+        var datasets = new object[]
+        {
+            new
+            {
+                label = "总重量 (lb)",
+                data = weightData,
+                backgroundColor = new[] { "#FF6384", "#36A2EB", "#FFCE56" },
+                borderColor = "#fff",
+                borderWidth = 2
+            }
+        };
+
+        var options = new
+        {
+            responsive = true,
+            maintainAspectRatio = true,
+            plugins = new { legend = new { display = false } },
+            scales = new { y = new { beginAtZero = true, title = new { display = true, text = "重量 (lb)" } } }
+        };
+
+        await JSRuntime.InvokeVoidAsync("initBarChart", "stageWeightsChart", labels, datasets, options);
+    }
+
+    private async Task InitializeMeatTypeChart()
+    {
+        if (records == null || !records.Any())
+            return;
+
+        // 按肉类类型分组统计
+        var meatTypeGroups = records
+            .GroupBy(r => r.MeatTypeName)
+            .OrderByDescending(g => g.Count())
+            .Select(g => new { Type = g.Key, Count = g.Count(), Weight = g.Sum(x => x.Weight) })
+            .ToList();
+
+        if (!meatTypeGroups.Any())
+            return;
+
+        var labels = meatTypeGroups.Select(m => m.Type).ToList();
+        var countData = meatTypeGroups.Select(m => m.Count).ToList();
+        var weightData = meatTypeGroups.Select(m => m.Weight).ToList();
+
+        var datasets = new object[]
+        {
+            new
+            {
+                label = "记录数",
+                data = countData,
+                backgroundColor = "#36A2EB",
+                borderColor = "#36A2EB",
+                borderWidth = 2,
+                yAxisID = "y"
+            },
+            new
+            {
+                label = "总重量 (lb)",
+                data = weightData,
+                backgroundColor = "#FF6384",
+                borderColor = "#FF6384",
+                borderWidth = 2,
+                yAxisID = "y1"
+            }
+        };
+
+        var options = new
+        {
+            responsive = true,
+            maintainAspectRatio = false,
+            interaction = new { mode = "index", intersect = false },
+            plugins = new { legend = new { display = true, position = "top" } },
+            scales = new
+            {
+                y = new { type = "linear", display = true, position = "left", title = new { display = true, text = "记录数" } },
+                y1 = new { type = "linear", display = true, position = "right", title = new { display = true, text = "重量 (lb)" }, grid = new { drawOnChartArea = false } }
+            }
+        };
+
+        await JSRuntime.InvokeVoidAsync("initBarChart", "meatTypeChart", labels, datasets, options);
+    }
+
+    private async Task InitializeDateTrendChart()
+    {
+        if (records == null || !records.Any())
+            return;
+
+        // 按日期分组统计
+        var dateGroups = records
+            .GroupBy(r => r.CreatedAt.Date)
+            .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Count = g.Count(),
+                Weight = g.Sum(r => r.Weight)
+            })
+            .ToList();
+
+        if (!dateGroups.Any())
+            return;
+
+        var labels = dateGroups.Select(d => d.Date.ToString("MM-dd")).ToList();
+        var countData = dateGroups.Select(d => d.Count).ToList();
+        var weightData = dateGroups.Select(d => d.Weight).ToList();
+
+        var datasets = new object[]
+        {
+            new
+            {
+                label = "记录数",
+                data = countData,
+                borderColor = "#36A2EB",
+                backgroundColor = "rgba(54, 162, 235, 0.1)",
+                borderWidth = 2,
+                fill = true,
+                yAxisID = "y"
+            },
+            new
+            {
+                label = "总重量 (lb)",
+                data = weightData,
+                borderColor = "#FF6384",
+                backgroundColor = "rgba(255, 99, 132, 0.1)",
+                borderWidth = 2,
+                fill = true,
+                yAxisID = "y1"
+            }
+        };
+
+        var options = new
+        {
+            responsive = true,
+            maintainAspectRatio = false,
+            interaction = new { mode = "index", intersect = false },
+            plugins = new { legend = new { display = true, position = "top" } },
+            scales = new
+            {
+                y = new { type = "linear", display = true, position = "left", title = new { display = true, text = "记录数" }, beginAtZero = true },
+                y1 = new { type = "linear", display = true, position = "right", title = new { display = true, text = "重量 (lb)" }, grid = new { drawOnChartArea = false }, beginAtZero = true }
+            }
+        };
+
+        await JSRuntime.InvokeVoidAsync("initLineChart", "dateTrendChart", labels, datasets, options);
+    }
+
+    private async Task InitializeLossRateChart()
+    {
+        if (lossRates == null || !lossRates.Any())
+            return;
+
+        // 取损耗率最高的TOP10
+        var topLossRates = lossRates
+            .OrderByDescending(l => l.LossRate)
+            .Take(10)
+            .ToList();
+
+        if (!topLossRates.Any())
+            return;
+
+        var labels = topLossRates.Select(l => l.Barcode).ToList();
+        var data = topLossRates.Select(l => l.LossRate).ToList();
+
+        // 根据损耗率设置颜色（红黄绿）
+        var backgroundColor = topLossRates.Select(l =>
+            l.LossRate > 20 ? "#dc3545" :  // 红色
+            l.LossRate > 10 ? "#ffc107" :  // 黄色
+            l.LossRate > 5 ? "#0dcaf0" :   // 蓝色
+            "#198754"                       // 绿色
+        ).ToArray();
+
+        var datasets = new object[]
+        {
+            new
+            {
+                label = "损耗率 (%)",
+                data = data,
+                backgroundColor = backgroundColor,
+                borderColor = "#fff",
+                borderWidth = 1
+            }
+        };
+
+        var options = new
+        {
+            responsive = true,
+            maintainAspectRatio = false,
+            indexAxis = "y",  // 横向柱状图
+            plugins = new
+            {
+                legend = new { display = false },
+                title = new { display = true, text = "损耗率越高，条码颜色越深（红>黄>蓝>绿）" }
+            },
+            scales = new
+            {
+                x = new { beginAtZero = true, title = new { display = true, text = "损耗率 (%)" } }
+            }
+        };
+
+        await JSRuntime.InvokeVoidAsync("initBarChart", "lossRateChart", labels, datasets, options);
+    }
+
     private (DateTime, DateTime) GetDateRange()
     {
         var today = DateTime.Today;
@@ -410,6 +733,7 @@
     {
         selectedPeriod = e.Value?.ToString() ?? "month";
         await LoadReport();
+        StateHasChanged();
     }
 
     private async Task HandleStageChange(ChangeEventArgs e)
@@ -417,6 +741,7 @@
         var value = e.Value?.ToString();
         selectedStageId = string.IsNullOrEmpty(value) ? null : int.Parse(value);
         await LoadReport();
+        StateHasChanged();
     }
 
     private async Task ExportToExcel()
