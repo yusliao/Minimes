@@ -268,8 +268,11 @@
             Console.WriteLine($"SignalR连接失败（演示模式不影响使用）: {ex.Message}");
         }
 
-        await LoadTodaySummary();
-        await LoadRecentRecords();
+        // 并行加载今日统计和最近记录，提升页面加载速度（性能优化）
+        await Task.WhenAll(
+            LoadTodaySummary(),
+            LoadRecentRecords()
+        );
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

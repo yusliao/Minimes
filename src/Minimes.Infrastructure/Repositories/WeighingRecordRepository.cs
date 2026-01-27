@@ -124,7 +124,7 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
             {
                 Barcode = g.Key,
                 RecordCount = g.Count(),
-                TotalWeight = g.Sum(r => r.Weight)
+                TotalWeight = (decimal)g.Sum(r => (double)r.Weight) // SQLite不支持decimal聚合，转为double
             })
             .OrderByDescending(s => s.TotalWeight)
             .ToListAsync();
@@ -140,7 +140,7 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         return new TodayStatistic
         {
             TotalRecords = await query.CountAsync(),
-            TotalWeight = await query.SumAsync(r => r.Weight),
+            TotalWeight = (decimal)await query.SumAsync(r => (double)r.Weight), // SQLite不支持decimal聚合，转为double
             UniqueBarcodes = await query.Select(r => r.Barcode).Distinct().CountAsync()
         };
     }
@@ -151,23 +151,34 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         var tomorrow = today.AddDays(1);
         var monthStart = new DateTime(today.Year, today.Month, 1);
 
-        // 只查询1次，获取所有用户操作记录
-        var allRecords = await _dbSet
-            .Where(r => r.CreatedBy == username)
-            .ToListAsync();
+        // 使用数据库聚合查询，避免加载所有记录到内存（性能优化）
+        var baseQuery = _dbSet.Where(r => r.CreatedBy == username);
 
-        // 在内存中按日期范围分类计算
-        var todayData = allRecords.Where(r => r.CreatedAt >= today && r.CreatedAt < tomorrow).ToList();
-        var monthData = allRecords.Where(r => r.CreatedAt >= monthStart).ToList();
+        // 并行执行6个数据库聚合查询
+        var todayRecordsTask = baseQuery.CountAsync(r => r.CreatedAt >= today && r.CreatedAt < tomorrow);
+        var todayWeightTask = baseQuery
+            .Where(r => r.CreatedAt >= today && r.CreatedAt < tomorrow)
+            .SumAsync(r => (double?)r.Weight);
+
+        var monthRecordsTask = baseQuery.CountAsync(r => r.CreatedAt >= monthStart);
+        var monthWeightTask = baseQuery
+            .Where(r => r.CreatedAt >= monthStart)
+            .SumAsync(r => (double?)r.Weight);
+
+        var totalRecordsTask = baseQuery.CountAsync();
+        var totalWeightTask = baseQuery.SumAsync(r => (double?)r.Weight);
+
+        await Task.WhenAll(todayRecordsTask, todayWeightTask, monthRecordsTask,
+                          monthWeightTask, totalRecordsTask, totalWeightTask);
 
         return new UserOperationStatistic
         {
-            TodayRecords = todayData.Count,
-            TodayWeight = todayData.Sum(r => r.Weight),
-            MonthRecords = monthData.Count,
-            MonthWeight = monthData.Sum(r => r.Weight),
-            TotalRecords = allRecords.Count,
-            TotalWeight = allRecords.Sum(r => r.Weight)
+            TodayRecords = await todayRecordsTask,
+            TodayWeight = (decimal)(await todayWeightTask ?? 0),
+            MonthRecords = await monthRecordsTask,
+            MonthWeight = (decimal)(await monthWeightTask ?? 0),
+            TotalRecords = await totalRecordsTask,
+            TotalWeight = (decimal)(await totalWeightTask ?? 0)
         };
     }
 }

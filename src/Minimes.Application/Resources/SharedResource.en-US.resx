@@ -133,9 +133,7 @@
   <data name="Btn_Export" xml:space="preserve">
     <value>Export</value>
   </data>
-  <data name="Btn_ExportExcel" xml:space="preserve">
-    <value>Export Excel</value>
-  </data>
+
 
   <!-- Common Status -->
   <data name="Status_Loading" xml:space="preserve">
@@ -155,12 +153,6 @@
   </data>
   <data name="Status_Disconnected" xml:space="preserve">
     <value>Disconnected</value>
-  </data>
-  <data name="Status_Active" xml:space="preserve">
-    <value>Active</value>
-  </data>
-  <data name="Status_Inactive" xml:space="preserve">
-    <value>Inactive</value>
   </data>
 
   <!-- User Roles -->
@@ -1439,12 +1431,8 @@
   <data name="ProcessStages_DescriptionLabel" xml:space="preserve">
     <value>Description</value>
   </data>
-  <data name="Btn_Save" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="Btn_Cancel" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
+
+
   <data name="ProcessStages_CodePlaceholder" xml:space="preserve">
     <value>e.g., RECEIVING</value>
   </data>
@@ -1548,9 +1536,7 @@
   <data name="MeatTypes_Title" xml:space="preserve">
     <value>Meat Types Management</value>
   </data>
-  <data name="MeatTypes_Description" xml:space="preserve">
-    <value>Manage different categories of raw meat</value>
-  </data>
+
   <data name="MeatTypes_AddNew" xml:space="preserve">
     <value>Add Type</value>
   </data>

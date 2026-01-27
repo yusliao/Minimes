@@ -923,6 +923,23 @@
   <data name="Settings_BackupDb" xml:space="preserve">
     <value>备份数据库</value>
   </data>
+  
+   <data name="Settings_WeightConfig" xml:space="preserve">
+    <value>称重配置</value>
+  </data>
+   <data name="Settings_MinWeightLb" xml:space="preserve">
+    <value>最小磅数</value>
+  </data>
+   <data name="Settings_MaxWeightLb" xml:space="preserve">
+    <value>最大磅数</value>
+  </data>
+  <data name="Settings_CurrentConfig" xml:space="preserve">
+    <value>当前配置磅数</value>
+  </data>
+   <data name="Settings_SaveConfig" xml:space="preserve">
+    <value>保存配置</value>
+  </data>
+  
   <data name="Settings_QuickLinks" xml:space="preserve">
     <value>快捷入口</value>
   </data>

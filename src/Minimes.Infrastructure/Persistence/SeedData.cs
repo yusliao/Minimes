@@ -159,23 +159,20 @@ public static class SeedData
             context.SaveChanges();
         }
 
-        // 如果已有其他数据，跳过
-        if (context.Users.Count() > 2)
+        // 操作员账号（如果用户数<=2才插入）
+        if (context.Users.Count() <= 2)
         {
-            return;
+            context.Users.Add(new User
+            {
+                Username = "operator",
+                PasswordHash = PasswordHashService.HashPassword("Operator123456"),
+                FullName = "操作员",
+                Role = UserRole.Operator,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            });
+            context.SaveChanges();
         }
-
-        // 操作员账号
-        context.Users.Add(new User
-        {
-            Username = "operator",
-            PasswordHash = PasswordHashService.HashPassword("Operator123456"),
-            FullName = "操作员",
-            Role = UserRole.Operator,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        });
-        context.SaveChanges();
 
         // 测试称重记录（简化版：直接用条码）
         var testRecords = new[]
@@ -184,6 +181,8 @@ public static class SeedData
             new WeighingRecord
             {
                 Barcode = "PORK2026010701",
+                Code = "2026010701",
+                MeatTypeId = 1, // 猪肉
                 Weight = 120.5m,
                 ProcessStageId = 1, // 原料入库
                 Remarks = "早班入库",
@@ -193,6 +192,8 @@ public static class SeedData
             new WeighingRecord
             {
                 Barcode = "PORK2026010701",
+                Code = "2026010701",
+                MeatTypeId = 1, // 猪肉
                 Weight = 115.2m,
                 ProcessStageId = 2, // 加工过程
                 Remarks = "去骨分割",
@@ -202,6 +203,8 @@ public static class SeedData
             new WeighingRecord
             {
                 Barcode = "PORK2026010701",
+                Code = "2026010701",
+                MeatTypeId = 1, // 猪肉
                 Weight = 110.8m,
                 ProcessStageId = 3, // 成品出库
                 Remarks = "装箱出库",
@@ -212,6 +215,8 @@ public static class SeedData
             new WeighingRecord
             {
                 Barcode = "BEEF2026010701",
+                Code = "2026010701",
+                MeatTypeId = 2, // 牛肉
                 Weight = 85.3m,
                 ProcessStageId = 1, // 原料入库
                 Remarks = "早班入库",
@@ -221,6 +226,8 @@ public static class SeedData
             new WeighingRecord
             {
                 Barcode = "BEEF2026010701",
+                Code = "2026010701",
+                MeatTypeId = 2, // 牛肉
                 Weight = 81.7m,
                 ProcessStageId = 2, // 加工过程
                 Remarks = "去筋膜处理",
@@ -231,6 +238,8 @@ public static class SeedData
             new WeighingRecord
             {
                 Barcode = "CHICKEN2026010701",
+                Code = "2026010701",
+                MeatTypeId = 4, // 鸡肉
                 Weight = 95.6m,
                 ProcessStageId = 1, // 原料入库
                 Remarks = "晚班入库",
