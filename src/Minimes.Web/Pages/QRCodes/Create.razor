@@ -1,4 +1,4 @@
-@page "/qrcodes/create"
+﻿@page "/qrcodes/create"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
 @using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
@@ -23,7 +23,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/qrcodes">@L["QRCodes_Title"]</a></li>
-                    <li class="breadcrumb-item active">@L["Breadcrumb_Create"]</li>
+                    <li class="breadcrumb-item active">@L["QRCodes_BreadcrumbCreate"]</li>
                 </ol>
             </nav>
         </div>

@@ -267,7 +267,7 @@
     <value>输入重量</value>
   </data>
   <data name="Weighing_WeightHint" xml:space="preserve">
-    <value>请输入重量（kg）</value>
+    <value>请输入重量（Lb）</value>
   </data>
   <data name="Weighing_RemarkPlaceholder" xml:space="preserve">
     <value>去骨、分割、真空包装...</value>
@@ -288,7 +288,7 @@
     <value>记录数</value>
   </data>
   <data name="Weighing_TotalWeight" xml:space="preserve">
-    <value>总重量(kg)</value>
+    <value>总重量(Lb)</value>
   </data>
   <data name="Weighing_BarcodeCount" xml:space="preserve">
     <value>条码数</value>
@@ -1844,6 +1844,9 @@
   </data>
   <data name="QRCodes_BreadcrumbCreate" xml:space="preserve">
     <value>新增</value>
+  </data>
+	<data name="QRCodes_BreadcrumbEdit" xml:space="preserve">
+    <value>编辑</value>
   </data>
   <data name="QRCodes_BasicInfo" xml:space="preserve">
     <value>基本信息</value>

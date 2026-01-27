@@ -259,7 +259,7 @@
     <value>Enter weight</value>
   </data>
   <data name="Weighing_WeightHint" xml:space="preserve">
-    <value>Please enter weight (kg)</value>
+    <value>Please enter weight (Lb)</value>
   </data>
   <data name="Weighing_RemarkPlaceholder" xml:space="preserve">
     <value>Deboning, cutting, vacuum packaging...</value>
@@ -280,7 +280,7 @@
     <value>Records</value>
   </data>
   <data name="Weighing_TotalWeight" xml:space="preserve">
-    <value>Total(kg)</value>
+    <value>Total(Lb)</value>
   </data>
   <data name="Weighing_BarcodeCount" xml:space="preserve">
     <value>Barcodes</value>
@@ -1833,6 +1833,9 @@
   </data>
   <data name="QRCodes_BreadcrumbCreate" xml:space="preserve">
     <value>Add</value>
+  </data>
+    <data name="QRCodes_BreadcrumbEdit" xml:space="preserve">
+    <value>Edit</value>
   </data>
   <data name="QRCodes_BasicInfo" xml:space="preserve">
     <value>Basic Information</value>
