@@ -33,12 +33,6 @@ public class WeighingRecordConfiguration : IEntityTypeConfiguration<WeighingReco
             .HasForeignKey(w => w.MeatTypeId)
             .OnDelete(DeleteBehavior.Restrict);  // 防止级联删除
 
-        // 工序外键关系
-        builder.HasOne(w => w.ProcessStage)
-            .WithMany(p => p.WeighingRecords)
-            .HasForeignKey(w => w.ProcessStageId)
-            .OnDelete(DeleteBehavior.Restrict);  // 防止级联删除
-
         builder.Property(w => w.Remarks)
             .HasMaxLength(1000);
 
@@ -54,6 +48,5 @@ public class WeighingRecordConfiguration : IEntityTypeConfiguration<WeighingReco
         builder.HasIndex(w => w.Barcode);
         builder.HasIndex(w => w.Code);
         builder.HasIndex(w => w.MeatTypeId);
-        builder.HasIndex(w => w.ProcessStageId);
     }
 }

@@ -1,4 +1,4 @@
-using Minimes.Domain.Entities;
+﻿using Minimes.Domain.Entities;
 using Minimes.Domain.Enums;
 using Minimes.Domain.Security;
 
@@ -12,52 +12,6 @@ public static class SeedData
     public static void Initialize(ApplicationDbContext context)
     {
         context.Database.EnsureCreated();
-
-        // 初始化工序数据（必须在WeighingRecord之前）
-        if (!context.ProcessStages.Any())
-        {
-            var stages = new[]
-            {
-                new Domain.Entities.ProcessStage
-                {
-                    Id = 1,
-                    Code = "RECEIVING",
-                    Name = "原料入库",
-                    DisplayOrder = 1,
-                    IsActive = true,
-                    StageType = StageType.Start,
-                    IncludeInLossRate = true,
-                    Description = "供应商送货，原料入库称重",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new Domain.Entities.ProcessStage
-                {
-                    Id = 2,
-                    Code = "PROCESSING",
-                    Name = "加工过程",
-                    DisplayOrder = 2,
-                    IsActive = true,
-                    StageType = StageType.Middle,
-                    IncludeInLossRate = true,
-                    Description = "分割、去骨、腌制等加工环节称重",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new Domain.Entities.ProcessStage
-                {
-                    Id = 3,
-                    Code = "SHIPPING",
-                    Name = "成品出库",
-                    DisplayOrder = 3,
-                    IsActive = true,
-                    StageType = StageType.End,
-                    IncludeInLossRate = true,
-                    Description = "最终成品包装后出库称重",
-                    CreatedAt = DateTime.UtcNow
-                }
-            };
-            context.ProcessStages.AddRange(stages);
-            context.SaveChanges();
-        }
 
         // 初始化肉类类型数据
         if (!context.MeatTypes.Any())
@@ -174,81 +128,6 @@ public static class SeedData
             context.SaveChanges();
         }
 
-        // 测试称重记录（简化版：直接用条码）
-        var testRecords = new[]
-        {
-            // 猪肉批次完整流程
-            new WeighingRecord
-            {
-                Barcode = "PORK2026010701",
-                Code = "2026010701",
-                MeatTypeId = 1, // 猪肉
-                Weight = 120.5m,
-                ProcessStageId = 1, // 原料入库
-                Remarks = "早班入库",
-                CreatedBy = "operator",
-                CreatedAt = DateTime.UtcNow.AddHours(-3)
-            },
-            new WeighingRecord
-            {
-                Barcode = "PORK2026010701",
-                Code = "2026010701",
-                MeatTypeId = 1, // 猪肉
-                Weight = 115.2m,
-                ProcessStageId = 2, // 加工过程
-                Remarks = "去骨分割",
-                CreatedBy = "operator",
-                CreatedAt = DateTime.UtcNow.AddHours(-2)
-            },
-            new WeighingRecord
-            {
-                Barcode = "PORK2026010701",
-                Code = "2026010701",
-                MeatTypeId = 1, // 猪肉
-                Weight = 110.8m,
-                ProcessStageId = 3, // 成品出库
-                Remarks = "装箱出库",
-                CreatedBy = "operator",
-                CreatedAt = DateTime.UtcNow.AddHours(-1)
-            },
-            // 牛肉批次
-            new WeighingRecord
-            {
-                Barcode = "BEEF2026010701",
-                Code = "2026010701",
-                MeatTypeId = 2, // 牛肉
-                Weight = 85.3m,
-                ProcessStageId = 1, // 原料入库
-                Remarks = "早班入库",
-                CreatedBy = "operator",
-                CreatedAt = DateTime.UtcNow.AddHours(-2)
-            },
-            new WeighingRecord
-            {
-                Barcode = "BEEF2026010701",
-                Code = "2026010701",
-                MeatTypeId = 2, // 牛肉
-                Weight = 81.7m,
-                ProcessStageId = 2, // 加工过程
-                Remarks = "去筋膜处理",
-                CreatedBy = "operator",
-                CreatedAt = DateTime.UtcNow.AddHours(-1)
-            },
-            // 鸡肉批次
-            new WeighingRecord
-            {
-                Barcode = "CHICKEN2026010701",
-                Code = "2026010701",
-                MeatTypeId = 4, // 鸡肉
-                Weight = 95.6m,
-                ProcessStageId = 1, // 原料入库
-                Remarks = "晚班入库",
-                CreatedBy = "operator",
-                CreatedAt = DateTime.UtcNow.AddMinutes(-30)
-            }
-        };
-
-        context.WeighingRecords.AddRange(testRecords);
-        context.SaveChanges();
+        
     }
 }

@@ -59,7 +59,6 @@ public static class DependencyInjection
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IWeighingRecordService, WeighingRecordService>();
         services.AddScoped<IReportService, ReportService>();
-        services.AddScoped<IProcessStageService, ProcessStageService>();
         services.AddScoped<IMeatTypeService, MeatTypeService>();
         services.AddScoped<IQRCodeService, QRCodeService>();
 

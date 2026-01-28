@@ -32,15 +32,6 @@
                 <input type="text" class="form-control" @bind="queryRequest.Barcode" placeholder="@L["Records_BarcodePlaceholder"]" />
             </div>
             <div class="col-md-2">
-                <label class="form-label">@L["Weighing_Stage"]</label>
-                <select class="form-select" @bind="selectedProcessStageId">
-                    <option value="">@L["Records_AllStages"]</option>
-                    <option value="1">@L["Stage_Receiving"]</option>
-                    <option value="2">@L["Stage_Processing"]</option>
-                    <option value="3">@L["Stage_Shipping"]</option>
-                </select>
-            </div>
-            <div class="col-md-2">
                 <label class="form-label">@L["Records_StartDate"]</label>
                 <input type="date" class="form-control" @bind="startDateInput" />
             </div>
@@ -104,7 +95,6 @@
                             <th>@L["Weighing_Barcode"]</th>
                             <th>@L["Records_MeatType"]</th>
                             <th>@L["Records_Code"]</th>
-                            <th>@L["Weighing_Stage"]</th>
                             <th>@L["Weighing_Weight"] (lb)</th>
                             <th>@L["Records_Operator"]</th>
                             <th>@L["Weighing_Remark"]</th>
@@ -119,7 +109,6 @@
                                 <td><code>@record.Barcode</code></td>
                                 <td><span class="badge bg-success">@record.MeatTypeName</span></td>
                                 <td><strong>@record.Code</strong></td>
-                                <td><span class="badge bg-info">@GetLocalizedStageName(record.ProcessStageName)</span></td>
                                 <td>@record.WeightInPounds.ToString("F3")</td>
                                 <td>@record.CreatedBy</td>
                                 <td>@record.Remarks</td>
@@ -169,7 +158,6 @@
 
     private DateTime? startDateInput;
     private DateTime? endDateInput;
-    private int? selectedProcessStageId; // 工序ID过滤
     private bool isLoading = false;
 
     // 角色和用户信息
@@ -211,7 +199,6 @@
 
         queryRequest.StartDate = startDateInput;
         queryRequest.EndDate = endDateInput;
-        queryRequest.ProcessStageId = selectedProcessStageId;
         queryRequest.PageNumber = 1; // 重置到第一页
 
         var (foundRecords, count) = await WeighingRecordService.QueryAsync(queryRequest);
@@ -254,18 +241,6 @@
         }
     }
 
-    private string GetLocalizedStageName(string stageName)
-    {
-        var normalized = stageName.ToLower().Trim();
-        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
-            return L["Stage_Receiving"];
-        if (normalized.Contains("processing") || normalized.Contains("加工"))
-            return L["Stage_Processing"];
-        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
-            return L["Stage_Shipping"];
-        return stageName;
-    }
-
     private async Task ExportToExcel()
     {
         try
@@ -273,11 +248,10 @@
             isLoading = true;
             StateHasChanged();
 
-            // 创建导出查询请求（获取所有记录，不分页）
+            // 创建导出查询请求(获取所有记录,不分页)
             var exportRequest = new WeighingRecordQueryRequest
             {
                 Barcode = queryRequest.Barcode,
-                ProcessStageId = queryRequest.ProcessStageId,
                 StartDate = queryRequest.StartDate,
                 EndDate = queryRequest.EndDate,
                 CreatedBy = queryRequest.CreatedBy,

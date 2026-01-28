@@ -24,7 +24,6 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWeighingRecordRepository, WeighingRecordRepository>();
         services.AddScoped<IUserOAuthAccountRepository, UserOAuthAccountRepository>();
-        services.AddScoped<IProcessStageRepository, ProcessStageRepository>();
         services.AddScoped<IMeatTypeRepository, MeatTypeRepository>();
         services.AddScoped<IQRCodeRepository, QRCodeRepository>();
 

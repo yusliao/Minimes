@@ -103,16 +103,6 @@
                     }
                 </div>
 
-                <!-- 加工环节选择 -->
-                <div class="mb-4">
-                    <h6>@L["Weighing_Stage"] <span class="text-danger">*</span></h6>
-                    <select class="form-select form-select-lg" @bind="selectedProcessStageId">
-                        <option value="1">@L["Stage_Receiving"]</option>
-                        <option value="2">@L["Stage_Processing"]</option>
-                        <option value="3">@L["Stage_Shipping"]</option>
-                    </select>
-                </div>
-
                 <div class="mb-4">
                     <label class="form-label">@L["Weighing_Remark"]（@L["Weighing_Optional"]）</label>
                     <textarea class="form-control form-control-lg" @bind="remarks" rows="2" placeholder="@L["Weighing_RemarkPlaceholder"]"></textarea>
@@ -186,7 +176,6 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <code class="fw-bold">@record.Barcode</code>
-                                            <span class="badge bg-info ms-1">@GetLocalizedStageName(record.ProcessStageName)</span>
                                         </div>
                                         <div class="text-end">
                                             <div class="fw-bold">@record.WeightInPounds.ToString("F2") lb</div>
@@ -225,7 +214,6 @@
     private decimal manualWeightInput = 0;  // 手动输入的重量
 
     // 其他字段
-    private int selectedProcessStageId = 1; // 默认：原料入库
     private string? remarks;
     private string? errorMessage;  // 错误提示
 
@@ -269,11 +257,11 @@
             Console.WriteLine($"SignalR连接失败（演示模式不影响使用）: {ex.Message}");
         }
 
-        // 并行加载今日统计和最近记录，提升页面加载速度（性能优化）
-        await Task.WhenAll(
-            LoadTodaySummary(),
-            LoadRecentRecords()
-        );
+        // 顺序加载今日统计和最近记录（避免DbContext并发错误）
+        // 注意：在Blazor Server中，DbContext是Scoped生命周期，同一连接共享一个实例
+        // 并行调用会导致"A second operation was started on this context"错误
+        await LoadTodaySummary();
+        await LoadRecentRecords();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -455,7 +443,6 @@
                 Code = parsedCode,
                 MeatTypeId = parsedMeatTypeId,
                 Weight = manualWeightInput,
-                ProcessStageId = selectedProcessStageId,
                 Remarks = remarks
             };
 
@@ -491,7 +478,6 @@
         parsedMeatTypeId = 0;
         parsedMeatTypeName = string.Empty;
         manualWeightInput = 0;
-        selectedProcessStageId = 1; // 重置为原料入库
         remarks = null;
         errorMessage = null;
         StateHasChanged();
@@ -508,17 +494,5 @@
     private class BarcodeData
     {
         public string barcode { get; set; } = string.Empty;
-    }
-
-    private string GetLocalizedStageName(string stageName)
-    {
-        var normalized = stageName.ToLower().Trim();
-        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
-            return L["Stage_Receiving"];
-        if (normalized.Contains("processing") || normalized.Contains("加工"))
-            return L["Stage_Processing"];
-        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
-            return L["Stage_Shipping"];
-        return stageName;
     }
 }

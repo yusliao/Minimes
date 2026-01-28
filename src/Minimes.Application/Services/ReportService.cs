@@ -12,16 +12,13 @@ namespace Minimes.Application.Services;
 public class ReportService : IReportService
 {
     private readonly IWeighingRecordRepository _recordRepository;
-    private readonly IProcessStageRepository _processStageRepository;
     private readonly ILogger<ReportService> _logger;
 
     public ReportService(
         IWeighingRecordRepository recordRepository,
-        IProcessStageRepository processStageRepository,
         ILogger<ReportService> logger)
     {
         _recordRepository = recordRepository;
-        _processStageRepository = processStageRepository;
         _logger = logger;
     }
 
@@ -50,127 +47,22 @@ public class ReportService : IReportService
             filtered = filtered.Where(r => r.Barcode.Contains(request.Barcode, StringComparison.OrdinalIgnoreCase));
         }
 
-        // 工序过滤
-        if (request.ProcessStageId.HasValue)
-        {
-            filtered = filtered.Where(r => r.ProcessStageId == request.ProcessStageId.Value);
-        }
-
         var filteredList = filtered.ToList();
 
-        // 按工序类型统计重量
-        var receivingWeight = filteredList.Where(r => r.ProcessStage.StageType == StageType.Start).Sum(r => r.Weight);
-        var processingWeight = filteredList.Where(r => r.ProcessStage.StageType == StageType.Middle).Sum(r => r.Weight);
-        var shippingWeight = filteredList.Where(r => r.ProcessStage.StageType == StageType.End).Sum(r => r.Weight);
+        // 统计总重量
+        var totalWeight = filteredList.Sum(r => r.Weight);
 
         var response = new ProductionReportResponse
         {
             TotalRecords = filteredList.Count,
-            ReceivingWeight = receivingWeight,
-            ProcessingWeight = processingWeight,
-            ShippingWeight = shippingWeight,
+            TotalWeight = totalWeight,
             UniqueBarcodes = filteredList.Select(r => r.Barcode).Distinct().Count()
         };
 
-        _logger.LogInformation("生产报表查询: 记录数={TotalRecords}, 入库={ReceivingWeight}lb, 出库={ShippingWeight}lb",
-            response.TotalRecords, response.ReceivingWeight, response.ShippingWeight);
+        _logger.LogInformation("生产报表查询: 记录数={TotalRecords}, 总重量={TotalWeight}lb, 唯一条码={UniqueBarcodes}",
+            response.TotalRecords, response.TotalWeight, response.UniqueBarcodes);
 
         return response;
     }
 
-    public async Task<List<ProductLossRateResponse>> GetBarcodeLossRateAsync(DateTime? startDate = null, DateTime? endDate = null)
-    {
-        // 性能优化：优先使用日期范围查询
-        IEnumerable<Domain.Entities.WeighingRecord> records;
-        if (startDate.HasValue && endDate.HasValue)
-        {
-            records = await _recordRepository.GetByDateRangeAsync(startDate.Value, endDate.Value);
-        }
-        else if (startDate.HasValue)
-        {
-            records = await _recordRepository.GetByDateRangeAsync(startDate.Value, DateTime.Now.AddYears(1));
-        }
-        else
-        {
-            records = await _recordRepository.GetAllAsync();
-        }
-
-        var filteredList = records.ToList();
-
-        // 按条码分组统计
-        var results = filteredList
-            .GroupBy(r => r.Barcode)
-            .Select(g => BuildLossRateResponse(g.Key, g.ToList()))
-            .OrderByDescending(r => r.LossRate)
-            .ToList();
-
-        _logger.LogInformation("条码损耗率统计: 条码数={BarcodeCount}", results.Count);
-
-        return results;
-    }
-
-    public async Task<ProductLossRateResponse?> GetBarcodeLossRateByCodeAsync(string barcode, DateTime? startDate = null, DateTime? endDate = null)
-    {
-        if (string.IsNullOrWhiteSpace(barcode))
-        {
-            return null;
-        }
-
-        // 使用条码查询替代全量加载（性能优化）
-        var records = await _recordRepository.GetByBarcodeAsync(barcode);
-        var filtered = records.AsEnumerable();
-
-        if (startDate.HasValue)
-        {
-            filtered = filtered.Where(r => r.CreatedAt >= startDate.Value);
-        }
-
-        if (endDate.HasValue)
-        {
-            var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
-            filtered = filtered.Where(r => r.CreatedAt <= endOfDay);
-        }
-
-        var filteredList = filtered.ToList();
-
-        if (!filteredList.Any())
-        {
-            return null;
-        }
-
-        var response = BuildLossRateResponse(barcode, filteredList);
-
-        _logger.LogInformation("条码损耗率查询: Barcode={Barcode}, 损耗率={LossRate}%",
-            barcode, response.LossRate);
-
-        return response;
-    }
-
-    private static ProductLossRateResponse BuildLossRateResponse(string barcode, List<Domain.Entities.WeighingRecord> records)
-    {
-        // 按工序类型分组统计
-        var receivingRecords = records.Where(r => r.ProcessStage.StageType == StageType.Start).ToList();
-        var processingRecords = records.Where(r => r.ProcessStage.StageType == StageType.Middle).ToList();
-        var shippingRecords = records.Where(r => r.ProcessStage.StageType == StageType.End).ToList();
-
-        var receivingWeight = receivingRecords.Sum(r => r.Weight);
-        var processingWeight = processingRecords.Sum(r => r.Weight);
-        var shippingWeight = shippingRecords.Sum(r => r.Weight);
-
-        var lossWeight = receivingWeight - shippingWeight;
-        var lossRate = receivingWeight > 0 ? (lossWeight / receivingWeight) * 100 : 0;
-
-        return new ProductLossRateResponse
-        {
-            Barcode = barcode,
-            ReceivingWeight = receivingWeight,
-            ProcessingWeight = processingWeight,
-            ShippingWeight = shippingWeight,
-            LossWeight = lossWeight,
-            LossRate = Math.Round(lossRate, 2),
-            ReceivingRecords = receivingRecords.Count,
-            ProcessingRecords = processingRecords.Count,
-            ShippingRecords = shippingRecords.Count
-        };
-    }
 }

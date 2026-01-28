@@ -14,18 +14,15 @@ namespace Minimes.Application.Services;
 public class WeighingRecordService : IWeighingRecordService
 {
     private readonly IWeighingRecordRepository _recordRepository;
-    private readonly IProcessStageRepository _processStageRepository;
     private readonly ILogger<WeighingRecordService> _logger;
     private readonly IOptionsMonitor<WeightValidationConfig> _weightConfig;
 
     public WeighingRecordService(
         IWeighingRecordRepository recordRepository,
-        IProcessStageRepository processStageRepository,
         ILogger<WeighingRecordService> logger,
         IOptionsMonitor<WeightValidationConfig> weightConfig)
     {
         _recordRepository = recordRepository;
-        _processStageRepository = processStageRepository;
         _logger = logger;
         _weightConfig = weightConfig;
     }
@@ -40,18 +37,6 @@ public class WeighingRecordService : IWeighingRecordService
         if (request.Weight <= 0)
         {
             throw new InvalidOperationException("重量必须大于0");
-        }
-
-        // 验证工序是否存在且激活
-        var processStage = await _processStageRepository.GetByIdAsync(request.ProcessStageId);
-        if (processStage == null)
-        {
-            throw new InvalidOperationException($"工序ID {request.ProcessStageId} 不存在！");
-        }
-
-        if (!processStage.IsActive)
-        {
-            throw new InvalidOperationException($"工序 [{processStage.Name}] 已停用，不能使用！");
         }
 
         // 验证重量上下限（使用CurrentValue获取最新配置）
@@ -71,7 +56,6 @@ public class WeighingRecordService : IWeighingRecordService
             Code = request.Code.Trim(),
             MeatTypeId = request.MeatTypeId,
             Weight = request.Weight,  // 直接存储英镑数值
-            ProcessStageId = request.ProcessStageId,
             Remarks = request.Remarks,
             CreatedBy = createdBy
         };
@@ -79,8 +63,8 @@ public class WeighingRecordService : IWeighingRecordService
         await _recordRepository.AddAsync(record);
         await _recordRepository.SaveChangesAsync();
 
-        _logger.LogInformation("创建称重记录: 条码={Barcode}, 重量={Weight}lb, 环节={Stage}",
-            record.Barcode, record.Weight, processStage.Name);
+        _logger.LogInformation("创建称重记录: 条码={Barcode}, 重量={Weight}lb",
+            record.Barcode, record.Weight);
 
         return ToResponse(record);
     }
@@ -96,7 +80,6 @@ public class WeighingRecordService : IWeighingRecordService
         // 使用新的Repository方法 - 数据库层面过滤和分页（性能优化）
         var (records, totalCount) = await _recordRepository.QueryPagedAsync(
             request.Barcode,
-            request.ProcessStageId,
             request.StartDate,
             request.EndDate,
             request.CreatedBy,
@@ -180,9 +163,6 @@ public class WeighingRecordService : IWeighingRecordService
             MeatTypeId = record.MeatTypeId,
             MeatTypeName = record.MeatType.Name,
             Weight = record.Weight,
-            ProcessStageId = record.ProcessStageId,
-            ProcessStageCode = record.ProcessStage.Code,
-            ProcessStageName = record.ProcessStage.Name,
             Remarks = record.Remarks,
             CreatedAt = record.CreatedAt,
             CreatedBy = record.CreatedBy

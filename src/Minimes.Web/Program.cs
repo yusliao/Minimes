@@ -96,11 +96,11 @@ app.UseAuthorization();
 app.UseRouting();
 
 // 初始化数据库种子数据
-//using (var scope = app.Services.CreateScope())
-//{
-//    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//    Minimes.Infrastructure.Persistence.SeedData.Initialize(dbContext);
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    Minimes.Infrastructure.Persistence.SeedData.Initialize(dbContext);
+}
 
 // 健康检查端点（Docker容器健康检查用）
 app.MapGet("/health", () => Results.Ok(new

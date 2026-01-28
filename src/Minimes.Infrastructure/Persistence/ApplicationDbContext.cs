@@ -34,11 +34,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<WeighingRecord> WeighingRecords => Set<WeighingRecord>();
 
     /// <summary>
-    /// 工序表
-    /// </summary>
-    public DbSet<ProcessStage> ProcessStages => Set<ProcessStage>();
-
-    /// <summary>
     /// 肉类类型表
     /// </summary>
     public DbSet<MeatType> MeatTypes => Set<MeatType>();

@@ -39,7 +39,6 @@ public class ExcelExportService : IExcelExportService
                 _localizer["Excel_Barcode"].Value,
                 _localizer["Excel_MeatType"].Value,
                 _localizer["Excel_Code"].Value,
-                _localizer["Excel_ProcessStage"].Value,
                 _localizer["Excel_WeightLb"].Value,
                 _localizer["Excel_Remarks"].Value,
                 _localizer["Excel_CreatedAt"].Value,
@@ -66,11 +65,10 @@ public class ExcelExportService : IExcelExportService
                 worksheet.Cells[row, 2].Value = record.Barcode;
                 worksheet.Cells[row, 3].Value = record.MeatTypeName;
                 worksheet.Cells[row, 4].Value = record.Code;
-                worksheet.Cells[row, 5].Value = record.ProcessStageName;
-                worksheet.Cells[row, 6].Value = record.WeightInPounds;
-                worksheet.Cells[row, 7].Value = record.Remarks ?? "";
-                worksheet.Cells[row, 8].Value = record.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
-                worksheet.Cells[row, 9].Value = record.CreatedBy;
+                worksheet.Cells[row, 5].Value = record.WeightInPounds;
+                worksheet.Cells[row, 6].Value = record.Remarks ?? "";
+                worksheet.Cells[row, 7].Value = record.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                worksheet.Cells[row, 8].Value = record.CreatedBy;
                 row++;
             }
 
@@ -95,12 +93,8 @@ public class ExcelExportService : IExcelExportService
             int row = 3;
             summarySheet.Cells[row, 1].Value = _localizer["Excel_TotalRecords"].Value;
             summarySheet.Cells[row++, 2].Value = report.TotalRecords;
-            summarySheet.Cells[row, 1].Value = _localizer["Excel_ReceivingWeightLb"].Value;
-            summarySheet.Cells[row++, 2].Value = (report.ReceivingWeight / 0.45359237m).ToString("F3");
-            summarySheet.Cells[row, 1].Value = _localizer["Excel_ProcessingWeightLb"].Value;
-            summarySheet.Cells[row++, 2].Value = (report.ProcessingWeight / 0.45359237m).ToString("F3");
-            summarySheet.Cells[row, 1].Value = _localizer["Excel_ShippingWeightLb"].Value;
-            summarySheet.Cells[row++, 2].Value = (report.ShippingWeight / 0.45359237m).ToString("F3");
+            summarySheet.Cells[row, 1].Value = _localizer["Excel_TotalWeightLb"].Value;
+            summarySheet.Cells[row++, 2].Value = report.TotalWeight.ToString("F3");
             summarySheet.Cells[row, 1].Value = _localizer["Excel_UniqueBarcodes"].Value;
             summarySheet.Cells[row, 2].Value = report.UniqueBarcodes;
 

@@ -148,7 +148,6 @@
                                         <th>@L["Records_Time"]</th>
                                         <th>@L["Weighing_Barcode"]</th>
                                         <th>@L["Weighing_Weight"]</th>
-                                        <th>@L["Weighing_Stage"]</th>
                                         <th>@L["Weighing_Remark"]</th>
                                     </tr>
                                 </thead>
@@ -159,11 +158,6 @@
                                             <td>@record.CreatedAt.ToString("MM-dd HH:mm")</td>
                                             <td><code>@record.Barcode</code></td>
                                             <td><strong>@record.WeightInPounds.ToString("F2")</strong> lb</td>
-                                            <td>
-                                                <span class="badge @GetStageBadgeClass(record.ProcessStageName)">
-                                                    @GetLocalizedStageName(record.ProcessStageName)
-                                                </span>
-                                            </td>
                                             <td class="text-muted">@(record.Remarks ?? "-")</td>
                                         </tr>
                                     }
@@ -431,32 +425,6 @@
         {
             isUpdatingName = false;
         }
-    }
-
-    private string GetStageBadgeClass(string stageName)
-    {
-        // 支持中英文环节名称
-        var normalized = stageName.ToLower().Trim();
-        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
-            return "bg-primary";
-        if (normalized.Contains("processing") || normalized.Contains("加工"))
-            return "bg-warning text-dark";
-        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
-            return "bg-success";
-        return "bg-secondary";
-    }
-
-    private string GetLocalizedStageName(string stageName)
-    {
-        // 将环节名称转换为本地化的名称
-        var normalized = stageName.ToLower().Trim();
-        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
-            return L["Stage_Receiving"];
-        if (normalized.Contains("processing") || normalized.Contains("加工"))
-            return L["Stage_Processing"];
-        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
-            return L["Stage_Shipping"];
-        return stageName; // 返回原值
     }
 
     private class UpdateNameModel

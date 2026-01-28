@@ -33,21 +33,6 @@ public class WeighingRecordResponse
     /// </summary>
     public decimal WeightInPounds => Weight;
 
-    /// <summary>
-    /// 工序ID
-    /// </summary>
-    public int ProcessStageId { get; set; }
-
-    /// <summary>
-    /// 工序代码
-    /// </summary>
-    public string ProcessStageCode { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 工序名称
-    /// </summary>
-    public string ProcessStageName { get; set; } = string.Empty;
-
     public string? Remarks { get; set; }
     public DateTime CreatedAt { get; set; }
     public string CreatedBy { get; set; } = string.Empty;

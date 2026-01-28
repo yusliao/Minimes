@@ -29,19 +29,9 @@ public class WeighingRecord : BaseEntity
     public decimal Weight { get; set; }
 
     /// <summary>
-    /// 工序ID - 外键关联ProcessStage表
-    /// </summary>
-    public int ProcessStageId { get; set; }
-
-    /// <summary>
     /// 肉类类型导航属性 - 关联的肉类类型
     /// </summary>
     public MeatType MeatType { get; set; } = null!;
-
-    /// <summary>
-    /// 工序导航属性 - 区分称重发生在哪个生产阶段
-    /// </summary>
-    public ProcessStage ProcessStage { get; set; } = null!;
 
     /// <summary>
     /// 备注（如：去骨、分割、真空包装等）

@@ -12,8 +12,8 @@ using Minimes.Infrastructure.Persistence;
 namespace Minimes.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260128054941_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260128082203_RemoveProcessStage")]
+    partial class RemoveProcessStage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -122,58 +122,6 @@ namespace Minimes.Infrastructure.Migrations
                     b.HasIndex("IsActive");
 
                     b.ToTable("MeatTypes", (string)null);
-                });
-
-            modelBuilder.Entity("Minimes.Domain.Entities.ProcessStage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IncludeInLossRate")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<int>("StageType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.HasIndex("DisplayOrder");
-
-                    b.HasIndex("IsActive");
-
-                    b.ToTable("ProcessStages", (string)null);
                 });
 
             modelBuilder.Entity("Minimes.Domain.Entities.Product", b =>
@@ -412,9 +360,6 @@ namespace Minimes.Infrastructure.Migrations
                     b.Property<int>("MeatTypeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProcessStageId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Remarks")
                         .HasMaxLength(1000)
                         .HasColumnType("varchar(1000)");
@@ -436,8 +381,6 @@ namespace Minimes.Infrastructure.Migrations
                         .IsDescending();
 
                     b.HasIndex("MeatTypeId");
-
-                    b.HasIndex("ProcessStageId");
 
                     b.ToTable("WeighingRecords", (string)null);
                 });
@@ -472,20 +415,7 @@ namespace Minimes.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Minimes.Domain.Entities.ProcessStage", "ProcessStage")
-                        .WithMany("WeighingRecords")
-                        .HasForeignKey("ProcessStageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("MeatType");
-
-                    b.Navigation("ProcessStage");
-                });
-
-            modelBuilder.Entity("Minimes.Domain.Entities.ProcessStage", b =>
-                {
-                    b.Navigation("WeighingRecords");
                 });
 
             modelBuilder.Entity("Minimes.Domain.Entities.User", b =>

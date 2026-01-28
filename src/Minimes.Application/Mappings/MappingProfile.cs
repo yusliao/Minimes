@@ -40,7 +40,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
-        CreateMap<WeighingRecord, WeighingRecordResponse>()
-            .ForMember(dest => dest.ProcessStageName, opt => opt.Ignore()); // 由Service层设置
+        CreateMap<WeighingRecord, WeighingRecordResponse>();
     }
 }

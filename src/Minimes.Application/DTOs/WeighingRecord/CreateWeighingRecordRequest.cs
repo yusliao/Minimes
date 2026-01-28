@@ -26,11 +26,6 @@ public class CreateWeighingRecordRequest
     public decimal Weight { get; set; }
 
     /// <summary>
-    /// 工序ID - 关联ProcessStage表
-    /// </summary>
-    public int ProcessStageId { get; set; }
-
-    /// <summary>
     /// 备注（如：去骨、分割、真空包装等）
     /// </summary>
     public string? Remarks { get; set; }

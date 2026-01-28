@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Minimes.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class RemoveProcessStage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,31 +61,6 @@ namespace Minimes.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MeatTypes", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "ProcessStages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Code = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    DisplayOrder = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    StageType = table.Column<int>(type: "int", nullable: false),
-                    IncludeInLossRate = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Description = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProcessStages", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -184,7 +159,6 @@ namespace Minimes.Infrastructure.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     MeatTypeId = table.Column<int>(type: "int", nullable: false),
                     Weight = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: false),
-                    ProcessStageId = table.Column<int>(type: "int", nullable: false),
                     Remarks = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
@@ -199,12 +173,6 @@ namespace Minimes.Infrastructure.Migrations
                         name: "FK_WeighingRecords_MeatTypes_MeatTypeId",
                         column: x => x.MeatTypeId,
                         principalTable: "MeatTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_WeighingRecords_ProcessStages_ProcessStageId",
-                        column: x => x.ProcessStageId,
-                        principalTable: "ProcessStages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
@@ -271,22 +239,6 @@ namespace Minimes.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_MeatTypes_IsActive",
                 table: "MeatTypes",
-                column: "IsActive");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProcessStages_Code",
-                table: "ProcessStages",
-                column: "Code",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProcessStages_DisplayOrder",
-                table: "ProcessStages",
-                column: "DisplayOrder");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProcessStages_IsActive",
-                table: "ProcessStages",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
@@ -368,11 +320,6 @@ namespace Minimes.Infrastructure.Migrations
                 name: "IX_WeighingRecords_MeatTypeId",
                 table: "WeighingRecords",
                 column: "MeatTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WeighingRecords_ProcessStageId",
-                table: "WeighingRecords",
-                column: "ProcessStageId");
         }
 
         /// <inheritdoc />
@@ -398,9 +345,6 @@ namespace Minimes.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "MeatTypes");
-
-            migrationBuilder.DropTable(
-                name: "ProcessStages");
         }
     }
 }

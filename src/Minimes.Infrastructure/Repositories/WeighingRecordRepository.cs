@@ -18,7 +18,6 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
     public async Task<IEnumerable<WeighingRecord>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         return await _dbSet
-            .Include(w => w.ProcessStage)
             .Include(w => w.MeatType)
             .Where(w => w.CreatedAt >= startDate && w.CreatedAt <= endDate)
             .OrderByDescending(w => w.CreatedAt)
@@ -28,7 +27,6 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
     public async Task<IEnumerable<WeighingRecord>> GetByBarcodeAsync(string barcode)
     {
         return await _dbSet
-            .Include(w => w.ProcessStage)
             .Include(w => w.MeatType)
             .Where(w => w.Barcode == barcode)
             .OrderByDescending(w => w.CreatedAt)
@@ -38,7 +36,6 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
     public async Task<IEnumerable<WeighingRecord>> GetLatestAsync(int count)
     {
         return await _dbSet
-            .Include(w => w.ProcessStage)
             .Include(w => w.MeatType)
             .OrderByDescending(w => w.CreatedAt)
             .Take(count)
@@ -47,7 +44,6 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
 
     public async Task<(List<WeighingRecord> Records, int TotalCount)> QueryPagedAsync(
         string? barcode,
-        int? processStageId,
         DateTime? startDate,
         DateTime? endDate,
         string? createdBy,
@@ -60,12 +56,6 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         if (!string.IsNullOrWhiteSpace(barcode))
         {
             query = query.Where(r => r.Barcode.Contains(barcode));
-        }
-
-        // 工序过滤
-        if (processStageId.HasValue)
-        {
-            query = query.Where(r => r.ProcessStageId == processStageId.Value);
         }
 
         // 日期范围过滤
@@ -89,9 +79,8 @@ public class WeighingRecordRepository : Repository<WeighingRecord>, IWeighingRec
         // 获取总数（在过滤后计算）
         var totalCount = await query.CountAsync();
 
-        // 排序和分页（加载工序和肉类类型导航属性）
+        // 排序和分页（加载肉类类型导航属性）
         var records = await query
-            .Include(r => r.ProcessStage)
             .Include(r => r.MeatType)
             .OrderByDescending(r => r.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)

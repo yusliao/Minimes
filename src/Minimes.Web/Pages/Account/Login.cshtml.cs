@@ -45,9 +45,6 @@ public class LoginModel : PageModel
     [BindProperty]
     public string? ReturnUrl { get; set; }
 
-    [BindProperty]
-    public bool DemoLogin { get; set; }
-
     public string? ErrorMessage { get; set; }
 
     public void OnGet(string? returnUrl = null)
@@ -64,14 +61,6 @@ public class LoginModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        // Demo login
-        if (DemoLogin)
-        {
-            Username = "demo";
-            Password = "demo123";
-            RememberMe = false;
-        }
-
         if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
         {
             ErrorMessage = _localizer["Login_ErrorEmpty"];

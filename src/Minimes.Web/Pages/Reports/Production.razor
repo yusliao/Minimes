@@ -52,17 +52,6 @@
                             </div>
                         }
 
-                        <div class="col-12 col-md-6 col-lg-3">
-                            @* <label class="form-label"><strong>@L["Weighing_ProcessStage"]</strong></label> *@
-                            <label class="form-label"><strong>@L["Weighing_Stage"]</strong></label>
-                            <select class="form-select form-select-lg" @onchange="HandleStageChange">
-                                <option value="">@L["Records_AllStages"]</option>
-                                <option value="@ProcessStage.Receiving">@L["Stage_Receiving"]</option>
-                                <option value="@ProcessStage.Processing">@L["Stage_Processing"]</option>
-                                <option value="@ProcessStage.Shipping">@L["Stage_Shipping"]</option>
-                            </select>
-                        </div>
-
                         <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                             <button class="btn btn-primary btn-lg w-100" @onclick="LoadReport" disabled="@isLoading">
                                 <span class="oi oi-reload me-1"></span>@L["Report_Refresh"]
@@ -211,51 +200,6 @@
             </div>
         </div>
 
-        <!-- 按加工环节统计 -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <span class="oi oi-spreadsheet me-2"></span>@L["Report_StageStatistics"]
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead class="table-light">
-                                    <tr>
-                                        @* <th>@L["Weighing_ProcessStage"]</th> *@
-                                        <th>@L["Weighing_Stage"]</th>
-                                        <th>@L["Report_RecordCount"]</th>
-                                        <th>@L["Report_TotalWeight"] (lb)</th>
-                                        <th>@L["Report_AverageWeight"] (lb)</th>
-                                        <th>@L["Report_MaxWeight"] (lb)</th>
-                                        <th>@L["Report_MinWeight"] (lb)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var stage in GetStageStatistics())
-                                    {
-                                        <tr>
-                                            <td>
-                                                <strong>@stage.Key</strong>
-                                            </td>
-                                            <td>@stage.Value.Count</td>
-                                            <td>@stage.Value.TotalWeight.ToString("F2")</td>
-                                            <td>@stage.Value.AverageWeight.ToString("F2")</td>
-                                            <td>@stage.Value.MaxWeight.ToString("F2")</td>
-                                            <td>@stage.Value.MinWeight.ToString("F2")</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         @* 批次维度统计暂时隐藏，目前还没有批次业务
         <div class="row mb-4">
             <div class="col-md-12">
@@ -315,97 +259,13 @@
             </div>
         </div>
         *@
-
-        <!-- 商品损耗率统计 - 质量追溯核心功能 -->
-        @if (lossRates != null && lossRates.Any())
-        {
-            <!-- 损耗率TOP10图表 -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card border-danger">
-                        <div class="card-header bg-danger text-white">
-                            <h6 class="mb-0">
-                                <span class="oi oi-warning me-2"></span>@L["Report_LossRateTopChart"]
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="lossRateChart" style="height: 400px;"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card border-danger">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0">
-                                <span class="oi oi-warning me-2"></span>@L["Report_LossRateTitle"]
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted mb-3">
-                                <small>
-                                    <strong>@L["Report_LossRateFormula"]：</strong> @L["Report_LossRateFormulaDesc"]
-                                </small>
-                            </p>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>@L["Tracing_Barcode"]</th>
-                                            <th>@L["Report_ReceivingWeight"] (lb)</th>
-                                            <th>@L["Report_ProcessingWeight"] (lb)</th>
-                                            <th>@L["Report_ShippingWeight"] (lb)</th>
-                                            <th>@L["Report_LossWeight"] (lb)</th>
-                                            <th>@L["Report_LossRate"]</th>
-                                            <th>@L["Report_RecordCount"]</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in lossRates.OrderByDescending(l => l.LossRate))
-                                        {
-                                            var lossRateClass = item.LossRate > 20 ? "danger" :
-                                                                item.LossRate > 10 ? "warning" :
-                                                                item.LossRate > 5 ? "info" : "success";
-
-                                            <tr>
-                                                <td><code>@item.Barcode</code></td>
-                                                <td>@item.ReceivingWeight.ToString("F3")</td>
-                                                <td>@item.ProcessingWeight.ToString("F3")</td>
-                                                <td>@item.ShippingWeight.ToString("F3")</td>
-                                                <td>@item.LossWeight.ToString("F3")</td>
-                                                <td>
-                                                    <span class="badge bg-@lossRateClass">
-                                                        @item.LossRate.ToString("F1")%
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <small class="text-muted">
-                                                        入:@item.ReceivingRecords /
-                                                        加:@item.ProcessingRecords /
-                                                        出:@item.ShippingRecords
-                                                    </small>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
     }
 </div>
 
 @code {
     private List<WeighingRecordResponse>? records;
     private ProductionReportResponse? reportSummary;
-    private List<ProductLossRateResponse>? lossRates;
     private string selectedPeriod = "month";
-    private int? selectedStageId = null;
     private DateTime startDate = DateTime.Today.AddDays(-30);
     private DateTime endDate = DateTime.Today;
     private bool isLoading = false;
@@ -438,7 +298,6 @@
             {
                 StartDate = start,
                 EndDate = end,
-                ProcessStageId = selectedStageId,
                 PageNumber = 1,
                 PageSize = 10000
             };
@@ -450,13 +309,9 @@
             var reportRequest = new ProductionReportRequest
             {
                 StartDate = start,
-                EndDate = end,
-                ProcessStageId = selectedStageId
+                EndDate = end
             };
             reportSummary = await ReportService.GetProductionReportAsync(reportRequest);
-
-            // 加载条码损耗率统计
-            lossRates = await ReportService.GetBarcodeLossRateAsync(start, end);
         }
         finally
         {
@@ -471,10 +326,6 @@
 
         try
         {
-            // 初始化环节记录分布饼图
-            await InitializeStageRecordsChart();
-            // 初始化环节重量对比柱状图
-            await InitializeStageWeightsChart();
             // 初始化肉类类型分布图
             await InitializeMeatTypeChart();
             // 如果不是今日报表，初始化日期趋势图
@@ -482,61 +333,11 @@
             {
                 await InitializeDateTrendChart();
             }
-            // 初始化损耗率图表
-            if (lossRates != null && lossRates.Any())
-            {
-                await InitializeLossRateChart();
-            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"图表初始化失败: {ex.Message}");
         }
-    }
-
-    private async Task InitializeStageRecordsChart()
-    {
-        var stageStats = GetStageStatistics();
-        if (!stageStats.Any())
-            return;
-
-        var labels = stageStats.Keys.ToList();
-        var data = stageStats.Values.Select(s => s.Count).ToList();
-        var backgroundColor = new[] { "#FF6384", "#36A2EB", "#FFCE56" };
-
-        await JSRuntime.InvokeVoidAsync("initPieChart", "stageRecordsChart", labels, data, backgroundColor);
-    }
-
-    private async Task InitializeStageWeightsChart()
-    {
-        var stageStats = GetStageStatistics();
-        if (!stageStats.Any())
-            return;
-
-        var labels = stageStats.Keys.ToList();
-        var weightData = stageStats.Values.Select(s => s.TotalWeight).ToList();
-
-        var datasets = new object[]
-        {
-            new
-            {
-                label = L["Chart_TotalWeight"].Value,
-                data = weightData,
-                backgroundColor = new[] { "#FF6384", "#36A2EB", "#FFCE56" },
-                borderColor = "#fff",
-                borderWidth = 2
-            }
-        };
-
-        var options = new
-        {
-            responsive = true,
-            maintainAspectRatio = true,
-            plugins = new { legend = new { display = false } },
-            scales = new { y = new { beginAtZero = true, title = new { display = true, text = L["Chart_WeightAxis"].Value } } }
-        };
-
-        await JSRuntime.InvokeVoidAsync("initBarChart", "stageWeightsChart", labels, datasets, options);
     }
 
     private async Task InitializeMeatTypeChart()
@@ -660,62 +461,6 @@
         await JSRuntime.InvokeVoidAsync("initLineChart", "dateTrendChart", labels, datasets, options);
     }
 
-    private async Task InitializeLossRateChart()
-    {
-        if (lossRates == null || !lossRates.Any())
-            return;
-
-        // 取损耗率最高的TOP10
-        var topLossRates = lossRates
-            .OrderByDescending(l => l.LossRate)
-            .Take(10)
-            .ToList();
-
-        if (!topLossRates.Any())
-            return;
-
-        var labels = topLossRates.Select(l => l.Barcode).ToList();
-        var data = topLossRates.Select(l => l.LossRate).ToList();
-
-        // 根据损耗率设置颜色（红黄绿）
-        var backgroundColor = topLossRates.Select(l =>
-            l.LossRate > 20 ? "#dc3545" :  // 红色
-            l.LossRate > 10 ? "#ffc107" :  // 黄色
-            l.LossRate > 5 ? "#0dcaf0" :   // 蓝色
-            "#198754"                       // 绿色
-        ).ToArray();
-
-        var datasets = new object[]
-        {
-            new
-            {
-                label = L["Chart_LossRatePercent"].Value,
-                data = data,
-                backgroundColor = backgroundColor,
-                borderColor = "#fff",
-                borderWidth = 1
-            }
-        };
-
-        var options = new
-        {
-            responsive = true,
-            maintainAspectRatio = false,
-            indexAxis = "y",  // 横向柱状图
-            plugins = new
-            {
-                legend = new { display = false },
-                title = new { display = true, text = L["Chart_LossRateLegend"].Value }
-            },
-            scales = new
-            {
-                x = new { beginAtZero = true, title = new { display = true, text = L["Chart_LossRatePercent"].Value } }
-            }
-        };
-
-        await JSRuntime.InvokeVoidAsync("initBarChart", "lossRateChart", labels, datasets, options);
-    }
-
     private (DateTime, DateTime) GetDateRange()
     {
         var today = DateTime.Today;
@@ -736,25 +481,17 @@
         StateHasChanged();
     }
 
-    private async Task HandleStageChange(ChangeEventArgs e)
-    {
-        var value = e.Value?.ToString();
-        selectedStageId = string.IsNullOrEmpty(value) ? null : int.Parse(value);
-        await LoadReport();
-        StateHasChanged();
-    }
-
     private async Task ExportToExcel()
     {
         try
         {
-            if (reportSummary == null || lossRates == null)
+            if (reportSummary == null)
             {
                 return;
             }
 
             // 生成Excel文件
-            var excelBytes = await ExcelExportService.ExportProductionReportAsync(reportSummary, lossRates);
+            var excelBytes = await ExcelExportService.ExportProductionReportAsync(reportSummary, new List<ProductLossRateResponse>());
 
             // 生成文件名
             var fileName = $"{L["Report_ExportFileName"].Value}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
@@ -773,30 +510,6 @@
     private decimal GetAverageWeight() => records?.Count() > 0 ? GetTotalWeight() / records.Count() : 0;
     private int GetBatchCount() => records?.DistinctBy(r => r.Barcode).Count() ?? 0;
 
-    private Dictionary<string, StageStats> GetStageStatistics()
-    {
-        var stats = new Dictionary<string, StageStats>();
-        if (records == null) return stats;
-
-        var grouped = records.GroupBy(r => r.ProcessStageName);
-        foreach (var group in grouped)
-        {
-            var stageName = GetLocalizedStageName(group.Key);
-
-            var weights = group.Select(r => r.Weight).ToList();
-            stats[stageName] = new StageStats
-            {
-                Count = group.Count(),
-                TotalWeight = weights.Sum(),
-                AverageWeight = weights.Average(),
-                MaxWeight = weights.Max(),
-                MinWeight = weights.Min()
-            };
-        }
-
-        return stats;
-    }
-
     private List<BatchStats> GetBatchStatistics()
     {
         var stats = new List<BatchStats>();
@@ -811,13 +524,7 @@
                 BatchId = batch.First().Barcode,
                 RecordCount = batch.Count(),
                 TotalWeight = weights.Sum(),
-                AverageWeight = weights.Average(),
-                Stages = batch.GroupBy(r => r.ProcessStageName)
-                    .Select(s => new StageWeight
-                    {
-                        Stage = s.Key,
-                        TotalWeight = s.Sum(r => r.Weight)
-                    }).ToList()
+                AverageWeight = weights.Average()
             };
             stats.Add(batchStats);
         }
@@ -849,15 +556,4 @@
         public decimal TotalWeight { get; set; }
     }
 
-    private string GetLocalizedStageName(string stageName)
-    {
-        var normalized = stageName.ToLower().Trim();
-        if (normalized.Contains("receiving") || normalized.Contains("入库") || normalized.Contains("原料"))
-            return L["Stage_Receiving"];
-        if (normalized.Contains("processing") || normalized.Contains("加工"))
-            return L["Stage_Processing"];
-        if (normalized.Contains("shipping") || normalized.Contains("出库") || normalized.Contains("成品"))
-            return L["Stage_Shipping"];
-        return stageName;
-    }
 }

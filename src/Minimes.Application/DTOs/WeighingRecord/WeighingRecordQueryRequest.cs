@@ -11,11 +11,6 @@ public class WeighingRecordQueryRequest
     public string? Barcode { get; set; }
 
     /// <summary>
-    /// 工序ID（可选）
-    /// </summary>
-    public int? ProcessStageId { get; set; }
-
-    /// <summary>
     /// 开始日期（可选）
     /// </summary>
     public DateTime? StartDate { get; set; }

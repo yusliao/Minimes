@@ -29,7 +29,6 @@ public interface IWeighingRecordRepository : IRepository<WeighingRecord>
     /// </summary>
     Task<(List<WeighingRecord> Records, int TotalCount)> QueryPagedAsync(
         string? barcode,
-        int? processStageId,
         DateTime? startDate,
         DateTime? endDate,
         string? createdBy,

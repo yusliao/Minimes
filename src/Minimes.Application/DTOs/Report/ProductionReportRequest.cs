@@ -19,9 +19,4 @@ public class ProductionReportRequest
     /// 条码（可选，模糊匹配）
     /// </summary>
     public string? Barcode { get; set; }
-
-    /// <summary>
-    /// 工序ID（可选）
-    /// </summary>
-    public int? ProcessStageId { get; set; }
 }
