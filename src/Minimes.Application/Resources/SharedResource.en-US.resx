@@ -544,7 +544,7 @@
     <value>Re-enter password</value>
   </data>
   <data name="User_RoleOperatorDesc" xml:space="preserve">
-    <value>Operator (weighing, query, customer and product management only)</value>
+    <value>Operator (weighing, query)</value>
   </data>
   <data name="User_RoleAdminDesc" xml:space="preserve">
     <value>Administrator (full access)</value>

@@ -552,7 +552,7 @@
     <value>请再次输入密码</value>
   </data>
   <data name="User_RoleOperatorDesc" xml:space="preserve">
-    <value>操作员（只能称重、查询、管理客户和商品）</value>
+    <value>操作员（只能称重、查询）</value>
   </data>
   <data name="User_RoleAdminDesc" xml:space="preserve">
     <value>管理员（拥有所有权限）</value>
@@ -1349,9 +1349,6 @@
   </data>
 
   <!-- 导出相关 -->
-  <data name="Btn_ExportExcel" xml:space="preserve">
-    <value>导出Excel</value>
-  </data>
   <data name="Export_NoData" xml:space="preserve">
     <value>没有数据可以导出！</value>
   </data>
@@ -1413,12 +1410,6 @@
   </data>
   <data name="ProcessStages_Actions" xml:space="preserve">
     <value>操作</value>
-  </data>
-  <data name="Status_Active" xml:space="preserve">
-    <value>激活</value>
-  </data>
-  <data name="Status_Inactive" xml:space="preserve">
-    <value>停用</value>
   </data>
   <data name="Message_Error" xml:space="preserve">
     <value>错误：</value>
@@ -1527,12 +1518,6 @@
   <data name="ProcessStages_DescriptionLabel" xml:space="preserve">
     <value>描述说明</value>
   </data>
-  <data name="Btn_Save" xml:space="preserve">
-    <value>保存</value>
-  </data>
-  <data name="Btn_Cancel" xml:space="preserve">
-    <value>取消</value>
-  </data>
   <data name="ProcessStages_CodePlaceholder" xml:space="preserve">
     <value>如：RECEIVING</value>
   </data>
@@ -1621,9 +1606,6 @@
   </data>
   <data name="MeatTypes_Name" xml:space="preserve">
     <value>类型名称</value>
-  </data>
-  <data name="MeatTypes_Description" xml:space="preserve">
-    <value>描述</value>
   </data>
   <data name="MeatTypes_Status" xml:space="preserve">
     <value>状态</value>

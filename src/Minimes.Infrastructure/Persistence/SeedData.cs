@@ -98,20 +98,20 @@ public static class SeedData
             context.SaveChanges();
         }
 
-        // 演示账号
-        if (!context.Users.Any(u => u.Username == "demo"))
-        {
-            context.Users.Add(new User
-            {
-                Username = "demo",
-                PasswordHash = PasswordHashService.HashPassword("demo123"),
-                FullName = "演示账号",
-                Role = UserRole.Administrator,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            });
-            context.SaveChanges();
-        }
+        //// 演示账号
+        //if (!context.Users.Any(u => u.Username == "demo"))
+        //{
+        //    context.Users.Add(new User
+        //    {
+        //        Username = "demo",
+        //        PasswordHash = PasswordHashService.HashPassword("demo123"),
+        //        FullName = "演示账号",
+        //        Role = UserRole.Administrator,
+        //        IsActive = true,
+        //        CreatedAt = DateTime.UtcNow
+        //    });
+        //    context.SaveChanges();
+        //}
 
         // 操作员账号（如果用户数<=2才插入）
         if (context.Users.Count() <= 2)
