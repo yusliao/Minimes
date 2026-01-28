@@ -351,7 +351,8 @@
             await JSRuntime.InvokeVoidAsync("printQRCode");
             await QRCodeService.RecordPrintAsync(qrCode.Id);
             await LoadData();
-            await JSRuntime.InvokeVoidAsync("alert", L["QRCode_PrintSuccess"].Value);
+            // 注意：由于浏览器API限制，无法判断用户是否真的打印了（点击打印还是取消）
+            // 所以不显示"打印成功"提示，避免误导用户
         }
         catch (Exception ex)
         {
