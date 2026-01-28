@@ -233,9 +233,18 @@
         isLoading = true;
         try
         {
+            // 先加载所有数据
             qrCodes = await QRCodeService.GetAllAsync();
             meatTypes = await MeatTypeService.GetAllAsync();
-            statistics = await QRCodeService.GetStatisticsAsync();
+
+            // 在内存中计算统计信息，避免重复查询数据库和DbContext并发问题
+            statistics = new QRCodeStatistics
+            {
+                TotalCount = qrCodes.Count,
+                ActiveCount = qrCodes.Count(q => q.IsActive),
+                TotalPrintCount = qrCodes.Sum(q => q.PrintCount)
+            };
+
             ApplyFilter();
         }
         catch (Exception ex)
