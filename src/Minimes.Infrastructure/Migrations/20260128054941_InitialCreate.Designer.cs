@@ -12,7 +12,7 @@ using Minimes.Infrastructure.Persistence;
 namespace Minimes.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260127023454_InitialCreate")]
+    [Migration("20260128054941_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

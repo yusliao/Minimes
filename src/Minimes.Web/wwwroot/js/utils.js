@@ -31,3 +31,28 @@ window.downloadFile = function (fileName, base64String) {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(link.href);
 };
+
+// 二维码打印工具函数
+window.printQRCode = function () {
+    const printArea = document.getElementById('printArea');
+    if (!printArea) {
+        console.error('打印区域未找到');
+        return;
+    }
+
+    // 保存原始内容
+    const originalContents = document.body.innerHTML;
+    const printContents = printArea.innerHTML;
+
+    // 替换为打印内容
+    document.body.innerHTML = printContents;
+
+    // 执行打印
+    window.print();
+
+    // 恢复原始内容
+    document.body.innerHTML = originalContents;
+
+    // 重新加载页面以恢复事件绑定
+    window.location.reload();
+};

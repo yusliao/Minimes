@@ -166,6 +166,10 @@
                                     </td>
                                     <td>@qrCode.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>
+                                        <button class="btn btn-sm btn-primary me-1"
+                                                @onclick="() => PrintQRCode(qrCode)">
+                                            <span class="oi oi-print"></span>
+                                        </button>
                                         <button class="btn btn-sm btn-outline-primary me-1"
                                                 @onclick="() => NavigateToEdit(qrCode.Id)">
                                             <span class="oi oi-pencil"></span>
@@ -189,12 +193,30 @@
     </div>
 </div>
 
+<!-- 打印区域（隐藏） -->
+<div id="printArea" style="display:none;">
+    @if (printingQRCode != null)
+    {
+        <div style="text-align:center;padding:40px;">
+            <img src="data:image/png;base64,@printingQRCode.ImageBase64"
+                 alt="@printingQRCode.Content"
+                 style="width:300px;height:300px;" />
+            <h2 style="margin-top:30px;font-weight:bold;">@printingQRCode.Content</h2>
+            @if (!string.IsNullOrEmpty(printingQRCode.MeatTypeName))
+            {
+                <p style="font-size:20px;color:#666;margin-top:10px;">@printingQRCode.MeatTypeName</p>
+            }
+        </div>
+    }
+</div>
+
 @code {
     private List<QRCodeResponse> qrCodes = new();
     private List<QRCodeResponse> filteredQRCodes = new();
     private List<MeatTypeResponse> meatTypes = new();
     private QRCodeStatistics? statistics;
     private bool isLoading = true;
+    private QRCodeResponse? printingQRCode;
 
     // 筛选条件
     private int filterMeatTypeId = 0;
@@ -316,6 +338,24 @@
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("alert", $"{L["Export_Failed"].Value} {ex.Message}");
+        }
+    }
+
+    private async Task PrintQRCode(QRCodeResponse qrCode)
+    {
+        try
+        {
+            printingQRCode = qrCode;
+            StateHasChanged();
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("printQRCode");
+            await QRCodeService.RecordPrintAsync(qrCode.Id);
+            await LoadData();
+            await JSRuntime.InvokeVoidAsync("alert", L["QRCode_PrintSuccess"].Value);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCode_PrintFailed"].Value}: {ex.Message}");
         }
     }
 }

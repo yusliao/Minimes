@@ -24,7 +24,7 @@ public class WeighingRecord : BaseEntity
     public int MeatTypeId { get; set; }
 
     /// <summary>
-    /// 重量（kg）
+    /// 重量（lb/磅）- 直接存储英镑数值，不做单位转换
     /// </summary>
     public decimal Weight { get; set; }
 

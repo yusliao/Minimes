@@ -24,14 +24,14 @@ public class WeighingRecordResponse
     public string MeatTypeName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 重量（千克）- 数据库存储单位
+    /// 重量（磅/lb）- 数据库直接存储英镑数值
     /// </summary>
     public decimal Weight { get; set; }
 
     /// <summary>
-    /// 重量（磅）- 前端显示单位
+    /// 重量（磅）- 兼容旧代码的属性，直接返回Weight
     /// </summary>
-    public decimal WeightInPounds => Weight / 0.45359237m;
+    public decimal WeightInPounds => Weight;
 
     /// <summary>
     /// 工序ID

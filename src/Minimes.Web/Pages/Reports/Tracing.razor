@@ -123,7 +123,7 @@
                                 <div class="col-4">
                                     <div class="border rounded p-3 @stage.BorderClass">
                                         <div class="text-muted small">@stage.Name</div>
-                                        <div class="fs-3 fw-bold @stage.TextClass">@((stage.Weight / 0.45359237m).ToString("F2"))</div>
+                                        <div class="fs-3 fw-bold @stage.TextClass">@(stage.Weight.ToString("F2"))</div>
                                         <div class="text-muted small">lb (@stage.Count @L["Tracing_Times"])</div>
                                     </div>
                                 </div>

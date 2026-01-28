@@ -18,12 +18,12 @@ public class ScaleConfiguration
     public decimal StableWeightTolerance { get; set; } = 0.5m; // 稳定重量容差（克）
 
     /// <summary>
-    /// 最小重量（千克）- 低于此值将被拒绝
+    /// 最小重量（磅/lb）- 低于此值将被拒绝
     /// </summary>
-    public decimal MinWeightKg { get; set; } = 0.001m; // 默认1克
+    public decimal MinWeightLb { get; set; } = 0.002m; // 默认0.002磅（约1克）
 
     /// <summary>
-    /// 最大重量（千克）- 超过此值将被拒绝
+    /// 最大重量（磅/lb）- 超过此值将被拒绝
     /// </summary>
-    public decimal MaxWeightKg { get; set; } = 200m; // 默认200千克
+    public decimal MaxWeightLb { get; set; } = 440m; // 默认440磅（约200千克）
 }

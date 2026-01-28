@@ -117,6 +117,27 @@ dotnet ef database update --startup-project ../Minimes.Web
 - 避免未来特性预留
 - 删除未使用的代码
 
+### 国际化规范（I18N）⭐重要
+- **强制要求**：所有用户可见的文本必须使用国际化资源，严禁硬编码中文或英文字符串
+- **资源文件位置**：`src/Minimes.Application/Resources/`
+  - `SharedResource.zh-CN.resx` - 中文资源
+  - `SharedResource.en-US.resx` - 英文资源
+- **资源键命名规范**：
+  - 使用PascalCase命名（如：`QRCode_NotFound`）
+  - 按功能模块分组（如：`Nav_*`、`Weighing_*`、`QRCode_*`）
+  - 错误提示使用`Error_*`前缀
+  - 按钮文本使用`Btn_*`前缀
+  - 状态文本使用`Status_*`前缀
+- **使用方式**：
+  - Razor页面：`@L["ResourceKey"]`
+  - C#代码：注入`IStringLocalizer<SharedResource>`后使用`_localizer["ResourceKey"]`
+- **新增/修改内容时的检查清单**：
+  1. ✅ 是否有用户可见的文本？
+  2. ✅ 是否已添加到中文资源文件（SharedResource.zh-CN.resx）？
+  3. ✅ 是否已添加到英文资源文件（SharedResource.en-US.resx）？
+  4. ✅ 是否使用`@L["ResourceKey"]`替换硬编码字符串？
+  5. ✅ 编译验证是否通过？
+
 ---
 
 ## 开发进度

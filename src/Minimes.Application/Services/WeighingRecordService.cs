@@ -54,20 +54,15 @@ public class WeighingRecordService : IWeighingRecordService
             throw new InvalidOperationException($"工序 [{processStage.Name}] 已停用，不能使用！");
         }
 
-        // 将磅转换为千克
-        decimal weightInKg = request.Weight * 0.45359237m;
-
         // 验证重量上下限（使用CurrentValue获取最新配置）
-        if (weightInKg < _weightConfig.CurrentValue.MinWeightKg)
+        if (request.Weight < _weightConfig.CurrentValue.MinWeightLb)
         {
-            var minPounds = _weightConfig.CurrentValue.MinWeightKg / 0.45359237m;
-            throw new InvalidOperationException($"重量过轻，最小重量为 {minPounds:F3} 磅");
+            throw new InvalidOperationException($"重量过轻，最小重量为 {_weightConfig.CurrentValue.MinWeightLb:F3} 磅");
         }
 
-        if (weightInKg > _weightConfig.CurrentValue.MaxWeightKg)
+        if (request.Weight > _weightConfig.CurrentValue.MaxWeightLb)
         {
-            var maxPounds = _weightConfig.CurrentValue.MaxWeightKg / 0.45359237m;
-            throw new InvalidOperationException($"重量过重，最大重量为 {maxPounds:F1} 磅");
+            throw new InvalidOperationException($"重量过重，最大重量为 {_weightConfig.CurrentValue.MaxWeightLb:F1} 磅");
         }
 
         var record = new WeighingRecord
@@ -75,7 +70,7 @@ public class WeighingRecordService : IWeighingRecordService
             Barcode = request.Barcode.Trim(),
             Code = request.Code.Trim(),
             MeatTypeId = request.MeatTypeId,
-            Weight = weightInKg,  // 存储千克
+            Weight = request.Weight,  // 直接存储英镑数值
             ProcessStageId = request.ProcessStageId,
             Remarks = request.Remarks,
             CreatedBy = createdBy
@@ -84,8 +79,8 @@ public class WeighingRecordService : IWeighingRecordService
         await _recordRepository.AddAsync(record);
         await _recordRepository.SaveChangesAsync();
 
-        _logger.LogInformation("创建称重记录: 条码={Barcode}, 重量={WeightKg}kg ({WeightLb}lb), 环节={Stage}",
-            record.Barcode, record.Weight, request.Weight, processStage.Name);
+        _logger.LogInformation("创建称重记录: 条码={Barcode}, 重量={Weight}lb, 环节={Stage}",
+            record.Barcode, record.Weight, processStage.Name);
 
         return ToResponse(record);
     }

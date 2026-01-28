@@ -7,9 +7,10 @@
 @using Minimes.Infrastructure.Persistence
 @using Minimes.Application.Resources
 @using System.Text.Json
+@using System.Diagnostics
 @inject IStringLocalizer<SharedResource> L
 @inject IConfiguration Configuration
-@inject IOptions<WeightValidationConfig> WeightConfig
+@inject IOptionsSnapshot<WeightValidationConfig> WeightConfig
 @inject IWebHostEnvironment Environment
 @inject NavigationManager Navigation
 @inject ApplicationDbContext DbContext
@@ -76,7 +77,7 @@
                         <div class="col-6 col-md-3 mb-3">
                             <div class="border rounded p-3">
                                 <div class="text-muted small">@L["Settings_StartTime"]</div>
-                                <div class="fw-bold">@startTime.ToString("MM-dd HH:mm")</div>
+                                <div class="fw-bold">@Process.GetCurrentProcess().StartTime.ToString("MM-dd HH:mm")</div>
                             </div>
                         </div>
                         <div class="col-6 col-md-3 mb-3">
@@ -320,7 +321,6 @@
     private string scaleProtocol = string.Empty;
     private string dbSize = string.Empty;
     private int recordCount = 0;
-    private static DateTime startTime = DateTime.Now;
 
     private bool isBackingUp = false;
     private string? backupMessage;
@@ -406,7 +406,7 @@
 
     private string GetUptime()
     {
-        var uptime = DateTime.Now - startTime;
+        var uptime = DateTime.Now - Process.GetCurrentProcess().StartTime;
         if (uptime.TotalHours < 1)
             return $"{(int)uptime.TotalMinutes} {L["Settings_Minutes"].Value}";
         if (uptime.TotalDays < 1)
@@ -416,10 +416,10 @@
 
     private void LoadWeightConfig()
     {
-        // 从配置中读取千克值，转换为磅显示
+        // 从配置中直接读取磅值
         var config = WeightConfig.Value;
-        currentMinWeightLb = config.MinWeightKg / 0.45359237m;
-        currentMaxWeightLb = config.MaxWeightKg / 0.45359237m;
+        currentMinWeightLb = config.MinWeightLb;
+        currentMaxWeightLb = config.MaxWeightLb;
 
         // 初始化输入框值
         minWeightLb = currentMinWeightLb;
@@ -455,10 +455,7 @@
                 return;
             }
 
-            // 转换为千克
-            var minWeightKg = minWeightLb * 0.45359237m;
-            var maxWeightKg = maxWeightLb * 0.45359237m;
-
+            // 直接使用磅值，不需要转换
             // 读取appsettings.json文件（使用项目根目录）
             var appSettingsPath = Path.Combine(Environment.ContentRootPath, "appsettings.json");
             if (!File.Exists(appSettingsPath))
@@ -482,10 +479,10 @@
                 {
                     if (property.Name == "WeightValidation")
                     {
-                        // 写入新的WeightValidation配置
+                        // 写入新的WeightValidation配置（英镑单位）
                         writer.WriteStartObject("WeightValidation");
-                        writer.WriteNumber("MinWeightKg", minWeightKg);
-                        writer.WriteNumber("MaxWeightKg", maxWeightKg);
+                        writer.WriteNumber("MinWeightLb", minWeightLb);
+                        writer.WriteNumber("MaxWeightLb", maxWeightLb);
                         writer.WriteEndObject();
                     }
                     else

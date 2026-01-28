@@ -72,7 +72,7 @@ public class ReportService : IReportService
             UniqueBarcodes = filteredList.Select(r => r.Barcode).Distinct().Count()
         };
 
-        _logger.LogInformation("生产报表查询: 记录数={TotalRecords}, 入库={ReceivingWeight}kg, 出库={ShippingWeight}kg",
+        _logger.LogInformation("生产报表查询: 记录数={TotalRecords}, 入库={ReceivingWeight}lb, 出库={ShippingWeight}lb",
             response.TotalRecords, response.ReceivingWeight, response.ShippingWeight);
 
         return response;
