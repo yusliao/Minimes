@@ -229,7 +229,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // 初始化SignalR连接（用于扫码枪）
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        Console.WriteLine("=== 称重页面初始化开始 ===");
+
+        // 初始化SignalR连接对象（不启动连接，避免阻塞数据加载）
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/hardwareHub"))
             .Build();
@@ -247,21 +250,18 @@
             }
         });
 
-        // SignalR连接可能失败，不影响页面基本功能
-        try
-        {
-            await hubConnection.StartAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"SignalR连接失败（演示模式不影响使用）: {ex.Message}");
-        }
+        Console.WriteLine($"[{stopwatch.ElapsedMilliseconds}ms] SignalR连接对象创建完成");
 
+        // 性能优化：先加载数据，SignalR连接在OnAfterRenderAsync中后台启动
         // 顺序加载今日统计和最近记录（避免DbContext并发错误）
-        // 注意：在Blazor Server中，DbContext是Scoped生命周期，同一连接共享一个实例
-        // 并行调用会导致"A second operation was started on this context"错误
         await LoadTodaySummary();
+        Console.WriteLine($"[{stopwatch.ElapsedMilliseconds}ms] 今日统计加载完成");
+
         await LoadRecentRecords();
+        Console.WriteLine($"[{stopwatch.ElapsedMilliseconds}ms] 最近记录加载完成");
+
+        stopwatch.Stop();
+        Console.WriteLine($"=== 称重页面数据加载完成，总耗时: {stopwatch.ElapsedMilliseconds}ms ===");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -270,6 +270,26 @@
         {
             // 页面首次加载，自动聚焦到条码输入框
             await FocusBarcodeInput();
+
+            // 性能优化：在后台启动SignalR连接，不阻塞数据显示
+            if (hubConnection != null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    Console.WriteLine("=== 开始后台连接SignalR ===");
+
+                    try
+                    {
+                        await hubConnection.StartAsync();
+                        Console.WriteLine($"[{stopwatch.ElapsedMilliseconds}ms] SignalR连接启动成功");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[{stopwatch.ElapsedMilliseconds}ms] SignalR连接失败: {ex.Message}");
+                    }
+                });
+            }
         }
     }
 

@@ -22,7 +22,7 @@ public static class SeedData
                 {
                     Id = 1,
                     Code = "PORK",
-                    Name = "猪肉",
+                    Name = "PORK",
                     DisplayOrder = 1,
                     IsActive = true,
                     Description = "猪肉及其制品",
@@ -32,7 +32,7 @@ public static class SeedData
                 {
                     Id = 2,
                     Code = "BEEF",
-                    Name = "牛肉",
+                    Name = "BEEF",
                     DisplayOrder = 2,
                     IsActive = true,
                     Description = "牛肉及其制品",
@@ -42,7 +42,7 @@ public static class SeedData
                 {
                     Id = 3,
                     Code = "MUTTON",
-                    Name = "羊肉",
+                    Name = "MUTTON",
                     DisplayOrder = 3,
                     IsActive = true,
                     Description = "羊肉及其制品",
@@ -52,7 +52,7 @@ public static class SeedData
                 {
                     Id = 4,
                     Code = "CHICKEN",
-                    Name = "鸡肉",
+                    Name = "CHICKEN",
                     DisplayOrder = 4,
                     IsActive = true,
                     Description = "鸡肉及其制品",
@@ -62,7 +62,7 @@ public static class SeedData
                 {
                     Id = 5,
                     Code = "DUCK",
-                    Name = "鸭肉",
+                    Name = "DUCK",
                     DisplayOrder = 5,
                     IsActive = true,
                     Description = "鸭肉及其制品",
@@ -72,7 +72,7 @@ public static class SeedData
                 {
                     Id = 6,
                     Code = "FISH",
-                    Name = "鱼肉",
+                    Name = "FISH",
                     DisplayOrder = 6,
                     IsActive = true,
                     Description = "鱼类及其制品",

@@ -348,6 +348,13 @@
         _ = UpdateUptimeLoop(cancellationTokenSource.Token);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        // 每次导航到此页面时都重新加载配置，确保显示最新数据
+        LoadWeightConfig();
+        await LoadStatistics();
+    }
+
     private async Task UpdateUptimeLoop(CancellationToken cancellationToken)
     {
         try
@@ -416,10 +423,42 @@
 
     private void LoadWeightConfig()
     {
-        // 从配置中直接读取磅值
-        var config = WeightConfig.Value;
-        currentMinWeightLb = config.MinWeightLb;
-        currentMaxWeightLb = config.MaxWeightLb;
+        try
+        {
+            // 直接从appsettings.json文件读取最新配置，避免IOptionsSnapshot缓存问题
+            var appSettingsPath = Path.Combine(Environment.ContentRootPath, "appsettings.json");
+            if (File.Exists(appSettingsPath))
+            {
+                var jsonText = File.ReadAllText(appSettingsPath);
+                var jsonDoc = JsonDocument.Parse(jsonText);
+
+                if (jsonDoc.RootElement.TryGetProperty("WeightValidation", out var weightValidation))
+                {
+                    if (weightValidation.TryGetProperty("MinWeightLb", out var minWeight))
+                    {
+                        currentMinWeightLb = minWeight.GetDecimal();
+                    }
+                    if (weightValidation.TryGetProperty("MaxWeightLb", out var maxWeight))
+                    {
+                        currentMaxWeightLb = maxWeight.GetDecimal();
+                    }
+                }
+            }
+            else
+            {
+                // 文件不存在时，使用IOptionsSnapshot作为后备方案
+                var config = WeightConfig.Value;
+                currentMinWeightLb = config.MinWeightLb;
+                currentMaxWeightLb = config.MaxWeightLb;
+            }
+        }
+        catch
+        {
+            // 读取失败时，使用IOptionsSnapshot作为后备方案
+            var config = WeightConfig.Value;
+            currentMinWeightLb = config.MinWeightLb;
+            currentMaxWeightLb = config.MaxWeightLb;
+        }
 
         // 初始化输入框值
         minWeightLb = currentMinWeightLb;
