@@ -1,0 +1,287 @@
+@page "/devices"
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Device
+@using Minimes.Application.Resources
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Localization
+@inject IDeviceManagementService DeviceService
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Navigation
+
+@attribute [Authorize(Policy = "Operator")]
+
+<PageTitle>@L["Device_Monitor"]</PageTitle>
+
+<div class="container-fluid mt-4">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>@L["Device_Monitor"]</h2>
+            <p class="text-muted">@L["Device_MonitorDescription"]</p>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-3 text-muted">@L["Device_LoadingData"]</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <!-- 错误提示 -->
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @errorMessage
+        </div>
+    }
+    else if (devices == null || !devices.Any())
+    {
+        <!-- 空设备列表 -->
+        <div class="alert alert-info text-center py-5" role="alert">
+            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+            <h5>@L["Device_NoDevices"]</h5>
+            <p class="text-muted">@L["Device_NoDevicesHint"]</p>
+        </div>
+    }
+    else
+    {
+        <!-- 设备卡片列表 -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var device in devices)
+            {
+                <div class="col">
+                    <div class="card h-100 device-card @GetCardClass(device.State)"
+                         style="cursor: pointer;"
+                         @onclick="() => NavigateToDetail(device.DeviceId)">
+                        <div class="card-body">
+                            <!-- 设备类型图标和名称 -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <i class="@GetDeviceIcon(device.DeviceType) me-2"></i>
+                                        @device.DeviceName
+                                    </h5>
+                                    <small class="text-muted">@L[$"Device_Type_{device.DeviceType}"]</small>
+                                </div>
+                                <!-- 状态徽章 -->
+                                <span class="badge @GetStatusBadgeClass(device.State)">
+                                    @L[$"Device_Status_{device.State}"]
+                                </span>
+                            </div>
+
+                            <!-- 设备信息 -->
+                            <div class="device-info">
+                                @if (!string.IsNullOrEmpty(device.Manufacturer))
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">@L["Device_Manufacturer"]:</small>
+                                        <span class="ms-2">@device.Manufacturer</span>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(device.Model))
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">@L["Device_Model"]:</small>
+                                        <span class="ms-2">@device.Model</span>
+                                    </div>
+                                }
+                                @if (device.ConnectedAt.HasValue)
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">@L["Device_ConnectedAt"]:</small>
+                                        <span class="ms-2">@device.ConnectedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                    </div>
+                                }
+                                @if (device.ErrorCount > 0)
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-danger">@L["Device_ErrorCount"]:</small>
+                                        <span class="ms-2 text-danger fw-bold">@device.ErrorCount</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="bi bi-arrow-right-circle me-1"></i>
+                                @L["Device_ClickToViewDetail"]
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<DeviceInfoDto>? devices;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDevicesAsync();
+        await InitializeSignalRAsync();
+    }
+
+    private async Task LoadDevicesAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            var result = await DeviceService.GetAllDevicesAsync();
+            devices = result.ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Device_LoadFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task InitializeSignalRAsync()
+    {
+        try
+        {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/hardwareHub"))
+                .WithAutomaticReconnect()
+                .Build();
+
+            // 监听设备状态更新事件
+            hubConnection.On<string, string, string>("ReceiveDeviceStatusUpdate",
+                (deviceId, state, stateDescription) =>
+            {
+                UpdateDeviceStatus(deviceId, state, stateDescription);
+                InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SignalR连接失败: {ex.Message}");
+        }
+    }
+
+    private void UpdateDeviceStatus(string deviceId, string state, string stateDescription)
+    {
+        if (devices == null) return;
+
+        var device = devices.FirstOrDefault(d => d.DeviceId == deviceId);
+        if (device != null)
+        {
+            device.State = state;
+            device.StateDescription = stateDescription;
+
+            // 更新连接状态
+            device.IsConnected = state == "Connected" || state == "Running";
+            device.IsRunning = state == "Running";
+
+            if (device.IsConnected && !device.ConnectedAt.HasValue)
+            {
+                device.ConnectedAt = DateTime.Now;
+            }
+            else if (!device.IsConnected)
+            {
+                device.ConnectedAt = null;
+            }
+        }
+    }
+
+    private void NavigateToDetail(string deviceId)
+    {
+        Navigation.NavigateTo($"/devices/{deviceId}");
+    }
+
+    private string GetStatusBadgeClass(string state)
+    {
+        return state switch
+        {
+            "Running" => "bg-success",
+            "Connected" => "bg-info",
+            "Error" => "bg-danger",
+            "Disconnected" => "bg-secondary",
+            "Demo" => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetCardClass(string state)
+    {
+        return state switch
+        {
+            "Running" => "border-success",
+            "Error" => "border-danger",
+            _ => ""
+        };
+    }
+
+    private string GetDeviceIcon(string deviceType)
+    {
+        return deviceType switch
+        {
+            "Scale" => "bi bi-speedometer2",
+            "BarcodeScanner" => "bi bi-upc-scan",
+            "DewPointMeter" => "bi bi-thermometer-half",
+            _ => "bi bi-cpu"
+        };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
+
+<style>
+    .device-card {
+        transition: all 0.3s ease;
+    }
+
+    .device-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .device-info {
+        font-size: 0.9rem;
+    }
+
+    .border-success {
+        border-left: 4px solid #198754 !important;
+    }
+
+    .border-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+
+    /* 响应式设计 */
+    @@media (max-width: 768px) {
+        .device-card {
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* 平板触摸优化 */
+    @@media (min-width: 768px) and (max-width: 1024px) {
+        .device-card {
+            min-height: 250px;
+        }
+    }
+</style>

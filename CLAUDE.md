@@ -349,6 +349,11 @@ dotnet ef database update --startup-project ../Minimes.Web
 - [x] 登录页面添加"演示登录"快捷按钮
 - [x] 演示模式下显示提示标识（让用户知道当前是演示模式）
 
+**⚠️ 功能状态更新（2026-02-04）**：
+- **演示模式功能已完全移除** - 不再需要此功能，已从代码库中彻底删除
+- **清理范围**：21个文件（Application层6个、Infrastructure层14个、Web层4个）
+- **编译状态**：✅ 0个警告，0个错误
+
 ---
 
 ### ⏳ 阶段9：部署和文档（进行中）
@@ -625,4 +630,4 @@ ASPNETCORE_ENVIRONMENT=Production dotnet run --project src/Minimes.Web
 1. **迁移不通用**：SQLite和MySQL迁移不能混用，切换数据库需重新生成迁移
 2. **MySQL版本**：建议MySQL 8.0+以支持降序索引
 3. **字符集**：连接字符串指定 `CharSet=utf8mb4` 支持中文和Emoji
-4. **演示模式**：演示账户(demo/demo123)在任何数据库下都可用
+

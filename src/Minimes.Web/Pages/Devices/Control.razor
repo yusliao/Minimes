@@ -1,0 +1,374 @@
+@page "/devices/{DeviceId}/control"
+@attribute [Authorize(Policy = "Admin")]
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Device
+@using Minimes.Application.Resources
+@using Microsoft.Extensions.Localization
+@inject IDeviceManagementService DeviceService
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Device_Control"] - @deviceName</PageTitle>
+
+<div class="container-fluid py-4">
+    <!-- 页面标题 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">@L["Device_Control"] - @deviceName</h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/devices">@L["Device_Monitor"]</a></li>
+                    <li class="breadcrumb-item"><a href="/devices/@DeviceId">@L["Device_Detail"]</a></li>
+                    <li class="breadcrumb-item active">@L["Device_Control"]</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-outline-secondary" @onclick="NavigateBack">
+            <i class="bi bi-arrow-left"></i> @L["Device_BackToList"]
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-3 text-muted">@L["Device_LoadingData"]</p>
+        </div>
+    }
+    else if (deviceNotFound)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            @L["Device_NotFound"]
+        </div>
+    }
+    else
+    {
+        <!-- 成功/错误提示 -->
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill"></i> @successMessage
+                <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i> @errorMessage
+                <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+            </div>
+        }
+
+        <!-- 设备信息卡片 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">@L["Device_BasicInfo"]</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>@L["Device_Name"]:</strong> @deviceName
+                    </div>
+                    <div class="col-md-4">
+                        <strong>@L["Device_Status"]:</strong>
+                        <span class="badge @GetStatusBadgeClass(deviceStatus)">
+                            @GetStatusText(deviceStatus)
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>@L["Device_Type"]:</strong> @deviceType
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制按钮区域 -->
+        <div class="row g-4">
+            <!-- 连接设备 -->
+            <div class="col-md-6 col-lg-4">
+                <button class="btn btn-primary btn-lg w-100 py-4"
+                        @onclick="() => ShowConfirmDialog(ControlAction.Connect)"
+                        disabled="@(isOperating || IsConnected())">
+                    <i class="bi bi-plug-fill fs-1 d-block mb-2"></i>
+                    <span class="fs-5">@L["Device_Connect"]</span>
+                </button>
+            </div>
+
+            <!-- 断开设备 -->
+            <div class="col-md-6 col-lg-4">
+                <button class="btn btn-secondary btn-lg w-100 py-4"
+                        @onclick="() => ShowConfirmDialog(ControlAction.Disconnect)"
+                        disabled="@(isOperating || !IsConnected())">
+                    <i class="bi bi-plug fs-1 d-block mb-2"></i>
+                    <span class="fs-5">@L["Device_Disconnect"]</span>
+                </button>
+            </div>
+
+            <!-- 启动设备 -->
+            <div class="col-md-6 col-lg-4">
+                <button class="btn btn-success btn-lg w-100 py-4"
+                        @onclick="() => ShowConfirmDialog(ControlAction.Start)"
+                        disabled="@(isOperating || !CanStart())">
+                    <i class="bi bi-play-circle-fill fs-1 d-block mb-2"></i>
+                    <span class="fs-5">@L["Device_Start"]</span>
+                </button>
+            </div>
+
+            <!-- 停止设备 -->
+            <div class="col-md-6 col-lg-4">
+                <button class="btn btn-warning btn-lg w-100 py-4"
+                        @onclick="() => ShowConfirmDialog(ControlAction.Stop)"
+                        disabled="@(isOperating || !IsRunning())">
+                    <i class="bi bi-stop-circle-fill fs-1 d-block mb-2"></i>
+                    <span class="fs-5">@L["Device_Stop"]</span>
+                </button>
+            </div>
+
+            <!-- 重启设备 -->
+            <div class="col-md-6 col-lg-4">
+                <button class="btn btn-info btn-lg w-100 py-4"
+                        @onclick="() => ShowConfirmDialog(ControlAction.Restart)"
+                        disabled="@isOperating">
+                    <i class="bi bi-arrow-clockwise fs-1 d-block mb-2"></i>
+                    <span class="fs-5">@L["Device_Restart"]</span>
+                </button>
+            </div>
+
+            <!-- 返回详情 -->
+            <div class="col-md-6 col-lg-4">
+                <button class="btn btn-outline-primary btn-lg w-100 py-4"
+                        @onclick="NavigateToDetail">
+                    <i class="bi bi-info-circle-fill fs-1 d-block mb-2"></i>
+                    <span class="fs-5">@L["Device_Detail"]</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 确认对话框 -->
+        @if (showConfirmDialog)
+        {
+            <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">@L["Btn_Confirm"]</h5>
+                            <button type="button" class="btn-close" @onclick="HideConfirmDialog"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>@GetConfirmMessage(pendingAction)</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="HideConfirmDialog">
+                                @L["Btn_Cancel"]
+                            </button>
+                            <button type="button" class="btn btn-primary" @onclick="ExecuteAction">
+                                @L["Btn_Confirm"]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string DeviceId { get; set; } = string.Empty;
+
+    private bool isLoading = true;
+    private bool deviceNotFound = false;
+    private bool isOperating = false;
+    private string deviceName = "";
+    private string deviceType = "";
+    private string deviceStatus = "Disconnected";
+    private string? successMessage;
+    private string? errorMessage;
+
+    private bool showConfirmDialog = false;
+    private ControlAction pendingAction;
+
+    private enum ControlAction
+    {
+        Connect,
+        Disconnect,
+        Start,
+        Stop,
+        Restart
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDeviceInfo();
+    }
+
+    private async Task LoadDeviceInfo()
+    {
+        try
+        {
+            isLoading = true;
+            var device = await DeviceService.GetDeviceDetailAsync(DeviceId);
+
+            if (device == null)
+            {
+                deviceNotFound = true;
+                return;
+            }
+
+            deviceName = device.DeviceName;
+            deviceType = GetDeviceTypeText(device.DeviceType);
+            deviceStatus = device.State;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Device_LoadFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowConfirmDialog(ControlAction action)
+    {
+        pendingAction = action;
+        showConfirmDialog = true;
+    }
+
+    private void HideConfirmDialog()
+    {
+        showConfirmDialog = false;
+    }
+
+    private async Task ExecuteAction()
+    {
+        HideConfirmDialog();
+        isOperating = true;
+        successMessage = null;
+        errorMessage = null;
+
+        try
+        {
+            bool result = false;
+
+            switch (pendingAction)
+            {
+                case ControlAction.Connect:
+                    result = await DeviceService.ConnectDeviceAsync(DeviceId);
+                    break;
+                case ControlAction.Disconnect:
+                    result = await DeviceService.DisconnectDeviceAsync(DeviceId);
+                    break;
+                case ControlAction.Start:
+                    result = await DeviceService.StartDeviceAsync(DeviceId);
+                    break;
+                case ControlAction.Stop:
+                    result = await DeviceService.StopDeviceAsync(DeviceId);
+                    break;
+                case ControlAction.Restart:
+                    result = await DeviceService.RestartDeviceAsync(DeviceId);
+                    break;
+            }
+
+            if (result)
+            {
+                successMessage = $"{GetActionText(pendingAction)}{L["Status_Success"]}";
+                await LoadDeviceInfo(); // 刷新设备状态
+            }
+            else
+            {
+                errorMessage = $"{GetActionText(pendingAction)}{L["Status_Failed"]}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{GetActionText(pendingAction)}{L["Status_Failed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isOperating = false;
+        }
+    }
+
+    private bool IsConnected() => deviceStatus == "Connected" || deviceStatus == "Running";
+    private bool IsRunning() => deviceStatus == "Running";
+    private bool CanStart() => deviceStatus == "Connected";
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Running" => "bg-success",
+            "Connected" => "bg-primary",
+            "Connecting" => "bg-info",
+            "Error" => "bg-danger",
+            "Demo" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Uninitialized" => L["Device_Status_Uninitialized"],
+            "Disconnected" => L["Device_Status_Disconnected"],
+            "Connecting" => L["Device_Status_Connecting"],
+            "Connected" => L["Device_Status_Connected"],
+            "Running" => L["Device_Status_Running"],
+            "Paused" => L["Device_Status_Paused"],
+            "Error" => L["Device_Status_Error"],
+            "Demo" => L["Device_Status_Demo"],
+            _ => status
+        };
+    }
+
+    private string GetDeviceTypeText(string type)
+    {
+        return type switch
+        {
+            "Scale" => L["Device_Type_Scale"],
+            "BarcodeScanner" => L["Device_Type_BarcodeScanner"],
+            "DewPointMeter" => L["Device_Type_DewPointMeter"],
+            _ => type
+        };
+    }
+
+    private string GetConfirmMessage(ControlAction action)
+    {
+        return action switch
+        {
+            ControlAction.Connect => L["Device_ConfirmConnect"],
+            ControlAction.Disconnect => L["Device_ConfirmDisconnect"],
+            ControlAction.Start => L["Device_ConfirmStart"],
+            ControlAction.Stop => L["Device_ConfirmStop"],
+            ControlAction.Restart => L["Device_ConfirmRestart"],
+            _ => ""
+        };
+    }
+
+    private string GetActionText(ControlAction action)
+    {
+        return action switch
+        {
+            ControlAction.Connect => L["Device_Connect"],
+            ControlAction.Disconnect => L["Device_Disconnect"],
+            ControlAction.Start => L["Device_Start"],
+            ControlAction.Stop => L["Device_Stop"],
+            ControlAction.Restart => L["Device_Restart"],
+            _ => ""
+        };
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo($"/devices/{DeviceId}");
+    }
+
+    private void NavigateToDetail()
+    {
+        Navigation.NavigateTo($"/devices/{DeviceId}");
+    }
+}

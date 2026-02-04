@@ -1,0 +1,290 @@
+/* ========================================
+   设备管理样式 - devices.css
+   ======================================== */
+
+/* 设备卡片样式 */
+.device-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.device-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #0d6efd;
+}
+
+.device-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.device-card-body {
+    padding: 1.25rem;
+}
+
+.device-card-footer {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* 设备状态徽章 */
+.device-status-badge {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.device-status-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+.device-status-badge.status-running::before {
+    background-color: #fff;
+}
+
+.device-status-badge.status-connected::before {
+    background-color: #fff;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* 设备信息行 */
+.device-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.device-info-row:last-child {
+    border-bottom: none;
+}
+
+.device-info-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.device-info-value {
+    color: #212529;
+    font-size: 0.875rem;
+}
+
+/* 设备控制按钮 */
+.device-control-btn {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    border: 2px solid transparent;
+}
+
+.device-control-btn:hover:not(:disabled) {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.device-control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.device-control-btn i {
+    font-size: 2.5rem;
+}
+
+/* 设备健康状态 */
+.device-health-card {
+    border-left: 4px solid #28a745;
+    background: linear-gradient(to right, rgba(40, 167, 69, 0.05), transparent);
+}
+
+.device-health-card.health-warning {
+    border-left-color: #ffc107;
+    background: linear-gradient(to right, rgba(255, 193, 7, 0.05), transparent);
+}
+
+.device-health-card.health-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(to right, rgba(220, 53, 69, 0.05), transparent);
+}
+
+.health-score {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #28a745;
+}
+
+.health-score.warning {
+    color: #ffc107;
+}
+
+.health-score.error {
+    color: #dc3545;
+}
+
+/* 设备日志表格 */
+.device-log-table {
+    font-size: 0.875rem;
+}
+
+.device-log-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.device-log-table td {
+    vertical-align: middle;
+}
+
+.log-level-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* 配置表单 */
+.config-form-table {
+    font-size: 0.875rem;
+}
+
+.config-form-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+.config-form-table input[type="text"],
+.config-form-table input[type="number"] {
+    font-size: 0.875rem;
+}
+
+.config-form-table .form-check-input {
+    width: 2rem;
+    height: 1rem;
+}
+
+/* 演示模式标识 */
+.demo-mode-indicator {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    z-index: 1000;
+    animation: slideInRight 0.5s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .device-card {
+        margin-bottom: 1rem;
+    }
+
+    .device-control-btn {
+        min-height: 100px;
+    }
+
+    .device-control-btn i {
+        font-size: 2rem;
+    }
+
+    .health-score {
+        font-size: 2rem;
+    }
+}
+
+/* 平板触摸优化 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .device-control-btn {
+        min-height: 140px;
+    }
+
+    .device-control-btn i {
+        font-size: 3rem;
+    }
+}
+
+/* 加载动画 */
+.device-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.device-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* 空状态 */
+.device-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.device-empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.device-empty-state h5 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.device-empty-state p {
+    color: #6c757d;
+    font-size: 0.875rem;
+}

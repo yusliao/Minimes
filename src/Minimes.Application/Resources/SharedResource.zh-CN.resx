@@ -2337,4 +2337,235 @@
     <value>批次不存在或已被删除</value>
   </data>
 
+  <!-- 设备监控页面 -->
+  <data name="Device_Monitor" xml:space="preserve">
+    <value>设备监控</value>
+  </data>
+  <data name="Device_MonitorDescription" xml:space="preserve">
+    <value>实时监控硬件设备状态和运行情况</value>
+  </data>
+
+  <!-- 设备详情页面 -->
+  <data name="Device_Detail" xml:space="preserve">
+    <value>设备详情</value>
+  </data>
+  <data name="Device_BackToList" xml:space="preserve">
+    <value>返回列表</value>
+  </data>
+  <data name="Device_Control" xml:space="preserve">
+    <value>控制设备</value>
+  </data>
+  <data name="Device_Configure" xml:space="preserve">
+    <value>配置设备</value>
+  </data>
+  <data name="Device_BasicInfo" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="Device_DeviceId" xml:space="preserve">
+    <value>设备ID</value>
+  </data>
+  <data name="Device_ProtocolType" xml:space="preserve">
+    <value>协议类型</value>
+  </data>
+  <data name="Device_DataType" xml:space="preserve">
+    <value>数据类型</value>
+  </data>
+  <data name="Device_SerialNumber" xml:space="preserve">
+    <value>序列号</value>
+  </data>
+  <data name="Device_Capabilities" xml:space="preserve">
+    <value>设备能力</value>
+  </data>
+  <data name="Device_Health" xml:space="preserve">
+    <value>健康状态</value>
+  </data>
+  <data name="Device_HealthScore" xml:space="preserve">
+    <value>健康分数</value>
+  </data>
+  <data name="Device_Uptime" xml:space="preserve">
+    <value>运行时长</value>
+  </data>
+  <data name="Device_LastHeartbeat" xml:space="preserve">
+    <value>最后心跳</value>
+  </data>
+  <data name="Device_Diagnostics" xml:space="preserve">
+    <value>诊断信息</value>
+  </data>
+  <data name="Device_Warnings" xml:space="preserve">
+    <value>警告信息</value>
+  </data>
+  <data name="Device_NoWarnings" xml:space="preserve">
+    <value>无警告信息</value>
+  </data>
+  <data name="Device_HealthDataUnavailable" xml:space="preserve">
+    <value>健康数据不可用</value>
+  </data>
+  <data name="Device_Logs" xml:space="preserve">
+    <value>设备日志</value>
+  </data>
+  <data name="Device_LogLevel" xml:space="preserve">
+    <value>级别</value>
+  </data>
+  <data name="Device_LogTime" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="Device_LogMessage" xml:space="preserve">
+    <value>消息</value>
+  </data>
+  <data name="Device_LogDetails" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="Device_NoLogs" xml:space="preserve">
+    <value>暂无日志记录</value>
+  </data>
+  <data name="Device_NotFound" xml:space="preserve">
+    <value>设备不存在</value>
+  </data>
+  <data name="Device_LastError" xml:space="preserve">
+    <value>最后错误</value>
+  </data>
+  <data name="Device_LoadingData" xml:space="preserve">
+    <value>加载设备数据中...</value>
+  </data>
+  <data name="Device_LoadFailed" xml:space="preserve">
+    <value>加载设备失败</value>
+  </data>
+  <data name="Device_NoDevices" xml:space="preserve">
+    <value>暂无设备</value>
+  </data>
+  <data name="Device_NoDevicesHint" xml:space="preserve">
+    <value>系统中尚未配置任何硬件设备</value>
+  </data>
+  <data name="Device_Name" xml:space="preserve">
+    <value>设备名称</value>
+  </data>
+  <data name="Device_Type" xml:space="preserve">
+    <value>设备类型</value>
+  </data>
+  <data name="Device_Status" xml:space="preserve">
+    <value>设备状态</value>
+  </data>
+  <data name="Device_ConnectedAt" xml:space="preserve">
+    <value>连接时间</value>
+  </data>
+  <data name="Device_ErrorCount" xml:space="preserve">
+    <value>错误计数</value>
+  </data>
+  <data name="Device_Manufacturer" xml:space="preserve">
+    <value>制造商</value>
+  </data>
+  <data name="Device_Model" xml:space="preserve">
+    <value>型号</value>
+  </data>
+  <data name="Device_ClickToViewDetail" xml:space="preserve">
+    <value>点击查看详情</value>
+  </data>
+
+  <!-- 设备配置页面 -->
+  <data name="Device_ConfigItems" xml:space="preserve">
+    <value>配置项</value>
+  </data>
+  <data name="Device_ConfigKey" xml:space="preserve">
+    <value>配置键</value>
+  </data>
+  <data name="Device_ConfigValue" xml:space="preserve">
+    <value>配置值</value>
+  </data>
+  <data name="Device_ConfigType" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="Device_NoConfigItems" xml:space="preserve">
+    <value>该设备暂无可配置项</value>
+  </data>
+  <data name="Device_SaveConfig" xml:space="preserve">
+    <value>保存配置</value>
+  </data>
+  <data name="Device_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Device_ConfigSaved" xml:space="preserve">
+    <value>配置已保存</value>
+  </data>
+  <data name="Device_ConfigSaveFailed" xml:space="preserve">
+    <value>保存配置失败</value>
+  </data>
+  <data name="Device_DemoMode" xml:space="preserve">
+    <value>演示模式</value>
+  </data>
+  <data name="Device_DemoModeHint" xml:space="preserve">
+    <value>启用后设备将使用模拟数据，适用于演示和测试</value>
+  </data>
+  <data name="Device_DemoModeUpdated" xml:space="preserve">
+    <value>演示模式已更新</value>
+  </data>
+
+  <!-- 设备类型 -->
+  <data name="Device_Type_Scale" xml:space="preserve">
+    <value>电子秤</value>
+  </data>
+  <data name="Device_Type_BarcodeScanner" xml:space="preserve">
+    <value>扫码枪</value>
+  </data>
+  <data name="Device_Type_DewPointMeter" xml:space="preserve">
+    <value>露点仪</value>
+  </data>
+
+  <!-- 设备状态 -->
+  <data name="Device_Status_Uninitialized" xml:space="preserve">
+    <value>未初始化</value>
+  </data>
+  <data name="Device_Status_Disconnected" xml:space="preserve">
+    <value>未连接</value>
+  </data>
+  <data name="Device_Status_Connecting" xml:space="preserve">
+    <value>连接中</value>
+  </data>
+  <data name="Device_Status_Connected" xml:space="preserve">
+    <value>已连接</value>
+  </data>
+  <data name="Device_Status_Running" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="Device_Status_Paused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="Device_Status_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Device_Status_Demo" xml:space="preserve">
+    <value>演示模式</value>
+  </data>
+
+  <!-- 设备控制页面 -->
+  <data name="Device_ConfirmConnect" xml:space="preserve">
+    <value>确定要连接此设备吗？</value>
+  </data>
+  <data name="Device_ConfirmDisconnect" xml:space="preserve">
+    <value>确定要断开此设备连接吗？</value>
+  </data>
+  <data name="Device_ConfirmStart" xml:space="preserve">
+    <value>确定要启动此设备吗？</value>
+  </data>
+  <data name="Device_ConfirmStop" xml:space="preserve">
+    <value>确定要停止此设备吗？</value>
+  </data>
+  <data name="Device_ConfirmRestart" xml:space="preserve">
+    <value>确定要重启此设备吗？设备将先断开连接，然后重新连接并启动。</value>
+  </data>
+  <data name="Device_Connect" xml:space="preserve">
+    <value>连接设备</value>
+  </data>
+  <data name="Device_Disconnect" xml:space="preserve">
+    <value>断开设备</value>
+  </data>
+  <data name="Device_Start" xml:space="preserve">
+    <value>启动设备</value>
+  </data>
+  <data name="Device_Stop" xml:space="preserve">
+    <value>停止设备</value>
+  </data>
+  <data name="Device_Restart" xml:space="preserve">
+    <value>重启设备</value>
+  </data>
+
 </root>

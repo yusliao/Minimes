@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Minimes.Application.Interfaces;
 using Minimes.Domain.Interfaces;
+using Minimes.Infrastructure.Devices.Abstractions;
+using Minimes.Infrastructure.Devices.Management;
 using Minimes.Infrastructure.Excel;
 using Minimes.Infrastructure.Hardware;
 using Minimes.Infrastructure.QRCodeGenerator;
@@ -36,6 +38,11 @@ public static class DependencyInjection
 
         // 注册Excel导出服务
         services.AddScoped<IExcelExportService, ExcelExportService>();
+
+        // 注册设备管理服务（艹，这些SB服务负责管理硬件设备）
+        services.AddSingleton<DeviceLogManager>();  // 设备日志管理器（单例）
+        services.AddSingleton<IDeviceManager, DeviceManager>();  // 设备管理器（单例）
+        services.AddScoped<IDeviceManagementService, DeviceManagementService>();  // 设备管理服务（Scoped）
 
         return services;
     }

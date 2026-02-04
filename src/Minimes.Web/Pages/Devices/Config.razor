@@ -1,0 +1,361 @@
+@page "/devices/{DeviceId}/config"
+@using Minimes.Application.Interfaces
+@using Minimes.Application.DTOs.Device
+@using Minimes.Application.Resources
+@using Microsoft.Extensions.Localization
+@inject IDeviceManagementService DeviceService
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Navigation
+@attribute [Authorize(Policy = "Admin")]
+
+<PageTitle>@L["Device_Configure"] - @(deviceDetail?.DeviceName ?? DeviceId)</PageTitle>
+
+<div class="container-fluid mt-4">
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/devices/monitor">@L["Device_Monitor"]</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="/devices/@DeviceId">@L["Device_Detail"]</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                @L["Device_Configure"]
+            </li>
+        </ol>
+    </nav>
+
+    <!-- 页面标题 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>@L["Device_Configure"] - @(deviceDetail?.DeviceName ?? DeviceId)</h2>
+        </div>
+        <div>
+            <button class="btn btn-secondary" @onclick="GoBack">
+                <i class="bi bi-arrow-left"></i> @L["Device_BackToList"]
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@L["Status_Loading"]</span>
+            </div>
+            <p class="mt-3">@L["Device_LoadingData"]</p>
+        </div>
+    }
+    else if (deviceDetail == null)
+    {
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            @L["Device_NotFound"]
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- 设备基本信息（只读） -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle"></i> @L["Device_BasicInfo"]
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless table-sm">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 40%;">@L["Device_DeviceId"]:</th>
+                                    <td><code>@deviceDetail.DeviceId</code></td>
+                                </tr>
+                                <tr>
+                                    <th>@L["Device_Name"]:</th>
+                                    <td>@deviceDetail.DeviceName</td>
+                                </tr>
+                                <tr>
+                                    <th>@L["Device_Type"]:</th>
+                                    <td>
+                                        <span class="badge bg-info">@GetDeviceTypeDisplay(deviceDetail.DeviceType)</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>@L["Device_Status"]:</th>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(deviceDetail.State)">
+                                            @GetDeviceStatusDisplay(deviceDetail.State)
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 配置表单 -->
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sliders"></i> @L["Device_ConfigItems"]
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                @errorMessage
+                                <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(successMessage))
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle"></i>
+                                @successMessage
+                                <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+                            </div>
+                        }
+
+                        <EditForm Model="@configModel" OnValidSubmit="HandleSaveConfiguration">
+                            <!-- 配置项动态表单 -->
+                            <h6 class="mb-3">@L["Device_ConfigItems"]</h6>
+
+                            @if (configurationItems.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 30%;">@L["Device_ConfigKey"]</th>
+                                                <th style="width: 50%;">@L["Device_ConfigValue"]</th>
+                                                <th style="width: 20%;">@L["Device_ConfigType"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in configurationItems)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <strong>@item.Key</strong>
+                                                    </td>
+                                                    <td>
+                                                        @if (item.Value is bool boolValue)
+                                                        {
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input"
+                                                                       type="checkbox"
+                                                                       checked="@boolValue"
+                                                                       @onchange="@(e => UpdateConfigValue(item.Key, e.Value))">
+                                                            </div>
+                                                        }
+                                                        else if (item.Value is int || item.Value is long || item.Value is double || item.Value is decimal)
+                                                        {
+                                                            <input type="number"
+                                                                   class="form-control form-control-sm"
+                                                                   value="@item.Value"
+                                                                   @onchange="@(e => UpdateConfigValue(item.Key, e.Value))">
+                                                        }
+                                                        else
+                                                        {
+                                                            <input type="text"
+                                                                   class="form-control form-control-sm"
+                                                                   value="@item.Value"
+                                                                   @onchange="@(e => UpdateConfigValue(item.Key, e.Value))">
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">@item.Value?.GetType().Name</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> @L["Device_NoConfigItems"]
+                                </div>
+                            }
+
+                            <!-- 操作按钮 -->
+                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary" @onclick="GoBack" disabled="@isSaving">
+                                    <i class="bi bi-x-circle"></i> @L["Device_Cancel"]
+                                </button>
+                                <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                    @if (isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        @L["Customer_Saving"]
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-save"></i>
+                                        @L["Device_SaveConfig"]
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string DeviceId { get; set; } = string.Empty;
+
+    private DeviceDetailDto? deviceDetail;
+    private Dictionary<string, object> configurationItems = new();
+    private object configModel = new();
+
+    private bool isLoading = true;
+    private bool isSaving = false;
+
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDeviceConfiguration();
+    }
+
+    private async Task LoadDeviceConfiguration()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            // 加载设备详情
+            deviceDetail = await DeviceService.GetDeviceDetailAsync(DeviceId);
+
+            if (deviceDetail == null)
+            {
+                errorMessage = L["Device_NotFound"];
+                return;
+            }
+
+            // 加载设备配置
+            var config = await DeviceService.GetDeviceConfigurationAsync(DeviceId);
+            if (config != null && config.ConfigurationItems != null)
+            {
+                configurationItems = new Dictionary<string, object>(config.ConfigurationItems);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Device_LoadFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void UpdateConfigValue(string key, object? value)
+    {
+        if (value != null && configurationItems.ContainsKey(key))
+        {
+            // 类型转换
+            var originalType = configurationItems[key].GetType();
+            try
+            {
+                var convertedValue = Convert.ChangeType(value, originalType);
+                configurationItems[key] = convertedValue;
+            }
+            catch
+            {
+                // 转换失败，保持原值
+            }
+        }
+    }
+
+    private async Task HandleSaveConfiguration()
+    {
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+            successMessage = null;
+
+            var configDto = new DeviceConfigurationDto
+            {
+                DeviceId = DeviceId,
+                DeviceType = deviceDetail?.DeviceType ?? string.Empty,
+                ConfigurationItems = configurationItems
+            };
+            await DeviceService.UpdateDeviceConfigurationAsync(DeviceId, configDto);
+
+            successMessage = L["Device_ConfigSaved"];
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["Device_ConfigSaveFailed"]}: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo($"/devices/{DeviceId}");
+    }
+
+    // 辅助方法：获取设备类型显示文本
+    private string GetDeviceTypeDisplay(string deviceType)
+    {
+        return deviceType switch
+        {
+            "Scale" => L["Device_Type_Scale"],
+            "BarcodeScanner" => L["Device_Type_BarcodeScanner"],
+            "DewPointMeter" => L["Device_Type_DewPointMeter"],
+            _ => deviceType
+        };
+    }
+
+    // 辅助方法：获取设备状态显示文本
+    private string GetDeviceStatusDisplay(string state)
+    {
+        return state switch
+        {
+            "Uninitialized" => L["Device_Status_Uninitialized"],
+            "Disconnected" => L["Device_Status_Disconnected"],
+            "Connecting" => L["Device_Status_Connecting"],
+            "Connected" => L["Device_Status_Connected"],
+            "Running" => L["Device_Status_Running"],
+            "Paused" => L["Device_Status_Paused"],
+            "Error" => L["Device_Status_Error"],
+            "Demo" => L["Device_Status_Demo"],
+            _ => state
+        };
+    }
+
+    // 辅助方法：获取状态徽章样式
+    private string GetStatusBadgeClass(string state)
+    {
+        return state switch
+        {
+            "Running" => "bg-success",
+            "Connected" => "bg-info",
+            "Connecting" => "bg-warning",
+            "Paused" => "bg-secondary",
+            "Error" => "bg-danger",
+            "Demo" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+}

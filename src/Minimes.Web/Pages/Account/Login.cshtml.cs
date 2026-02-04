@@ -114,10 +114,6 @@ public class LoginModel : PageModel
                     claimsPrincipal,
                     authProperties);
 
-                // Set hardware service demo mode
-                _scaleService.SetDemoMode(isDemoAccount);
-                _barcodeScannerService.SetDemoMode(isDemoAccount);
-
                 // Redirect to target page
                 return LocalRedirect(ReturnUrl ?? "/");
             }

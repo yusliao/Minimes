@@ -26,15 +26,8 @@ public class WiFiScaleService : IScaleService
     private CancellationTokenSource? _readingCts;
     private Task? _readingTask;
 
-    // 演示模式相关字段
-    private bool _isDemoMode;
-    private CancellationTokenSource? _demoCts;
-    private Task? _demoTask;
-    private readonly Random _random = new();
-
     public decimal CurrentWeight => _currentWeight;
-    public bool IsConnected => _isDemoMode || _isConnected;
-    public bool IsDemoMode => _isDemoMode;
+    public bool IsConnected => _isConnected;
 
     public event EventHandler<WeightChangedEventArgs>? WeightChanged;
     public event EventHandler<ScaleErrorEventArgs>? ErrorOccurred;
@@ -183,16 +176,6 @@ public class WiFiScaleService : IScaleService
 
             _logger.LogInformation("执行去皮操作，当前重量: {Weight}g", _currentWeight);
 
-            if (_isDemoMode)
-            {
-                // 演示模式下直接清零
-                _currentWeight = 0;
-                _lastStableWeight = 0;
-                OnWeightChanged(0, true);
-                _logger.LogInformation("演示模式去皮成功");
-                return;
-            }
-
             // 发送去皮命令到电子秤
             var tareUrl = BuildUrl(_config.TareApiPath);
             var response = await _httpClient.PostAsJsonAsync(tareUrl, new { });
@@ -214,115 +197,6 @@ public class WiFiScaleService : IScaleService
         {
             _logger.LogError(ex, "去皮操作失败");
             OnError($"去皮失败: {ex.Message}", ex);
-        }
-    }
-
-    /// <summary>
-    /// 设置演示模式 - 模拟电子秤数据推送
-    /// </summary>
-    public void SetDemoMode(bool enabled)
-    {
-        if (_isDemoMode == enabled)
-        {
-            return;
-        }
-
-        _isDemoMode = enabled;
-
-        if (enabled)
-        {
-            _logger.LogInformation("WiFi电子秤进入演示模式");
-            // 停止真实数据读取
-            StopReading();
-            // 启动模拟数据推送
-            StartDemoDataLoop();
-        }
-        else
-        {
-            _logger.LogInformation("WiFi电子秤退出演示模式");
-            StopDemoDataLoop();
-        }
-    }
-
-    private void StartDemoDataLoop()
-    {
-        if (_demoTask != null)
-        {
-            return;
-        }
-
-        _demoCts = new CancellationTokenSource();
-        _demoTask = Task.Run(() => DemoDataLoop(_demoCts.Token), _demoCts.Token);
-        _logger.LogInformation("开始模拟WiFi电子秤数据推送");
-    }
-
-    private void StopDemoDataLoop()
-    {
-        try
-        {
-            _demoCts?.Cancel();
-            _demoTask?.Wait(TimeSpan.FromSeconds(2));
-            _demoCts?.Dispose();
-            _demoCts = null;
-            _demoTask = null;
-            _logger.LogInformation("停止模拟WiFi电子秤数据推送");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "停止模拟数据推送时发生错误");
-        }
-    }
-
-    /// <summary>
-    /// 演示模式数据循环 - 模拟真实电子秤的抖动和稳定过程
-    /// </summary>
-    private async Task DemoDataLoop(CancellationToken cancellationToken)
-    {
-        decimal targetWeight = 0;
-        decimal simulatedWeight = 0;
-        int stableCounter = 0;
-        const int stableThreshold = 5;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                // 随机决定是否"放上新物品"（10%概率）
-                if (_random.NextDouble() < 0.10 && stableCounter >= stableThreshold)
-                {
-                    targetWeight = (decimal)(_random.NextDouble() * 149950 + 50);
-                    targetWeight = Math.Round(targetWeight, 1);
-                    stableCounter = 0;
-                    _logger.LogDebug("演示模式：模拟放上新物品，目标重量: {Weight}g", targetWeight);
-                }
-
-                // 模拟重量波动
-                if (Math.Abs(simulatedWeight - targetWeight) > 1)
-                {
-                    var diff = targetWeight - simulatedWeight;
-                    simulatedWeight += diff * 0.3m + (decimal)(_random.NextDouble() - 0.5) * 5;
-                    stableCounter = 0;
-                }
-                else
-                {
-                    simulatedWeight = targetWeight + (decimal)(_random.NextDouble() - 0.5) * 0.5m;
-                    stableCounter++;
-                }
-
-                simulatedWeight = Math.Max(0, Math.Round(simulatedWeight, 1));
-                UpdateWeight(simulatedWeight, stableCounter >= stableThreshold);
-
-                await Task.Delay(200, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "演示模式数据推送发生错误");
-                await Task.Delay(1000, cancellationToken);
-            }
         }
     }
 
@@ -507,9 +381,7 @@ public class WiFiScaleService : IScaleService
     public void Dispose()
     {
         StopReading();
-        StopDemoDataLoop();
         _httpClient?.Dispose();
-        _demoCts?.Dispose();
     }
 
     /// <summary>

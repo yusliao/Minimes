@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Minimes.Application.Interfaces;
+using Minimes.Infrastructure.Devices.Abstractions;
+using Minimes.Infrastructure.Devices.Models.EventArgs;
 using Minimes.Web.Hubs;
 
 namespace Minimes.Web.Services;
@@ -13,17 +15,20 @@ public class HardwareBackgroundService : BackgroundService
     private readonly IScaleService _scaleService;
     private readonly IBarcodeScannerService _scannerService;
     private readonly IHubContext<HardwareHub> _hubContext;
+    private readonly IDeviceManager? _deviceManager;
 
     public HardwareBackgroundService(
         ILogger<HardwareBackgroundService> logger,
         IScaleService scaleService,
         IBarcodeScannerService scannerService,
-        IHubContext<HardwareHub> hubContext)
+        IHubContext<HardwareHub> hubContext,
+        IDeviceManager? deviceManager = null)
     {
         _logger = logger;
         _scaleService = scaleService;
         _scannerService = scannerService;
         _hubContext = hubContext;
+        _deviceManager = deviceManager;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,6 +39,14 @@ public class HardwareBackgroundService : BackgroundService
         _scaleService.WeightChanged += OnWeightChanged;
         _scaleService.ErrorOccurred += OnScaleError;
         _scannerService.BarcodeScanned += OnBarcodeScanned;
+
+        // 订阅设备管理器事件（艹，这个SB事件用于实时推送设备状态）
+        if (_deviceManager != null)
+        {
+            _deviceManager.DeviceStatusChanged += OnDeviceStatusChanged;
+            _deviceManager.DeviceErrorOccurred += OnDeviceErrorOccurred;
+            _logger.LogInformation("设备管理器事件已订阅");
+        }
 
         // 连接电子秤并开始读取
         var connected = await _scaleService.ConnectAsync();
@@ -63,6 +76,13 @@ public class HardwareBackgroundService : BackgroundService
         _scaleService.WeightChanged -= OnWeightChanged;
         _scaleService.ErrorOccurred -= OnScaleError;
         _scannerService.BarcodeScanned -= OnBarcodeScanned;
+
+        // 取消订阅设备管理器事件
+        if (_deviceManager != null)
+        {
+            _deviceManager.DeviceStatusChanged -= OnDeviceStatusChanged;
+            _deviceManager.DeviceErrorOccurred -= OnDeviceErrorOccurred;
+        }
 
         // 停止硬件服务
         _scaleService.StopReading();
@@ -125,6 +145,75 @@ public class HardwareBackgroundService : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "推送错误信息失败");
+        }
+    }
+
+    private async void OnDeviceStatusChanged(object? sender, DeviceStatusEventArgs e)
+    {
+        try
+        {
+            // 获取设备类型（通过反射）
+            string deviceType = "Unknown";
+            if (sender != null)
+            {
+                var metadataProp = sender.GetType().GetProperty("Metadata");
+                if (metadataProp != null)
+                {
+                    var metadata = metadataProp.GetValue(sender);
+                    var deviceTypeProp = metadata?.GetType().GetProperty("DeviceType");
+                    deviceType = deviceTypeProp?.GetValue(metadata)?.ToString() ?? "Unknown";
+                }
+            }
+
+            await _hubContext.Clients.All.SendAsync("ReceiveDeviceStatusUpdate", new
+            {
+                deviceId = e.DeviceId,
+                deviceType = deviceType,
+                oldState = e.OldState.ToString(),
+                newState = e.NewState.ToString(),
+                timestamp = e.Timestamp
+            });
+
+            _logger.LogInformation("设备状态变化已推送: {DeviceId} {OldState} -> {NewState}",
+                e.DeviceId, e.OldState, e.NewState);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "推送设备状态变化失败");
+        }
+    }
+
+    private async void OnDeviceErrorOccurred(object? sender, DeviceErrorEventArgs e)
+    {
+        try
+        {
+            // 获取设备类型（通过反射）
+            string deviceType = "Unknown";
+            if (sender != null)
+            {
+                var metadataProp = sender.GetType().GetProperty("Metadata");
+                if (metadataProp != null)
+                {
+                    var metadata = metadataProp.GetValue(sender);
+                    var deviceTypeProp = metadata?.GetType().GetProperty("DeviceType");
+                    deviceType = deviceTypeProp?.GetValue(metadata)?.ToString() ?? "Unknown";
+                }
+            }
+
+            await _hubContext.Clients.All.SendAsync("ReceiveDeviceError", new
+            {
+                deviceId = e.DeviceId,
+                deviceType = deviceType,
+                errorMessage = e.Message,
+                severity = e.Severity.ToString(),
+                timestamp = e.Timestamp
+            });
+
+            _logger.LogError("设备错误已推送: {DeviceId} {Message}", e.DeviceId, e.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "推送设备错误失败");
         }
     }
 }

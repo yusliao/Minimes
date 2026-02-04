@@ -49,17 +49,6 @@ public interface IScaleService : IDisposable
     /// 手动触发去皮（清零）
     /// </summary>
     Task TareAsync();
-
-    /// <summary>
-    /// 设置演示模式（模拟电子秤数据）
-    /// </summary>
-    /// <param name="enabled">是否启用演示模式</param>
-    void SetDemoMode(bool enabled);
-
-    /// <summary>
-    /// 是否处于演示模式
-    /// </summary>
-    bool IsDemoMode { get; }
 }
 
 /// <summary>

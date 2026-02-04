@@ -2344,4 +2344,235 @@
     <value>Batch not found or has been deleted</value>
   </data>
 
+  <!-- Device Monitor Page -->
+  <data name="Device_Monitor" xml:space="preserve">
+    <value>Device Monitor</value>
+  </data>
+  <data name="Device_MonitorDescription" xml:space="preserve">
+    <value>Real-time monitoring of hardware device status and operation</value>
+  </data>
+
+  <!-- Device Detail Page -->
+  <data name="Device_Detail" xml:space="preserve">
+    <value>Device Detail</value>
+  </data>
+  <data name="Device_BackToList" xml:space="preserve">
+    <value>Back to List</value>
+  </data>
+  <data name="Device_Control" xml:space="preserve">
+    <value>Control Device</value>
+  </data>
+  <data name="Device_Configure" xml:space="preserve">
+    <value>Configure Device</value>
+  </data>
+  <data name="Device_BasicInfo" xml:space="preserve">
+    <value>Basic Information</value>
+  </data>
+  <data name="Device_DeviceId" xml:space="preserve">
+    <value>Device ID</value>
+  </data>
+  <data name="Device_ProtocolType" xml:space="preserve">
+    <value>Protocol Type</value>
+  </data>
+  <data name="Device_DataType" xml:space="preserve">
+    <value>Data Type</value>
+  </data>
+  <data name="Device_SerialNumber" xml:space="preserve">
+    <value>Serial Number</value>
+  </data>
+  <data name="Device_Capabilities" xml:space="preserve">
+    <value>Capabilities</value>
+  </data>
+  <data name="Device_Health" xml:space="preserve">
+    <value>Health Status</value>
+  </data>
+  <data name="Device_HealthScore" xml:space="preserve">
+    <value>Health Score</value>
+  </data>
+  <data name="Device_Uptime" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="Device_LastHeartbeat" xml:space="preserve">
+    <value>Last Heartbeat</value>
+  </data>
+  <data name="Device_Diagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="Device_Warnings" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="Device_NoWarnings" xml:space="preserve">
+    <value>No Warnings</value>
+  </data>
+  <data name="Device_HealthDataUnavailable" xml:space="preserve">
+    <value>Health data unavailable</value>
+  </data>
+  <data name="Device_Logs" xml:space="preserve">
+    <value>Device Logs</value>
+  </data>
+  <data name="Device_LogLevel" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="Device_LogTime" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Device_LogMessage" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Device_LogDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Device_NoLogs" xml:space="preserve">
+    <value>No logs available</value>
+  </data>
+  <data name="Device_NotFound" xml:space="preserve">
+    <value>Device not found</value>
+  </data>
+  <data name="Device_LastError" xml:space="preserve">
+    <value>Last Error</value>
+  </data>
+  <data name="Device_LoadingData" xml:space="preserve">
+    <value>Loading device data...</value>
+  </data>
+  <data name="Device_LoadFailed" xml:space="preserve">
+    <value>Failed to load devices</value>
+  </data>
+  <data name="Device_NoDevices" xml:space="preserve">
+    <value>No Devices</value>
+  </data>
+  <data name="Device_NoDevicesHint" xml:space="preserve">
+    <value>No hardware devices configured in the system</value>
+  </data>
+  <data name="Device_Name" xml:space="preserve">
+    <value>Device Name</value>
+  </data>
+  <data name="Device_Type" xml:space="preserve">
+    <value>Device Type</value>
+  </data>
+  <data name="Device_Status" xml:space="preserve">
+    <value>Device Status</value>
+  </data>
+  <data name="Device_ConnectedAt" xml:space="preserve">
+    <value>Connected At</value>
+  </data>
+  <data name="Device_ErrorCount" xml:space="preserve">
+    <value>Error Count</value>
+  </data>
+  <data name="Device_Manufacturer" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="Device_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="Device_ClickToViewDetail" xml:space="preserve">
+    <value>Click to view details</value>
+  </data>
+
+  <!-- Device Configuration Page -->
+  <data name="Device_ConfigItems" xml:space="preserve">
+    <value>Configuration Items</value>
+  </data>
+  <data name="Device_ConfigKey" xml:space="preserve">
+    <value>Config Key</value>
+  </data>
+  <data name="Device_ConfigValue" xml:space="preserve">
+    <value>Config Value</value>
+  </data>
+  <data name="Device_ConfigType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Device_NoConfigItems" xml:space="preserve">
+    <value>No configuration items available for this device</value>
+  </data>
+  <data name="Device_SaveConfig" xml:space="preserve">
+    <value>Save Configuration</value>
+  </data>
+  <data name="Device_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Device_ConfigSaved" xml:space="preserve">
+    <value>Configuration saved successfully</value>
+  </data>
+  <data name="Device_ConfigSaveFailed" xml:space="preserve">
+    <value>Failed to save configuration</value>
+  </data>
+  <data name="Device_DemoMode" xml:space="preserve">
+    <value>Demo Mode</value>
+  </data>
+  <data name="Device_DemoModeHint" xml:space="preserve">
+    <value>When enabled, the device will use simulated data for demonstration and testing</value>
+  </data>
+  <data name="Device_DemoModeUpdated" xml:space="preserve">
+    <value>Demo mode updated successfully</value>
+  </data>
+
+  <!-- Device Types -->
+  <data name="Device_Type_Scale" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="Device_Type_BarcodeScanner" xml:space="preserve">
+    <value>Barcode Scanner</value>
+  </data>
+  <data name="Device_Type_DewPointMeter" xml:space="preserve">
+    <value>Dew Point Meter</value>
+  </data>
+
+  <!-- Device Status -->
+  <data name="Device_Status_Uninitialized" xml:space="preserve">
+    <value>Uninitialized</value>
+  </data>
+  <data name="Device_Status_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Device_Status_Connecting" xml:space="preserve">
+    <value>Connecting</value>
+  </data>
+  <data name="Device_Status_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Device_Status_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Device_Status_Paused" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="Device_Status_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Device_Status_Demo" xml:space="preserve">
+    <value>Demo Mode</value>
+  </data>
+
+  <!-- Device Control Page -->
+  <data name="Device_ConfirmConnect" xml:space="preserve">
+    <value>Are you sure you want to connect this device?</value>
+  </data>
+  <data name="Device_ConfirmDisconnect" xml:space="preserve">
+    <value>Are you sure you want to disconnect this device?</value>
+  </data>
+  <data name="Device_ConfirmStart" xml:space="preserve">
+    <value>Are you sure you want to start this device?</value>
+  </data>
+  <data name="Device_ConfirmStop" xml:space="preserve">
+    <value>Are you sure you want to stop this device?</value>
+  </data>
+  <data name="Device_ConfirmRestart" xml:space="preserve">
+    <value>Are you sure you want to restart this device? The device will disconnect, then reconnect and start.</value>
+  </data>
+  <data name="Device_Connect" xml:space="preserve">
+    <value>Connect Device</value>
+  </data>
+  <data name="Device_Disconnect" xml:space="preserve">
+    <value>Disconnect Device</value>
+  </data>
+  <data name="Device_Start" xml:space="preserve">
+    <value>Start Device</value>
+  </data>
+  <data name="Device_Stop" xml:space="preserve">
+    <value>Stop Device</value>
+  </data>
+  <data name="Device_Restart" xml:space="preserve">
+    <value>Restart Device</value>
+  </data>
+
 </root>

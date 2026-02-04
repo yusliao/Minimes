@@ -47,6 +47,48 @@ public class HardwareHub : Hub
         });
     }
 
+    /// <summary>
+    /// 推送设备状态更新到所有客户端
+    /// 艹，这个SB方法用于实时推送设备状态变化
+    /// </summary>
+    public async Task BroadcastDeviceStatusUpdate(string deviceId, string deviceType, string oldState, string newState)
+    {
+        await Clients.All.SendAsync("ReceiveDeviceStatusUpdate", new
+        {
+            deviceId,
+            deviceType,
+            oldState,
+            newState,
+            timestamp = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// 推送设备错误到所有客户端
+    /// </summary>
+    public async Task BroadcastDeviceError(string deviceId, string deviceType, string errorMessage, string severity)
+    {
+        await Clients.All.SendAsync("ReceiveDeviceError", new
+        {
+            deviceId,
+            deviceType,
+            errorMessage,
+            severity,
+            timestamp = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// 推送设备列表更新到所有客户端
+    /// </summary>
+    public async Task BroadcastDeviceListUpdate()
+    {
+        await Clients.All.SendAsync("ReceiveDeviceListUpdate", new
+        {
+            timestamp = DateTime.Now
+        });
+    }
+
     public override async Task OnConnectedAsync()
     {
         await base.OnConnectedAsync();

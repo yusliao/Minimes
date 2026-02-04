@@ -29,17 +29,6 @@ public interface IBarcodeScannerService
     /// 手动触发扫码（用于测试）
     /// </summary>
     void SimulateScan(string barcode);
-
-    /// <summary>
-    /// 设置演示模式（自动模拟扫码）
-    /// </summary>
-    /// <param name="enabled">是否启用演示模式</param>
-    void SetDemoMode(bool enabled);
-
-    /// <summary>
-    /// 是否处于演示模式
-    /// </summary>
-    bool IsDemoMode { get; }
 }
 
 /// <summary>
