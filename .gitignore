@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /nul
 /src/Minimes.Web/minimes.db-shm
 /src/Minimes.Web/minimes.db-wal
+/src/nul
