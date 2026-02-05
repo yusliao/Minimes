@@ -1,17 +1,17 @@
-namespace Minimes.Domain.Entities;
+namespace Minimes.Application.DTOs.Employee;
 
 /// <summary>
-/// 客户实体 - 业务往来客户
+/// 创建员工请求DTO
 /// </summary>
-public class Customer : BaseEntity
+public class CreateEmployeeRequest
 {
     /// <summary>
-    /// 客户编码 - 唯一标识
+    /// 员工代码（唯一）
     /// </summary>
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// 客户名称
+    /// 员工姓名
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
@@ -29,9 +29,4 @@ public class Customer : BaseEntity
     /// 地址
     /// </summary>
     public string? Address { get; set; }
-
-    /// <summary>
-    /// 是否激活
-    /// </summary>
-    public bool IsActive { get; set; } = true;
 }

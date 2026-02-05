@@ -1,25 +1,25 @@
-@page "/customers/edit/{id:int}"
+@page "/employees/edit/{id:int}"
 @using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
-@using Minimes.Application.DTOs.Customer
+@using Minimes.Application.DTOs.Employee
 @using Minimes.Application.Resources
 @inject IStringLocalizer<SharedResource> L
-@inject ICustomerService CustomerService
+@inject IEmployeeService EmployeeService
 @inject NavigationManager NavigationManager
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
 
-<PageTitle>@L["Customer_EditTitle"] - MiniMES</PageTitle>
+<PageTitle>@L["Employee_Edit"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-pencil me-2"></span>@L["Customer_EditTitle"]
+                <span class="oi oi-pencil me-2"></span>@L["Employee_Edit"]
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/customers">@L["Customer_Title"]</a></li>
-                    <li class="breadcrumb-item active">@L["Customer_EditTitle"]</li>
+                    <li class="breadcrumb-item"><a href="/employees">@L["Employee_List"]</a></li>
+                    <li class="breadcrumb-item active">@L["Employee_Edit"]</li>
                 </ol>
             </nav>
         </div>
@@ -31,18 +31,18 @@
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">@L["Status_Loading"]</span>
             </div>
-            <p class="mt-2 text-muted">@L["Customer_LoadingData"]</p>
+            <p class="mt-2 text-muted">加载员工数据中...</p>
         </div>
     }
-    else if (customer == null)
+    else if (employee == null)
     {
         <div class="alert alert-danger">
             <span class="oi oi-warning me-2"></span>
-            @L["Customer_NotFound"]
+            @L["Employee_NotFound"]
         </div>
         <div class="mt-3">
             <button class="btn btn-secondary" @onclick="BackToList">
-                <span class="oi oi-arrow-left me-1"></span>@L["Customer_BackToList"]
+                <span class="oi oi-arrow-left me-1"></span>返回列表
             </button>
         </div>
     }
@@ -65,18 +65,18 @@
 
                             <div class="mb-3">
                                 <label class="form-label">
-                                    <strong>@L["Customer_Code"] *</strong>
-                                    <span class="badge bg-secondary ms-2">@L["Customer_CodeReadonly"]</span>
+                                    <strong>@L["Employee_Code"] *</strong>
+                                    <span class="badge bg-secondary ms-2">只读</span>
                                 </label>
-                                <input type="text" class="form-control" value="@customer.Code" disabled />
+                                <input type="text" class="form-control" value="@employee.Code" disabled />
                                 <small class="form-text text-muted">
-                                    @L["Customer_CodeReadonlyNote"]
+                                    员工编码不可修改，用于生成二维码
                                 </small>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">
-                                    <strong>@L["Customer_Name"] *</strong>
+                                    <strong>@L["Employee_Name"] *</strong>
                                 </label>
                                 <input type="text" class="form-control form-control-lg" @bind="request.Name" required />
                                 <ValidationMessage For="@(() => request.Name)" />
@@ -84,20 +84,20 @@
 
                             <div class="row">
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label class="form-label">@L["Customer_Contact"]</label>
+                                    <label class="form-label">@L["Employee_ContactPerson"]</label>
                                     <input type="text" class="form-control" @bind="request.ContactPerson" />
                                     <ValidationMessage For="@(() => request.ContactPerson)" />
                                 </div>
 
                                 <div class="col-12 col-md-6 mb-3">
-                                    <label class="form-label">@L["Customer_Phone"]</label>
+                                    <label class="form-label">@L["Employee_Phone"]</label>
                                     <input type="tel" class="form-control" @bind="request.Phone" />
                                     <ValidationMessage For="@(() => request.Phone)" />
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">@L["Customer_Address"]</label>
+                                <label class="form-label">@L["Employee_Address"]</label>
                                 <textarea class="form-control" @bind="request.Address" rows="3"></textarea>
                                 <ValidationMessage For="@(() => request.Address)" />
                             </div>
@@ -105,8 +105,17 @@
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="isActive" @bind="request.IsActive" />
                                 <label class="form-check-label" for="isActive">
-                                    @L["Customer_ActiveStatus"]
+                                    激活状态
                                 </label>
+                                @if (!request.IsActive && employee.QRCodeCount > 0)
+                                {
+                                    <div class="alert alert-warning mt-2 mb-0">
+                                        <small>
+                                            <span class="oi oi-warning me-1"></span>
+                                            @L["Employee_DeactivateConfirm"]
+                                        </small>
+                                    </div>
+                                }
                             </div>
 
                             <hr class="my-4" />
@@ -119,7 +128,7 @@
                                     @if (isSaving)
                                     {
                                         <span class="spinner-border spinner-border-sm me-1"></span>
-                                        <span>@L["Customer_Saving"]</span>
+                                        <span>保存中...</span>
                                     }
                                     else
                                     {
@@ -132,37 +141,37 @@
                     </div>
                 </div>
 
-                <!-- 客户使用记录 -->
+                <!-- 员工信息卡片 -->
                 <div class="card mt-3">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">
-                            <span class="oi oi-info me-2"></span>@L["Customer_Info"]
+                            <span class="oi oi-info me-2"></span>员工信息
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-6 col-md-3">
-                                <div class="text-muted small">@L["Customer_CreatedAt"]</div>
-                                <div><strong>@customer.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong></div>
+                                <div class="text-muted small">创建时间</div>
+                                <div><strong>@employee.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong></div>
                             </div>
                             <div class="col-6 col-md-3">
-                                <div class="text-muted small">@L["Customer_UpdatedAt"]</div>
-                                <div><strong>@(customer.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? L["Customer_NeverUpdated"])</strong></div>
+                                <div class="text-muted small">更新时间</div>
+                                <div><strong>@(employee.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "从未更新")</strong></div>
                             </div>
                             <div class="col-6 col-md-3 mt-2 mt-md-0">
-                                <div class="text-muted small">ID</div>
-                                <div><strong>#@customer.Id</strong></div>
+                                <div class="text-muted small">@L["Employee_QRCodeCount"]</div>
+                                <div><strong><span class="badge bg-info">@employee.QRCodeCount</span></strong></div>
                             </div>
                             <div class="col-6 col-md-3 mt-2 mt-md-0">
-                                <div class="text-muted small">@L["Status_Active"]</div>
+                                <div class="text-muted small">@L["Employee_Status"]</div>
                                 <div>
-                                    @if (customer.IsActive)
+                                    @if (employee.IsActive)
                                     {
-                                        <span class="badge bg-success">@L["Status_Active"]</span>
+                                        <span class="badge bg-success">@L["Employee_Active"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">@L["Status_Inactive"]</span>
+                                        <span class="badge bg-secondary">@L["Employee_Inactive"]</span>
                                     }
                                 </div>
                             </div>
@@ -176,27 +185,27 @@
                 <div class="card bg-light">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <span class="oi oi-info me-2"></span>@L["Customer_EditHelpTitle"]
+                            <span class="oi oi-info me-2"></span>编辑说明
                         </h5>
                         <ul class="mb-0">
                             <li class="mb-2">
-                                <strong>@L["Customer_Code"]</strong>：@L["Customer_CodeReadonly"]
+                                <strong>@L["Employee_Code"]</strong>：不可修改
                             </li>
                             <li class="mb-2">
-                                <strong>@L["Customer_Name"]</strong>：@L["Common_Required"]
+                                <strong>@L["Employee_Name"]</strong>：@L["Common_Required"]
                             </li>
                             <li class="mb-2">
-                                <strong>@L["Customer_Contact"]</strong>：@L["Common_Optional"]
+                                <strong>@L["Employee_ContactPerson"]</strong>：@L["Common_Optional"]
                             </li>
                             <li class="mb-2">
-                                <strong>@L["Customer_Phone"]</strong>：@L["Common_Optional"]
+                                <strong>@L["Employee_Phone"]</strong>：@L["Common_Optional"]
                             </li>
                         </ul>
 
                         <div class="alert alert-warning mt-3 mb-0">
                             <small>
                                 <span class="oi oi-warning me-1"></span>
-                                @L["Customer_EditWarning"]
+                                停用员工会自动停用该员工的所有二维码
                             </small>
                         </div>
                     </div>
@@ -210,41 +219,41 @@
     [Parameter]
     public int Id { get; set; }
 
-    private CustomerResponse? customer;
-    private UpdateCustomerRequest request = new();
+    private EmployeeResponse? employee;
+    private UpdateEmployeeRequest request = new();
     private bool isLoading = true;
     private bool isSaving = false;
     private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCustomer();
+        await LoadEmployee();
     }
 
-    private async Task LoadCustomer()
+    private async Task LoadEmployee()
     {
         isLoading = true;
         try
         {
-            customer = await CustomerService.GetByIdAsync(Id);
-            if (customer != null)
+            employee = await EmployeeService.GetByIdAsync(Id);
+            if (employee != null)
             {
                 // 填充表单数据
-                request = new UpdateCustomerRequest
+                request = new UpdateEmployeeRequest
                 {
-                    Id = customer.Id,
-                    Code = customer.Code,
-                    Name = customer.Name,
-                    ContactPerson = customer.ContactPerson,
-                    Phone = customer.Phone,
-                    Address = customer.Address,
-                    IsActive = customer.IsActive
+                    Id = employee.Id,
+                    Code = employee.Code,
+                    Name = employee.Name,
+                    ContactPerson = employee.ContactPerson,
+                    Phone = employee.Phone,
+                    Address = employee.Address,
+                    IsActive = employee.IsActive
                 };
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"{L["Customer_LoadFailed"]}: {ex.Message}";
+            errorMessage = $"加载失败: {ex.Message}";
         }
         finally
         {
@@ -259,12 +268,12 @@
 
         try
         {
-            await CustomerService.UpdateAsync(request);
-            NavigationManager.NavigateTo("/customers");
+            await EmployeeService.UpdateAsync(request);
+            NavigationManager.NavigateTo("/employees");
         }
         catch (Exception ex)
         {
-            errorMessage = $"{L["Customer_SaveFailed"]}: {ex.Message}";
+            errorMessage = $"保存失败: {ex.Message}";
         }
         finally
         {
@@ -274,12 +283,12 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/customers");
+        NavigationManager.NavigateTo("/employees");
     }
 
     private void BackToList()
     {
-        NavigationManager.NavigateTo("/customers");
+        NavigationManager.NavigateTo("/employees");
     }
 
     private void ClearError()

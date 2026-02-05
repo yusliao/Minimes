@@ -15,16 +15,20 @@ public class DeviceManagementService : IDeviceManagementService
 {
     private readonly IDeviceManager _deviceManager;
     private readonly ILogger<DeviceManagementService> _logger;
+    private readonly IDeviceNotificationService? _notificationService;
 
     /// <summary>
     /// 构造函数
+    /// 艹，通知服务是可选的，没有也能工作，只是不会推送实时更新
     /// </summary>
     public DeviceManagementService(
         IDeviceManager deviceManager,
-        ILogger<DeviceManagementService> logger)
+        ILogger<DeviceManagementService> logger,
+        IDeviceNotificationService? notificationService = null)
     {
         _deviceManager = deviceManager ?? throw new ArgumentNullException(nameof(deviceManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _notificationService = notificationService;
     }
 
     #region 查询操作（Operator可用）

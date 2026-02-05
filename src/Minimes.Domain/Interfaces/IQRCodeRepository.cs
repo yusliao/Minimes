@@ -49,4 +49,24 @@ public interface IQRCodeRepository : IRepository<QRCode>
     /// 获取激活的二维码数量
     /// </summary>
     Task<int> GetActiveQRCodeCountAsync();
+
+    /// <summary>
+    /// 根据员工编码获取二维码列表
+    /// </summary>
+    Task<List<QRCode>> GetByEmployeeCodeAsync(string employeeCode);
+
+    /// <summary>
+    /// 根据员工编码停用相关的二维码（级联操作）
+    /// </summary>
+    Task DeactivateByEmployeeCodeAsync(string employeeCode);
+
+    /// <summary>
+    /// 根据肉类类型ID停用相关的二维码（级联操作）
+    /// </summary>
+    Task DeactivateByMeatTypeIdAsync(int meatTypeId);
+
+    /// <summary>
+    /// 获取员工关联的二维码数量
+    /// </summary>
+    Task<int> GetCountByEmployeeCodeAsync(string employeeCode);
 }

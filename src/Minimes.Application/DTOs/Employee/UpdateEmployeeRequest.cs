@@ -1,22 +1,22 @@
-namespace Minimes.Application.DTOs.Customer;
+namespace Minimes.Application.DTOs.Employee;
 
 /// <summary>
-/// 更新客户请求DTO
+/// 更新员工请求DTO
 /// </summary>
-public class UpdateCustomerRequest
+public class UpdateEmployeeRequest
 {
     /// <summary>
-    /// 客户ID
+    /// 员工ID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// 客户代码
+    /// 员工代码
     /// </summary>
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// 客户名称
+    /// 员工姓名
     /// </summary>
     public string Name { get; set; } = string.Empty;
 

@@ -1,5 +1,5 @@
 using AutoMapper;
-using Minimes.Application.DTOs.Customer;
+using Minimes.Application.DTOs.Employee;
 using Minimes.Application.DTOs.Product;
 using Minimes.Application.DTOs.WeighingRecord;
 using Minimes.Domain.Entities;
@@ -23,13 +23,13 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
-        // Customer映射
-        CreateMap<Customer, CustomerResponse>();
-        CreateMap<CreateCustomerRequest, Customer>()
+        // Employee映射
+        CreateMap<Employee, EmployeeResponse>();
+        CreateMap<CreateEmployeeRequest, Employee>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
-        CreateMap<UpdateCustomerRequest, Customer>()
+        CreateMap<UpdateEmployeeRequest, Employee>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 

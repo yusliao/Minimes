@@ -3,6 +3,12 @@
 @using Minimes.Application.Resources
 @inject IStringLocalizer<SharedResource> L
 
+<!-- 移动端遮罩层：点击空白区域关闭菜单 -->
+@if (!collapseNavMenu)
+{
+    <div class="nav-backdrop" @onclick="ToggleNavMenu"></div>
+}
+
 <div class="top-row ps-3 navbar navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">
@@ -14,7 +20,7 @@
     </div>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+<div class="nav-content @NavMenuCssClass">
     <nav class="flex-column">
         <!-- 核心生产功能 - 操作员和管理员都可见 -->
         <AuthorizeView Policy="Operator">
@@ -59,8 +65,8 @@
                 </div>
 
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="customers">
-                        <span class="oi oi-person" aria-hidden="true"></span> @L["Nav_Customers"]
+                    <NavLink class="nav-link" href="employees">
+                        <span class="oi oi-person" aria-hidden="true"></span> @L["Nav_Employees"]
                     </NavLink>
                 </div>
 

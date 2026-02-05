@@ -11,10 +11,17 @@ namespace Minimes.Application.Services;
 public class MeatTypeService : IMeatTypeService
 {
     private readonly IMeatTypeRepository _repository;
+    private readonly IEmployeeRepository _employeeRepository;
+    private readonly IQRCodeRepository _qrCodeRepository;
 
-    public MeatTypeService(IMeatTypeRepository repository)
+    public MeatTypeService(
+        IMeatTypeRepository repository,
+        IEmployeeRepository employeeRepository,
+        IQRCodeRepository qrCodeRepository)
     {
         _repository = repository;
+        _employeeRepository = employeeRepository;
+        _qrCodeRepository = qrCodeRepository;
     }
 
     public async Task<MeatTypeResponse> CreateAsync(CreateMeatTypeRequest request)
@@ -38,6 +45,9 @@ public class MeatTypeService : IMeatTypeService
 
         var created = await _repository.AddAsync(meatType);
         await _repository.SaveChangesAsync();
+
+        // 自动为所有激活的员工生成二维码
+        await GenerateQRCodesForAllEmployeesAsync(created);
 
         return ToResponse(created);
     }
@@ -113,6 +123,9 @@ public class MeatTypeService : IMeatTypeService
             throw new InvalidOperationException("该肉类类型已被使用，不能删除！请先停用该类型。");
         }
 
+        // 级联停用逻辑：删除前先停用相关的二维码
+        await _qrCodeRepository.DeactivateByMeatTypeIdAsync(id);
+
         await _repository.DeleteAsync(meatType);
         await _repository.SaveChangesAsync();
         return true;
@@ -142,6 +155,43 @@ public class MeatTypeService : IMeatTypeService
         await _repository.UpdateAsync(meatType);
         await _repository.SaveChangesAsync();
         return true;
+    }
+
+    /// <summary>
+    /// 为所有激活的员工生成二维码
+    /// </summary>
+    private async Task GenerateQRCodesForAllEmployeesAsync(MeatType meatType)
+    {
+        // 获取所有激活的员工
+        var activeEmployees = await _employeeRepository.GetActiveEmployeesAsync();
+        var employeeList = activeEmployees.ToList();
+
+        if (!employeeList.Any())
+        {
+            return; // 没有激活的员工，不生成二维码
+        }
+
+        // 生成批次号：BATCH-{MeatType.Code}-{DateTime}
+        var batchNumber = $"BATCH-{meatType.Code}-{DateTime.Now:yyyyMMddHHmmss}";
+
+        // 为每个员工生成二维码
+        foreach (var employee in employeeList)
+        {
+            var qrCode = new QRCode
+            {
+                Code = $"{meatType.Code}-{employee.Code}",
+                Content = $"{meatType.Code}-{employee.Code}",
+                EmployeeCode = employee.Code,
+                MeatTypeId = meatType.Id,
+                BatchNumber = batchNumber,
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            };
+
+            await _qrCodeRepository.AddAsync(qrCode);
+        }
+
+        await _qrCodeRepository.SaveChangesAsync();
     }
 
     /// <summary>

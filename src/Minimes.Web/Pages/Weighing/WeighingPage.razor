@@ -216,6 +216,7 @@
     // 其他字段
     private string? remarks;
     private string? errorMessage;  // 错误提示
+    private bool isSaving = false;  // 防止重复提交标志
 
     // 统计数据
     private TodaySummary? todaySummary;
@@ -334,7 +335,12 @@
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(currentBarcode))
         {
             await ParseBarcode();
-            await FocusWeightInput();
+
+            // 【修复Bug】只有解析成功才切换焦点到重量框，否则停留在条码框让用户重新输入
+            if (parsedMeatTypeId > 0 && !string.IsNullOrWhiteSpace(parsedCode))
+            {
+                await FocusWeightInput();
+            }
         }
     }
 
@@ -417,42 +423,65 @@
         }
     }
 
-    // 重量输入框回车：直接保存
+    // 重量输入框回车：校验后保存
     private async Task OnWeightKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && manualWeightInput > 0)
+        if (e.Key == "Enter")
         {
+            // 【修复Bug】校验重量是否大于0
+            if (manualWeightInput <= 0)
+            {
+                errorMessage = L["Weighing_ErrorWeightRequired"];
+                StateHasChanged();
+                return;
+            }
+
+            // 【修复Bug】校验条码是否已解析成功
+            if (parsedMeatTypeId == 0 || string.IsNullOrWhiteSpace(parsedCode))
+            {
+                errorMessage = "请先输入有效的二维码并按回车解析！";
+                StateHasChanged();
+                return;
+            }
+
+            // 校验通过，保存记录
             await SaveRecord();
         }
     }
 
     private async Task SaveRecord()
     {
+        // 防止重复提交
+        if (isSaving)
+        {
+            return;
+        }
+
         errorMessage = null;
-
-        // 验证条码
-        if (string.IsNullOrWhiteSpace(currentBarcode))
-        {
-            errorMessage = L["Weighing_ErrorBarcodeRequired"];
-            return;
-        }
-
-        // 验证重量
-        if (manualWeightInput <= 0)
-        {
-            errorMessage = L["Weighing_ErrorWeightRequired"];
-            return;
-        }
-
-        // 验证二维码解析结果
-        if (parsedMeatTypeId == 0 || string.IsNullOrWhiteSpace(parsedCode))
-        {
-            errorMessage = "请先输入有效的二维码并按回车解析！";
-            return;
-        }
+        isSaving = true;  // 锁定，防止重复提交
 
         try
         {
+            // 验证条码
+            if (string.IsNullOrWhiteSpace(currentBarcode))
+            {
+                errorMessage = L["Weighing_ErrorBarcodeRequired"];
+                return;
+            }
+
+            // 验证重量
+            if (manualWeightInput <= 0)
+            {
+                errorMessage = L["Weighing_ErrorWeightRequired"];
+                return;
+            }
+
+            // 验证二维码解析结果
+            if (parsedMeatTypeId == 0 || string.IsNullOrWhiteSpace(parsedCode))
+            {
+                errorMessage = "请先输入有效的二维码并按回车解析！";
+                return;
+            }
             // 获取当前登录用户
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var currentUser = authState.User.Identity?.Name ?? "Unknown";
@@ -488,6 +517,10 @@
         {
             errorMessage = ex.Message;
             StateHasChanged();
+        }
+        finally
+        {
+            isSaving = false;  // 解锁，允许下一次提交
         }
     }
 

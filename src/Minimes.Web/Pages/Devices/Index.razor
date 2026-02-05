@@ -160,12 +160,25 @@
                 .WithAutomaticReconnect()
                 .Build();
 
-            // 监听设备状态更新事件
-            hubConnection.On<string, string, string>("ReceiveDeviceStatusUpdate",
-                (deviceId, state, stateDescription) =>
+            // 监听设备状态更新事件（艹，接收JSON对象，不是独立参数）
+            hubConnection.On<DeviceStatusUpdateEvent>("ReceiveDeviceStatusUpdate", evt =>
             {
-                UpdateDeviceStatus(deviceId, state, stateDescription);
+                UpdateDeviceStatus(evt.deviceId, evt.newState, $"{evt.oldState} -> {evt.newState}");
                 InvokeAsync(StateHasChanged);
+            });
+
+            // 监听设备错误事件
+            hubConnection.On<DeviceErrorEvent>("ReceiveDeviceError", evt =>
+            {
+                errorMessage = $"[{evt.deviceId}] {evt.errorMessage}";
+                InvokeAsync(StateHasChanged);
+            });
+
+            // 监听设备列表更新事件（艹，有设备注册/注销时重新加载列表）
+            hubConnection.On("ReceiveDeviceListUpdate", async () =>
+            {
+                await LoadDevicesAsync();
+                await InvokeAsync(StateHasChanged);
             });
 
             await hubConnection.StartAsync();
@@ -174,6 +187,25 @@
         {
             Console.WriteLine($"SignalR连接失败: {ex.Message}");
         }
+    }
+
+    // SignalR事件数据类（艹，这些SB类用于接收SignalR推送的JSON对象）
+    private class DeviceStatusUpdateEvent
+    {
+        public string deviceId { get; set; } = string.Empty;
+        public string deviceType { get; set; } = string.Empty;
+        public string oldState { get; set; } = string.Empty;
+        public string newState { get; set; } = string.Empty;
+        public DateTime timestamp { get; set; }
+    }
+
+    private class DeviceErrorEvent
+    {
+        public string deviceId { get; set; } = string.Empty;
+        public string deviceType { get; set; } = string.Empty;
+        public string errorMessage { get; set; } = string.Empty;
+        public string severity { get; set; } = string.Empty;
+        public DateTime timestamp { get; set; }
     }
 
     private void UpdateDeviceStatus(string deviceId, string state, string stateDescription)

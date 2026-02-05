@@ -19,9 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users => Set<User>();
 
     /// <summary>
-    /// 客户表
+    /// 员工表
     /// </summary>
-    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Employee> Employees => Set<Employee>();
 
     /// <summary>
     /// 商品表

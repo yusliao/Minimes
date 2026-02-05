@@ -1,7 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Minimes.Application.DTOs.Customer;
+using Minimes.Application.DTOs.Employee;
 using Minimes.Application.DTOs.MeatType;
 using Minimes.Application.DTOs.Product;
 using Minimes.Application.DTOs.QRCode;
@@ -9,7 +9,7 @@ using Minimes.Application.DTOs.User;
 using Minimes.Application.Interfaces;
 using Minimes.Application.Mappings;
 using Minimes.Application.Services;
-using Minimes.Application.Validators.Customer;
+using Minimes.Application.Validators.Employee;
 using Minimes.Application.Validators.MeatType;
 using Minimes.Application.Validators.Product;
 using Minimes.Application.Validators.QRCode;
@@ -30,9 +30,9 @@ public static class DependencyInjection
         // 注册AutoMapper
         services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
-        // 注册验证器 - 客户
-        services.AddScoped<IValidator<CreateCustomerRequest>, CreateCustomerRequestValidator>();
-        services.AddScoped<IValidator<UpdateCustomerRequest>, UpdateCustomerRequestValidator>();
+        // 注册验证器 - 员工
+        services.AddScoped<IValidator<CreateEmployeeRequest>, CreateEmployeeRequestValidator>();
+        services.AddScoped<IValidator<UpdateEmployeeRequest>, UpdateEmployeeRequestValidator>();
 
         // 注册验证器 - 商品
         services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
@@ -53,7 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IValidator<BatchCreateQRCodeRequest>, BatchCreateQRCodeRequestValidator>();
 
         // 注册服务 - 业务逻辑
-        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();

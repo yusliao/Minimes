@@ -50,13 +50,53 @@
     color: white;
 }
 
+/* 移动端导航栏折叠逻辑 */
+@media (max-width: 640.98px) {
+    .collapse {
+        /* 移动端默认隐藏导航菜单 */
+        display: none;
+    }
+
+    /* 移动端展开时显示菜单 */
+    .collapse.show {
+        display: block;
+    }
+
+    /* 移动端遮罩层：覆盖整个视口，点击关闭菜单 */
+    .nav-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999; /* 低于sidebar(1000)，高于main内容 */
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+}
+
+/* 桌面端导航栏 */
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
     }
 
     .collapse {
-        /* Never collapse the sidebar for wide screens */
+        /* 桌面端导航栏始终显示，不折叠 */
         display: block;
+    }
+
+    /* 桌面端不显示遮罩层 */
+    .nav-backdrop {
+        display: none;
     }
 }

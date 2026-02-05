@@ -1,22 +1,22 @@
-namespace Minimes.Application.DTOs.Customer;
+namespace Minimes.Application.DTOs.Employee;
 
 /// <summary>
-/// 客户响应DTO
+/// 员工响应DTO
 /// </summary>
-public class CustomerResponse
+public class EmployeeResponse
 {
     /// <summary>
-    /// 客户ID
+    /// 员工ID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// 客户代码
+    /// 员工代码
     /// </summary>
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// 客户名称
+    /// 员工姓名
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
@@ -39,6 +39,11 @@ public class CustomerResponse
     /// 是否激活
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 关联的二维码数量
+    /// </summary>
+    public int QRCodeCount { get; set; }
 
     /// <summary>
     /// 创建时间

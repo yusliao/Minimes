@@ -61,6 +61,9 @@ builder.Services.AddControllers(); // CultureController需要
 // 添加SignalR支持
 builder.Services.AddSignalR();
 
+// 注册设备通知服务（艹，这个SB服务负责把设备事件推送到前端）
+builder.Services.AddSingleton<IDeviceNotificationService, DeviceNotificationService>();
+
 // 注册硬件后台服务
 builder.Services.AddHostedService<HardwareBackgroundService>();
 

@@ -1,25 +1,25 @@
-@page "/customers/create"
+@page "/employees/create"
 @using Microsoft.Extensions.Localization
 @using Minimes.Application.Interfaces
-@using Minimes.Application.DTOs.Customer
+@using Minimes.Application.DTOs.Employee
 @using Minimes.Application.Resources
 @inject IStringLocalizer<SharedResource> L
-@inject ICustomerService CustomerService
+@inject IEmployeeService EmployeeService
 @inject NavigationManager NavigationManager
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Admin")]
 
-<PageTitle>@L["Customer_AddNew"] - MiniMES</PageTitle>
+<PageTitle>@L["Employee_Create"] - MiniMES</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
             <h2>
-                <span class="oi oi-plus me-2"></span>@L["Customer_AddNew"]
+                <span class="oi oi-plus me-2"></span>@L["Employee_Create"]
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/customers">@L["Customer_Title"]</a></li>
-                    <li class="breadcrumb-item active">@L["Customer_AddNew"]</li>
+                    <li class="breadcrumb-item"><a href="/employees">@L["Employee_List"]</a></li>
+                    <li class="breadcrumb-item active">@L["Employee_Create"]</li>
                 </ol>
             </nav>
         </div>
@@ -42,46 +42,46 @@
 
                         <div class="mb-3">
                             <label class="form-label">
-                                <strong>@L["Customer_Code"] *</strong>
-                                <small class="text-muted">（@L["Customer_CodeHint"]）</small>
+                                <strong>@L["Employee_Code"] *</strong>
+                                <small class="text-muted">（唯一标识）</small>
                             </label>
                             <input type="text" class="form-control form-control-lg" @bind="request.Code"
-                                   placeholder="@L["Customer_CodePlaceholder"]" required />
+                                   placeholder="例如：E001" required />
                             <ValidationMessage For="@(() => request.Code)" />
                             <small class="form-text text-muted">
-                                @L["Customer_CodeNote"]
+                                员工编码用于生成二维码，建议使用字母+数字组合
                             </small>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">
-                                <strong>@L["Customer_Name"] *</strong>
+                                <strong>@L["Employee_Name"] *</strong>
                             </label>
                             <input type="text" class="form-control form-control-lg" @bind="request.Name"
-                                   placeholder="@L["Customer_NamePlaceholder"]" required />
+                                   placeholder="员工姓名" required />
                             <ValidationMessage For="@(() => request.Name)" />
                         </div>
 
                         <div class="row">
                             <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">@L["Customer_Contact"]</label>
+                                <label class="form-label">@L["Employee_ContactPerson"]</label>
                                 <input type="text" class="form-control" @bind="request.ContactPerson"
-                                       placeholder="@L["Customer_ContactPlaceholder"]" />
+                                       placeholder="紧急联系人" />
                                 <ValidationMessage For="@(() => request.ContactPerson)" />
                             </div>
 
                             <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">@L["Customer_Phone"]</label>
+                                <label class="form-label">@L["Employee_Phone"]</label>
                                 <input type="tel" class="form-control" @bind="request.Phone"
-                                       placeholder="@L["Customer_PhonePlaceholder"]" />
+                                       placeholder="联系电话" />
                                 <ValidationMessage For="@(() => request.Phone)" />
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">@L["Customer_Address"]</label>
+                            <label class="form-label">@L["Employee_Address"]</label>
                             <textarea class="form-control" @bind="request.Address" rows="3"
-                                      placeholder="@L["Customer_AddressPlaceholder"]"></textarea>
+                                      placeholder="家庭住址"></textarea>
                             <ValidationMessage For="@(() => request.Address)" />
                         </div>
 
@@ -95,7 +95,7 @@
                                 @if (isSaving)
                                 {
                                     <span class="spinner-border spinner-border-sm me-1"></span>
-                                    <span>@L["Customer_Saving"]</span>
+                                    <span>保存中...</span>
                                 }
                                 else
                                 {
@@ -114,30 +114,30 @@
             <div class="card bg-light">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <span class="oi oi-info me-2"></span>@L["Customer_HelpTitle"]
+                        <span class="oi oi-info me-2"></span>填写说明
                     </h5>
                     <ul class="mb-0">
                         <li class="mb-2">
-                            <strong>@L["Customer_Code"]</strong>：@L["Common_Required"]
+                            <strong>@L["Employee_Code"]</strong>：@L["Common_Required"]
                         </li>
                         <li class="mb-2">
-                            <strong>@L["Customer_Name"]</strong>：@L["Common_Required"]
+                            <strong>@L["Employee_Name"]</strong>：@L["Common_Required"]
                         </li>
                         <li class="mb-2">
-                            <strong>@L["Customer_Contact"]</strong>：@L["Common_Optional"]
+                            <strong>@L["Employee_ContactPerson"]</strong>：@L["Common_Optional"]
                         </li>
                         <li class="mb-2">
-                            <strong>@L["Customer_Phone"]</strong>：@L["Common_Optional"]
+                            <strong>@L["Employee_Phone"]</strong>：@L["Common_Optional"]
                         </li>
                         <li class="mb-2">
-                            <strong>@L["Customer_Address"]</strong>：@L["Common_Optional"]
+                            <strong>@L["Employee_Address"]</strong>：@L["Common_Optional"]
                         </li>
                     </ul>
 
                     <div class="alert alert-info mt-3 mb-0">
                         <small>
                             <span class="oi oi-lightbulb me-1"></span>
-                            @L["Customer_HelpTip"]
+                            创建员工后，系统会自动为该员工生成对应的二维码
                         </small>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
 </div>
 
 @code {
-    private CreateCustomerRequest request = new();
+    private CreateEmployeeRequest request = new();
     private bool isSaving = false;
     private string? errorMessage;
 
@@ -158,12 +158,12 @@
 
         try
         {
-            await CustomerService.CreateAsync(request);
-            NavigationManager.NavigateTo("/customers");
+            await EmployeeService.CreateAsync(request);
+            NavigationManager.NavigateTo("/employees");
         }
         catch (Exception ex)
         {
-            errorMessage = $"{L["Customer_SaveFailed"]}: {ex.Message}";
+            errorMessage = $"保存失败: {ex.Message}";
         }
         finally
         {
@@ -173,7 +173,7 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/customers");
+        NavigationManager.NavigateTo("/employees");
     }
 
     private void ClearError()

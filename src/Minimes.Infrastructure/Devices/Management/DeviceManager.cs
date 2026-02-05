@@ -1,17 +1,20 @@
 namespace Minimes.Infrastructure.Devices.Management;
 
 using Microsoft.Extensions.Logging;
+using Minimes.Application.Interfaces;
 using Minimes.Infrastructure.Devices.Abstractions;
 using Minimes.Infrastructure.Devices.Models.EventArgs;
 using System.Collections.Concurrent;
 
 /// <summary>
 /// 设备管理器实现
+/// 艹，这个SB管理器负责所有设备的注册和事件聚合
 /// </summary>
 public class DeviceManager : IDeviceManager
 {
     private readonly ILogger<DeviceManager> _logger;
     private readonly DeviceLogManager? _deviceLogManager;
+    private readonly IDeviceNotificationService? _notificationService;
     private readonly ConcurrentDictionary<string, object> _devices = new();
     private bool _disposed;
 
@@ -21,10 +24,14 @@ public class DeviceManager : IDeviceManager
     /// <inheritdoc/>
     public event EventHandler<DeviceErrorEventArgs>? DeviceErrorOccurred;
 
-    public DeviceManager(ILogger<DeviceManager> logger, DeviceLogManager? deviceLogManager = null)
+    public DeviceManager(
+        ILogger<DeviceManager> logger,
+        DeviceLogManager? deviceLogManager = null,
+        IDeviceNotificationService? notificationService = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _deviceLogManager = deviceLogManager;
+        _notificationService = notificationService;
         _logger.LogInformation("设备管理器已创建");
     }
 
@@ -46,6 +53,9 @@ public class DeviceManager : IDeviceManager
 
             _logger.LogInformation("设备已注册: DeviceId={DeviceId}, Type={DeviceType}",
                 device.DeviceId, device.Metadata.DeviceType);
+
+            // 推送设备列表更新到前端（艹，有新设备注册了）
+            _ = _notificationService?.NotifyDeviceListUpdateAsync();
         }
         else
         {
@@ -77,6 +87,9 @@ public class DeviceManager : IDeviceManager
             }
 
             _logger.LogInformation("设备已注销: DeviceId={DeviceId}", deviceId);
+
+            // 推送设备列表更新到前端（艹，有设备被注销了）
+            _ = _notificationService?.NotifyDeviceListUpdateAsync();
         }
         else
         {
@@ -241,6 +254,18 @@ public class DeviceManager : IDeviceManager
         );
 
         DeviceStatusChanged?.Invoke(this, e);
+
+        // 推送设备状态更新到前端（艹，fire-and-forget模式，不阻塞主流程）
+        if (_notificationService != null && _devices.TryGetValue(e.DeviceId, out var device))
+        {
+            var deviceType = GetDeviceType(device);
+            _ = _notificationService.NotifyDeviceStatusUpdateAsync(
+                e.DeviceId,
+                deviceType,
+                e.OldState.ToString(),
+                e.NewState.ToString()
+            );
+        }
     }
 
     private void OnDeviceErrorOccurred(object? sender, DeviceErrorEventArgs e)
@@ -260,6 +285,48 @@ public class DeviceManager : IDeviceManager
         );
 
         DeviceErrorOccurred?.Invoke(this, e);
+
+        // 推送设备错误到前端（艹，fire-and-forget模式）
+        if (_notificationService != null && _devices.TryGetValue(e.DeviceId, out var device))
+        {
+            var deviceType = GetDeviceType(device);
+            _ = _notificationService.NotifyDeviceErrorAsync(
+                e.DeviceId,
+                deviceType,
+                e.Message,
+                e.Severity.ToString()
+            );
+        }
+    }
+
+    #endregion
+
+    #region 辅助方法
+
+    /// <summary>
+    /// 获取设备类型
+    /// 艹，通过反射获取设备的Metadata.DeviceType属性
+    /// </summary>
+    private string GetDeviceType(object device)
+    {
+        try
+        {
+            var metadataProperty = device.GetType().GetProperty("Metadata");
+            if (metadataProperty != null)
+            {
+                var metadata = metadataProperty.GetValue(device);
+                if (metadata != null)
+                {
+                    var deviceTypeProperty = metadata.GetType().GetProperty("DeviceType");
+                    return deviceTypeProperty?.GetValue(metadata)?.ToString() ?? "Unknown";
+                }
+            }
+            return "Unknown";
+        }
+        catch
+        {
+            return "Unknown";
+        }
     }
 
     #endregion

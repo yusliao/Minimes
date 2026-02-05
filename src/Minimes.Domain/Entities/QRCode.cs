@@ -7,10 +7,17 @@ namespace Minimes.Domain.Entities;
 public class QRCode : BaseEntity
 {
     /// <summary>
-    /// 用户编号 - 用户输入的编号部分（如：001、A01）
-    /// 与肉类类型代码组合生成完整的二维码内容
+    /// 二维码唯一标识 - 完整的唯一编码（如：PORK-E001）
+    /// 格式：MeatType.Code + "-" + Employee.Code
+    /// 全局唯一，用于快速查找和关联
     /// </summary>
     public string Code { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 员工编码 - 关联的员工编码（如：E001）
+    /// 用于级联查询和停用操作
+    /// </summary>
+    public string? EmployeeCode { get; set; }
 
     /// <summary>
     /// 肉类类型ID - 关联的肉类类型

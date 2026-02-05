@@ -80,4 +80,52 @@ public class QRCodeRepository : Repository<QRCode>, IQRCodeRepository
     {
         return await _dbSet.CountAsync(q => q.IsActive);
     }
+
+    public async Task<List<QRCode>> GetByEmployeeCodeAsync(string employeeCode)
+    {
+        return await _dbSet
+            .Include(q => q.MeatType)
+            .Where(q => q.EmployeeCode == employeeCode)
+            .OrderByDescending(q => q.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task DeactivateByEmployeeCodeAsync(string employeeCode)
+    {
+        var qrCodes = await _dbSet
+            .Where(q => q.EmployeeCode == employeeCode && q.IsActive)
+            .ToListAsync();
+
+        foreach (var qrCode in qrCodes)
+        {
+            qrCode.IsActive = false;
+        }
+
+        if (qrCodes.Any())
+        {
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task DeactivateByMeatTypeIdAsync(int meatTypeId)
+    {
+        var qrCodes = await _dbSet
+            .Where(q => q.MeatTypeId == meatTypeId && q.IsActive)
+            .ToListAsync();
+
+        foreach (var qrCode in qrCodes)
+        {
+            qrCode.IsActive = false;
+        }
+
+        if (qrCodes.Any())
+        {
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<int> GetCountByEmployeeCodeAsync(string employeeCode)
+    {
+        return await _dbSet.CountAsync(q => q.EmployeeCode == employeeCode);
+    }
 }

@@ -417,14 +417,28 @@
                 .WithAutomaticReconnect()
                 .Build();
 
-            hubConnection.On<string, string, object>("ReceiveDeviceStatusUpdate",
-                (deviceId, status, data) =>
+            // 监听设备状态更新事件（艹，只监听当前设备的状态变化）
+            hubConnection.On<DeviceStatusUpdateEvent>("ReceiveDeviceStatusUpdate", evt =>
             {
-                if (deviceId == DeviceId)
+                if (evt.deviceId == DeviceId)
                 {
                     InvokeAsync(async () =>
                     {
                         await LoadDeviceData();
+                        StateHasChanged();
+                    });
+                }
+            });
+
+            // 监听设备错误事件
+            hubConnection.On<DeviceErrorEvent>("ReceiveDeviceError", evt =>
+            {
+                if (evt.deviceId == DeviceId)
+                {
+                    InvokeAsync(() =>
+                    {
+                        // TODO: 显示错误提示
+                        Console.WriteLine($"设备错误: {evt.errorMessage}");
                         StateHasChanged();
                     });
                 }
@@ -436,6 +450,25 @@
         {
             Console.WriteLine($"SignalR连接失败: {ex.Message}");
         }
+    }
+
+    // SignalR事件数据类（艹，这些SB类用于接收SignalR推送的JSON对象）
+    private class DeviceStatusUpdateEvent
+    {
+        public string deviceId { get; set; } = string.Empty;
+        public string deviceType { get; set; } = string.Empty;
+        public string oldState { get; set; } = string.Empty;
+        public string newState { get; set; } = string.Empty;
+        public DateTime timestamp { get; set; }
+    }
+
+    private class DeviceErrorEvent
+    {
+        public string deviceId { get; set; } = string.Empty;
+        public string deviceType { get; set; } = string.Empty;
+        public string errorMessage { get; set; } = string.Empty;
+        public string severity { get; set; } = string.Empty;
+        public DateTime timestamp { get; set; }
     }
 
     private void UpdatePagedLogs()

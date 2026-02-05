@@ -21,7 +21,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
         // 注册仓储
-        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWeighingRecordRepository, WeighingRecordRepository>();

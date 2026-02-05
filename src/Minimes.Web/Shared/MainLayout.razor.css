@@ -31,6 +31,7 @@ main {
         text-overflow: ellipsis;
     }
 
+/* 移动端布局 */
 @media (max-width: 640.98px) {
     .top-row:not(.auth) {
         display: none;
@@ -42,6 +43,33 @@ main {
 
     .top-row a, .top-row .btn-link {
         margin-left: 0;
+    }
+
+    /* 移动端sidebar采用fixed定位，默认隐藏在左侧 */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 250px;
+        z-index: 1000;
+        overflow-y: auto;
+        /* iOS平滑滚动 */
+        -webkit-overflow-scrolling: touch;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* 当菜单展开时（nav-content没有collapse类），sidebar滑入视图 */
+    .sidebar:has(.nav-content:not(.collapse)) {
+        transform: translateX(0);
+        /* 菜单展开时禁止body滚动，防止穿透滚动 */
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 菜单展开时禁止body滚动 */
+    body:has(.sidebar .nav-content:not(.collapse)) {
+        overflow: hidden;
     }
 }
 
