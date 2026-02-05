@@ -2,14 +2,17 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Operator")]
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
 @using Minimes.Application.Interfaces
 @using Minimes.Application.DTOs.WeighingRecord
+@using Minimes.Application.Configuration
 @using Minimes.Domain.Enums
 @using Minimes.Application.Resources
 @inject IStringLocalizer<SharedResource> L
 @inject IWeighingRecordService WeighingRecordService
 @inject IMeatTypeService MeatTypeService
 @inject IQRCodeService QRCodeService
+@inject IOptionsSnapshot<WeightValidationConfig> WeightConfig
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
@@ -89,6 +92,7 @@
                         <input type="number" class="form-control form-control-lg text-center"
                                @ref="weightInput"
                                @bind="manualWeightInput"
+                               @bind:event="oninput"
                                @onkeydown="OnWeightKeyDown"
                                placeholder="@L["Weighing_WeightPlaceholder"]" step="0.001" min="0" />
                         <span class="input-group-text">lb</span>
@@ -99,7 +103,7 @@
                     }
                     else
                     {
-                        <small class="text-muted">@L["Weighing_WeightHint"]</small>
+                        <small class="text-muted">@L["Weighing_WeightHint"] (@WeightConfig.Value.MinWeightLb.ToString("F3") - @WeightConfig.Value.MaxWeightLb.ToString("F1") lb)</small>
                     }
                 </div>
 
@@ -432,6 +436,24 @@
             if (manualWeightInput <= 0)
             {
                 errorMessage = L["Weighing_ErrorWeightRequired"];
+                StateHasChanged();
+                return;
+            }
+
+            // 【新增校验】校验重量上下限
+            var minWeight = WeightConfig.Value.MinWeightLb;
+            var maxWeight = WeightConfig.Value.MaxWeightLb;
+
+            if (manualWeightInput < minWeight)
+            {
+                errorMessage = $"重量过轻！最小重量为 {minWeight:F3} 磅";
+                StateHasChanged();
+                return;
+            }
+
+            if (manualWeightInput > maxWeight)
+            {
+                errorMessage = $"重量过重！最大重量为 {maxWeight:F1} 磅";
                 StateHasChanged();
                 return;
             }
