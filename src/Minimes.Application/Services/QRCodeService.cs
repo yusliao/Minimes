@@ -12,15 +12,18 @@ public class QRCodeService : IQRCodeService
 {
     private readonly IQRCodeRepository _repository;
     private readonly IMeatTypeRepository _meatTypeRepository;
+    private readonly IEmployeeRepository _employeeRepository;
     private readonly IQRCodeGeneratorService _qrCodeGenerator;
 
     public QRCodeService(
         IQRCodeRepository repository,
         IMeatTypeRepository meatTypeRepository,
+        IEmployeeRepository employeeRepository,
         IQRCodeGeneratorService qrCodeGenerator)
     {
         _repository = repository;
         _meatTypeRepository = meatTypeRepository;
+        _employeeRepository = employeeRepository;
         _qrCodeGenerator = qrCodeGenerator;
     }
 
@@ -123,26 +126,107 @@ public class QRCodeService : IQRCodeService
     public async Task<QRCodeResponse?> GetByIdAsync(int id)
     {
         var qrCode = await _repository.GetByIdAsync(id);
-        return qrCode == null ? null : ToResponse(qrCode);
+        return qrCode == null ? null : await ToResponseAsync(qrCode);
     }
 
     public async Task<QRCodeResponse?> GetByContentAsync(string content)
     {
         var qrCode = await _repository.GetByContentAsync(content);
-        return qrCode == null ? null : ToResponse(qrCode);
+        return qrCode == null ? null : await ToResponseAsync(qrCode);
     }
 
     public async Task<List<QRCodeResponse>> GetAllAsync()
     {
         var qrCodes = await _repository.GetAllAsync();
         var orderedQRCodes = qrCodes.OrderByDescending(q => q.CreatedAt).ToList();
-        return orderedQRCodes.Select(ToResponse).ToList();
+
+        // 艹，批量加载员工信息，避免N+1查询
+        var employeeCodes = orderedQRCodes
+            .Where(q => !string.IsNullOrEmpty(q.EmployeeCode))
+            .Select(q => q.EmployeeCode!)
+            .Distinct()
+            .ToList();
+
+        // 查询所有相关员工
+        var employees = new Dictionary<string, string>();
+        foreach (var code in employeeCodes)
+        {
+            var employee = await _employeeRepository.GetByCodeAsync(code);
+            if (employee != null)
+            {
+                employees[code] = employee.Name;
+            }
+        }
+
+        // 映射到Response，填充员工姓名
+        return orderedQRCodes.Select(q => new QRCodeResponse
+        {
+            Id = q.Id,
+            Code = q.Code,
+            MeatTypeId = q.MeatTypeId,
+            MeatTypeName = q.MeatType?.Name ?? string.Empty,
+            MeatTypeCode = q.MeatType?.Code ?? string.Empty,
+            EmployeeCode = q.EmployeeCode,
+            EmployeeName = !string.IsNullOrEmpty(q.EmployeeCode) && employees.ContainsKey(q.EmployeeCode)
+                ? employees[q.EmployeeCode]
+                : null,
+            Content = q.Content,
+            ImageBase64 = q.ImageBase64,
+            BatchNumber = q.BatchNumber,
+            PrintCount = q.PrintCount,
+            LastPrintedAt = q.LastPrintedAt,
+            IsActive = q.IsActive,
+            Remarks = q.Remarks,
+            CreatedAt = q.CreatedAt,
+            UpdatedAt = q.UpdatedAt
+        }).ToList();
     }
 
     public async Task<List<QRCodeResponse>> GetActiveAsync()
     {
         var qrCodes = await _repository.GetActiveAsync();
-        return qrCodes.Select(ToResponse).ToList();
+        var qrCodeList = qrCodes.ToList();
+
+        // 艹，批量加载员工信息，避免N+1查询
+        var employeeCodes = qrCodeList
+            .Where(q => !string.IsNullOrEmpty(q.EmployeeCode))
+            .Select(q => q.EmployeeCode!)
+            .Distinct()
+            .ToList();
+
+        // 查询所有相关员工
+        var employees = new Dictionary<string, string>();
+        foreach (var code in employeeCodes)
+        {
+            var employee = await _employeeRepository.GetByCodeAsync(code);
+            if (employee != null)
+            {
+                employees[code] = employee.Name;
+            }
+        }
+
+        // 映射到Response，填充员工姓名
+        return qrCodeList.Select(q => new QRCodeResponse
+        {
+            Id = q.Id,
+            Code = q.Code,
+            MeatTypeId = q.MeatTypeId,
+            MeatTypeName = q.MeatType?.Name ?? string.Empty,
+            MeatTypeCode = q.MeatType?.Code ?? string.Empty,
+            EmployeeCode = q.EmployeeCode,
+            EmployeeName = !string.IsNullOrEmpty(q.EmployeeCode) && employees.ContainsKey(q.EmployeeCode)
+                ? employees[q.EmployeeCode]
+                : null,
+            Content = q.Content,
+            ImageBase64 = q.ImageBase64,
+            BatchNumber = q.BatchNumber,
+            PrintCount = q.PrintCount,
+            LastPrintedAt = q.LastPrintedAt,
+            IsActive = q.IsActive,
+            Remarks = q.Remarks,
+            CreatedAt = q.CreatedAt,
+            UpdatedAt = q.UpdatedAt
+        }).ToList();
     }
 
     public async Task<QRCodeResponse> UpdateAsync(int id, UpdateQRCodeRequest request)
@@ -219,6 +303,7 @@ public class QRCodeService : IQRCodeService
 
     private QRCodeResponse ToResponse(QRCode qrCode)
     {
+        // 同步方法中无法使用async，如果需要员工姓名请使用ToResponseAsync
         return new QRCodeResponse
         {
             Id = qrCode.Id,
@@ -226,6 +311,38 @@ public class QRCodeService : IQRCodeService
             MeatTypeId = qrCode.MeatTypeId,
             MeatTypeName = qrCode.MeatType?.Name ?? string.Empty,
             MeatTypeCode = qrCode.MeatType?.Code ?? string.Empty,
+            EmployeeCode = qrCode.EmployeeCode,
+            EmployeeName = null, // 同步方法无法查询，使用ToResponseAsync获取员工姓名
+            Content = qrCode.Content,
+            ImageBase64 = qrCode.ImageBase64,
+            BatchNumber = qrCode.BatchNumber,
+            PrintCount = qrCode.PrintCount,
+            LastPrintedAt = qrCode.LastPrintedAt,
+            IsActive = qrCode.IsActive,
+            Remarks = qrCode.Remarks,
+            CreatedAt = qrCode.CreatedAt,
+            UpdatedAt = qrCode.UpdatedAt
+        };
+    }
+
+    private async Task<QRCodeResponse> ToResponseAsync(QRCode qrCode)
+    {
+        string? employeeName = null;
+        if (!string.IsNullOrEmpty(qrCode.EmployeeCode))
+        {
+            var employee = await _employeeRepository.GetByCodeAsync(qrCode.EmployeeCode);
+            employeeName = employee?.Name;
+        }
+
+        return new QRCodeResponse
+        {
+            Id = qrCode.Id,
+            Code = qrCode.Code,
+            MeatTypeId = qrCode.MeatTypeId,
+            MeatTypeName = qrCode.MeatType?.Name ?? string.Empty,
+            MeatTypeCode = qrCode.MeatType?.Code ?? string.Empty,
+            EmployeeCode = qrCode.EmployeeCode,
+            EmployeeName = employeeName,
             Content = qrCode.Content,
             ImageBase64 = qrCode.ImageBase64,
             BatchNumber = qrCode.BatchNumber,

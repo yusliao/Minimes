@@ -14,6 +14,23 @@ public class QRCodeRepository : Repository<QRCode>, IQRCodeRepository
     {
     }
 
+    // 重写GetByIdAsync，确保加载MeatType导航属性
+    public override async Task<QRCode?> GetByIdAsync(int id)
+    {
+        return await _dbSet
+            .Include(q => q.MeatType)
+            .FirstOrDefaultAsync(q => q.Id == id);
+    }
+
+    // 重写GetAllAsync，确保加载MeatType导航属性
+    public override async Task<IEnumerable<QRCode>> GetAllAsync()
+    {
+        return await _dbSet
+            .Include(q => q.MeatType)
+            .OrderByDescending(q => q.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<QRCode?> GetByContentAsync(string content)
     {
         return await _dbSet

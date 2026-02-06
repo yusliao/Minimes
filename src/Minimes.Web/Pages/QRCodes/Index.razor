@@ -206,6 +206,10 @@
             {
                 <p style="font-size:20px;color:#666;margin-top:10px;">@printingQRCode.MeatTypeName</p>
             }
+            @if (!string.IsNullOrEmpty(printingQRCode.EmployeeName))
+            {
+                <p style="font-size:18px;color:#999;margin-top:5px;">@printingQRCode.EmployeeName</p>
+            }
         </div>
     }
 </div>
@@ -249,7 +253,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_LoadFailed"].Value} {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_LoadFailed"].Value} {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误
+            }
         }
         finally
         {
@@ -316,7 +328,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_ToggleStatusFailed"].Value} {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_ToggleStatusFailed"].Value} {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误
+            }
         }
     }
 
@@ -332,7 +352,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_DeleteFailed"].Value} {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_DeleteFailed"].Value} {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误
+            }
         }
     }
 
@@ -346,7 +374,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["Export_Failed"].Value} {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["Export_Failed"].Value} {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误
+            }
         }
     }
 
@@ -365,7 +401,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCode_PrintFailed"].Value}: {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCode_PrintFailed"].Value}: {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误（反正也看不到alert了）
+            }
         }
     }
 }

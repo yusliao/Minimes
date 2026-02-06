@@ -172,6 +172,10 @@
                 <div class="qr-info">
                     <div>@qrCode.MeatTypeName</div>
                     <div>@qrCode.Content</div>
+                    @if (!string.IsNullOrEmpty(qrCode.EmployeeName))
+                    {
+                        <div style="font-size: 9pt; color: #666;">@qrCode.EmployeeName</div>
+                    }
                 </div>
             </div>
         }
@@ -192,6 +196,10 @@
                         <div class="qr-info">
                             <div>@qrCode.MeatTypeName</div>
                             <div>@qrCode.Content</div>
+                            @if (!string.IsNullOrEmpty(qrCode.EmployeeName))
+                            {
+                                <div style="font-size: 8pt; color: #666;">@qrCode.EmployeeName</div>
+                            }
                         </div>
                     </div>
                 }
@@ -222,7 +230,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_LoadFailed"].Value} {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_LoadFailed"].Value} {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误
+            }
         }
         finally
         {
@@ -247,7 +263,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_PrintFailed"].Value} {ex.Message}");
+            // 艹，捕获JSDisconnectedException，避免在circuit断开时调用JS报错
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"{L["QRCodes_PrintFailed"].Value} {ex.Message}");
+            }
+            catch (Microsoft.JSInterop.JSDisconnectedException)
+            {
+                // 用户已断开连接，忽略错误
+            }
         }
     }
 

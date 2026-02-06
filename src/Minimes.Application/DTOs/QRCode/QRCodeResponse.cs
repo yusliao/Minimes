@@ -31,6 +31,16 @@ public class QRCodeResponse
     public string MeatTypeCode { get; set; } = string.Empty;
 
     /// <summary>
+    /// 员工编码
+    /// </summary>
+    public string? EmployeeCode { get; set; }
+
+    /// <summary>
+    /// 员工姓名
+    /// </summary>
+    public string? EmployeeName { get; set; }
+
+    /// <summary>
     /// 二维码内容（完整内容，如：PORK-001）
     /// </summary>
     public string Content { get; set; } = string.Empty;
