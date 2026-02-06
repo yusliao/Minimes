@@ -46,4 +46,11 @@ public interface IMeatTypeService
     /// 切换肉类类型激活状态（至少保留一个激活类型）
     /// </summary>
     Task<bool> ToggleActiveAsync(int id);
+
+    /// <summary>
+    /// 重新生成指定肉类类型的所有二维码（为所有激活员工生成）
+    /// </summary>
+    /// <param name="id">肉类类型ID</param>
+    /// <returns>生成的二维码数量</returns>
+    Task<int> RegenerateQRCodesAsync(int id);
 }

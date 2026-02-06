@@ -104,15 +104,22 @@
                                     <td>@meatType.CreatedAt.ToString("yyyy-MM-dd")</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary" @onclick="() => NavigateToEdit(meatType.Id)">
+                                            <button class="btn btn-outline-primary" @onclick="() => NavigateToEdit(meatType.Id)"
+                                                    title="@L["MeatTypes_Edit"]">
                                                 <span class="oi oi-pencil"></span>
                                             </button>
+                                            <button class="btn btn-outline-info" @onclick="() => RegenerateQRCodes(meatType.Id)"
+                                                    title="@L["MeatTypes_RegenerateQRCodes"]">
+                                                <span class="oi oi-reload"></span>
+                                            </button>
                                             <button class="btn @(meatType.IsActive ? "btn-outline-warning" : "btn-outline-success")"
-                                                    @onclick="() => ToggleActive(meatType.Id)">
+                                                    @onclick="() => ToggleActive(meatType.Id)"
+                                                    title="@L[meatType.IsActive ? "MeatTypes_Deactivate" : "MeatTypes_Activate"]">
                                                 <span class="oi @(meatType.IsActive ? "oi-ban" : "oi-check")"></span>
                                             </button>
                                             <button class="btn btn-outline-danger"
-                                                    @onclick="() => DeleteMeatType(meatType.Id)">
+                                                    @onclick="() => DeleteMeatType(meatType.Id)"
+                                                    title="@L["MeatTypes_Delete"]">
                                                 <span class="oi oi-trash"></span>
                                             </button>
                                         </div>
@@ -226,6 +233,25 @@
         catch (Exception ex)
         {
             errorMessage = $"{L["MeatTypes_DeleteFailed"].Value}: {ex.Message}";
+        }
+    }
+
+    private async Task RegenerateQRCodes(int id)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["MeatTypes_ConfirmRegenerate"].Value))
+        {
+            return;
+        }
+
+        try
+        {
+            var count = await MeatTypeService.RegenerateQRCodesAsync(id);
+            successMessage = string.Format(L["MeatTypes_RegenerateSuccess"].Value, count);
+            await LoadMeatTypes();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"{L["MeatTypes_RegenerateFailed"].Value}: {ex.Message}";
         }
     }
 }

@@ -753,12 +753,6 @@
   </data>
 
   <!-- 生产报表-图表标题 -->
-  <data name="Report_StageRecordsChart" xml:space="preserve">
-    <value>环节记录分布</value>
-  </data>
-  <data name="Report_StageWeightsChart" xml:space="preserve">
-    <value>环节重量对比</value>
-  </data>
   <data name="Report_DateTrendChart" xml:space="preserve">
     <value>日期趋势分析</value>
   </data>
@@ -1636,6 +1630,30 @@
   </data>
   <data name="MeatTypes_DeleteFailed" xml:space="preserve">
     <value>删除肉类类型失败</value>
+  </data>
+  <data name="MeatTypes_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="MeatTypes_RegenerateQRCodes" xml:space="preserve">
+    <value>重新生成二维码</value>
+  </data>
+  <data name="MeatTypes_Deactivate" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="MeatTypes_Activate" xml:space="preserve">
+    <value>激活</value>
+  </data>
+  <data name="MeatTypes_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="MeatTypes_ConfirmRegenerate" xml:space="preserve">
+    <value>确定要重新生成该肉类类型的所有二维码吗？这将删除旧的二维码并为所有激活的员工重新生成。</value>
+  </data>
+  <data name="MeatTypes_RegenerateSuccess" xml:space="preserve">
+    <value>成功重新生成 {0} 个二维码</value>
+  </data>
+  <data name="MeatTypes_RegenerateFailed" xml:space="preserve">
+    <value>重新生成二维码失败</value>
   </data>
 
   <!-- 肉类类型表单页面 -->

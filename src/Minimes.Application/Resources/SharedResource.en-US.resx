@@ -763,12 +763,6 @@
   </data>
 
   <!-- Production Report - Chart Titles -->
-  <data name="Report_StageRecordsChart" xml:space="preserve">
-    <value>Stage Records Distribution</value>
-  </data>
-  <data name="Report_StageWeightsChart" xml:space="preserve">
-    <value>Stage Weight Comparison</value>
-  </data>
   <data name="Report_DateTrendChart" xml:space="preserve">
     <value>Date Trend Analysis</value>
   </data>
@@ -1643,6 +1637,30 @@
   </data>
   <data name="MeatTypes_DeleteFailed" xml:space="preserve">
     <value>Failed to delete meat type</value>
+  </data>
+  <data name="MeatTypes_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="MeatTypes_RegenerateQRCodes" xml:space="preserve">
+    <value>Regenerate QR Codes</value>
+  </data>
+  <data name="MeatTypes_Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="MeatTypes_Activate" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="MeatTypes_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="MeatTypes_ConfirmRegenerate" xml:space="preserve">
+    <value>Are you sure you want to regenerate all QR codes for this meat type? This will delete old QR codes and regenerate them for all active employees.</value>
+  </data>
+  <data name="MeatTypes_RegenerateSuccess" xml:space="preserve">
+    <value>Successfully regenerated {0} QR codes</value>
+  </data>
+  <data name="MeatTypes_RegenerateFailed" xml:space="preserve">
+    <value>Failed to regenerate QR codes</value>
   </data>
 
   <!-- Meat Types Form Pages -->

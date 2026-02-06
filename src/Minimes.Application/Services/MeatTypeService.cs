@@ -160,6 +160,33 @@ public class MeatTypeService : IMeatTypeService
         return true;
     }
 
+    public async Task<int> RegenerateQRCodesAsync(int id)
+    {
+        // 检查肉类类型是否存在
+        var meatType = await _repository.GetByIdAsync(id);
+        if (meatType == null)
+        {
+            throw new InvalidOperationException($"肉类类型ID {id} 不存在！");
+        }
+
+        // 获取该肉类类型的所有旧二维码
+        var oldQRCodes = await _qrCodeRepository.GetByMeatTypeIdAsync(id);
+
+        // 删除所有旧二维码
+        foreach (var qrCode in oldQRCodes)
+        {
+            await _qrCodeRepository.DeleteAsync(qrCode);
+        }
+        await _qrCodeRepository.SaveChangesAsync();
+
+        // 重新生成二维码
+        await GenerateQRCodesForAllEmployeesAsync(meatType);
+
+        // 返回生成的数量
+        var newQRCodes = await _qrCodeRepository.GetByMeatTypeIdAsync(id);
+        return newQRCodes.Count;
+    }
+
     /// <summary>
     /// 为所有激活的员工生成二维码
     /// </summary>
