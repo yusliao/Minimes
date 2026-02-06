@@ -65,9 +65,62 @@ dotnet run
 
 ---
 
-## 🌐 生产环境部署
+## 🌐 部署配置
 
-### 重要：PWA必须使用HTTPS
+### 局域网环境部署（推荐）⭐
+
+**如果你的系统只在局域网使用**（如工厂车间、办公室内网），有两种方案：
+
+#### 方案1：继续使用HTTP（最简单）
+
+大多数现代浏览器（Chrome 67+, Edge 79+）在局域网环境下**允许HTTP注册Service Worker**。
+
+**如果某些设备的浏览器报错**，手动开启不安全源：
+
+1. 浏览器地址栏输入：`chrome://flags/#unsafely-treat-insecure-origin-as-secure`
+2. 找到 "Insecure origins treated as secure"
+3. 输入你的局域网地址：`http://192.168.1.100:5000`（改成你的实际IP）
+4. 点击"Relaunch"重启浏览器
+
+**优点**：零配置，开箱即用
+**缺点**：部分浏览器需要手动开启标志位
+
+#### 方案2：配置局域网HTTPS（一劳永逸）
+
+使用自签名证书，10分钟搞定：
+
+```bash
+# 生成自签名证书（有效期10年）
+cd src/Minimes.Web
+dotnet dev-certs https -ep cert.pfx -p YourPassword123 --trust
+```
+
+修改 `appsettings.json`：
+
+```json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Https": {
+        "Url": "https://*:5001",
+        "Certificate": {
+          "Path": "cert.pfx",
+          "Password": "YourPassword123"
+        }
+      }
+    }
+  }
+}
+```
+
+启动后访问：`https://192.168.1.100:5001`
+
+**优点**：完全兼容所有浏览器，更专业
+**缺点**：首次访问需要点击"继续访问"（自签名证书特性）
+
+---
+
+### 公网环境部署
 
 PWA的Service Worker功能**必须在HTTPS环境下运行**（localhost除外）。
 

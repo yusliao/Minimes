@@ -302,7 +302,8 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('input[placeholder*=\"扫码\"]')?.focus()");
+            // 使用ElementReference直接聚焦，更可靠
+            await barcodeInput.FocusAsync();
         }
         catch { /* 忽略聚焦失败 */ }
     }
@@ -311,7 +312,8 @@
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('input[type=\"number\"]')?.focus()");
+            // 使用ElementReference直接聚焦，更可靠
+            await weightInput.FocusAsync();
         }
         catch { /* 忽略聚焦失败 */ }
     }

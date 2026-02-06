@@ -13,15 +13,18 @@ public class MeatTypeService : IMeatTypeService
     private readonly IMeatTypeRepository _repository;
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IQRCodeRepository _qrCodeRepository;
+    private readonly IQRCodeGeneratorService _qrCodeGenerator;
 
     public MeatTypeService(
         IMeatTypeRepository repository,
         IEmployeeRepository employeeRepository,
-        IQRCodeRepository qrCodeRepository)
+        IQRCodeRepository qrCodeRepository,
+        IQRCodeGeneratorService qrCodeGenerator)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _qrCodeRepository = qrCodeRepository;
+        _qrCodeGenerator = qrCodeGenerator;
     }
 
     public async Task<MeatTypeResponse> CreateAsync(CreateMeatTypeRequest request)
@@ -177,10 +180,17 @@ public class MeatTypeService : IMeatTypeService
         // 为每个员工生成二维码
         foreach (var employee in employeeList)
         {
+            // 生成二维码内容
+            var content = $"{meatType.Code}-{employee.Code}";
+
+            // 生成二维码图片（Base64）
+            var imageBase64 = _qrCodeGenerator.GenerateQRCodeBase64(content);
+
             var qrCode = new QRCode
             {
                 Code = $"{meatType.Code}-{employee.Code}",
-                Content = $"{meatType.Code}-{employee.Code}",
+                Content = content,
+                ImageBase64 = imageBase64, // 添加图片数据
                 EmployeeCode = employee.Code,
                 MeatTypeId = meatType.Id,
                 BatchNumber = batchNumber,
